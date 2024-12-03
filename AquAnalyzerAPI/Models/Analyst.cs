@@ -9,7 +9,7 @@ public class Analyst : User
     {
     }
 
-    public Analyst(int id, string username, string password, string email, string role, ) : base(id, username, password, email, role)
+    public Analyst(int id, string username, string password, string email, string role) : base(id, username, password, email, role)
     {
     }
 }

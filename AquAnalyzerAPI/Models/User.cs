@@ -17,7 +17,7 @@ public abstract class User
     }
     public User(int id, string username, string password, string email, string role)
     {
-        this.Id I = id;
+        this.Id = id;
         this.Username = username;
         this.Password = password;
         this.Email = email;
