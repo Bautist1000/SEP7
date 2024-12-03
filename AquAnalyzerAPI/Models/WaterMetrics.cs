@@ -3,13 +3,17 @@ using System;
 public class WaterMetrics
 {
     public int Id { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
-    public double TotalConsumption { get; set; }
-    public double WaterEfficiency { get; set; }
-    public double Savings { get; set; }
-    public bool HasAbnormalities { get; set; }
-    public string Insights { get; set; }
+    public DateTime DateGeneratedOn { get; set; }
+    public double LeakageRate { get; set; }
+    public double WaterEfficiencyRatio { get; set; }
+    public double TotalWaterConsumption { get; set; }
+    public double TotalWaterSaved { get; set; }
+    public double RecycledWaterUsage { get; set; }
+
+    public WaterMetrics()
+    {
+
+    }
     public WaterMetrics()
     {
         StartDate = DateTime.Now;
