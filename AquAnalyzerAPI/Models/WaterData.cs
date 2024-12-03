@@ -10,16 +10,29 @@ public class WaterData
     public double ProductId { get; set; }
     // freshwater, recycled, groundwater, seawater?
     public string SourceType { get; set; }
-    public bool LeakDetected? { get; set; }
+    public bool? LeakDetected { get; set; }
     public string Location { get; set; }
     public bool HasAbnormalities { get; set; }
     public bool UsesCleanEnergy { get; set; }
 
     public WaterData() { }
-
-    public WaterData()
+    public WaterData(int Id, DateTime Timestamp)
     {
-        Timestamp = DateTime.Now;
-        IsAnomalous = false;
+        this.Id = Id;
+        this.Timestamp = Timestamp;
+    }
+    public WaterData(int Id, DateTime Timestamp, double UsageVolume, double FlowRate, double ElectricityConsumption, double ProductId, string SourceType, bool LeakDetected, string Location, bool HasAbnormalities, bool UsesCleanEnergy)
+    {
+        this.Id = Id;
+        this.Timestamp = Timestamp;
+        this.UsageVolume = UsageVolume;
+        this.FlowRate = FlowRate;
+        this.ElectricityConsumption = ElectricityConsumption;
+        this.ProductId = ProductId;
+        this.SourceType = SourceType;
+        this.LeakDetected = LeakDetected;
+        this.Location = Location;
+        this.HasAbnormalities = HasAbnormalities;
+        this.UsesCleanEnergy = UsesCleanEnergy;
     }
 }
