@@ -1,6 +1,6 @@
 
-namespace AquAnalyzerAPI.Interfaces
-{
+
+
 public interface INotificationService
 {
     Task<IEnumerable<Notification>> GetAllNotifications(); 
@@ -11,5 +11,4 @@ public interface INotificationService
     Task<bool> MarkNotificationAsRead(int id, DateTime readAt);
     Task<bool> DeleteNotification(int id);
     Task<IEnumerable<Notification>> GetNotificationsByType(string type);
-}
 }

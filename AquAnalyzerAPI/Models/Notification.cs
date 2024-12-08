@@ -1,5 +1,4 @@
-namespace AquAnalyzerAPI.Models
-{
+
 public class Notification
 {
     
@@ -18,4 +17,4 @@ public class Notification
     public Abnormality? Abnormality { get; set; }
 
 }
-}
+

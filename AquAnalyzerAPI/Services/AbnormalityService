@@ -1,5 +1,4 @@
-namespace AquAnalyzerAPI.Services
-{
+
 public class AbnormalityService : IAbnormalityService
 {
     private readonly DatabaseContext _context;
@@ -60,4 +59,4 @@ public class AbnormalityService : IAbnormalityService
         return true;
     }
 }
-}
+

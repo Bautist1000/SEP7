@@ -1,20 +1,17 @@
-using Microsoft.AspNetCore.Mvc;
+/*using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AquAnalyzerAPI.Models;
-
-
 
 [Route("api/[controller]")]
 [ApiController]
 public class AbnormalityController : ControllerBase
 {
-    /*private readonly IAbnormalityService _abnormalityService;
+    private readonly IAbnormalityService _abnormalityService;
 
     public AbnormalityController(IAbnormalityService abnormalityService)
     {
         _abnormalityService = abnormalityService;
-    }*/
+    }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Abnormality>>> GetAllAbnormalities()
@@ -64,4 +61,4 @@ public class AbnormalityController : ControllerBase
 
         return NoContent();
     }
-}
+}*/

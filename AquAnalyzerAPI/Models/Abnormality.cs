@@ -1,5 +1,4 @@
-namespace AquAnalyzerAPI.Models
-{
+
 public class Abnormality
 {
     public int Id { get; set; }
@@ -9,4 +8,3 @@ public class Abnormality
  
 }
 
-}

@@ -1,6 +1,5 @@
 
-namespace AquAnalyzerAPI.Services
-{
+
 public class NotificationService : INotificationService
 {
     private readonly DatabaseContext _context;
@@ -60,4 +59,4 @@ public class NotificationService : INotificationService
         return true;
     }
 }
-}
+
