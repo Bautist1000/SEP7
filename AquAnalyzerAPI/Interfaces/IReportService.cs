@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 public interface IReportService
 {
     Task<Report> AddReport(Report report);
