@@ -10,4 +10,9 @@ public class Notification
     public DateTime? ReadAt { get; set; } //idk if this one is necessary ^
     // Optional: Additional metadata or context
     public string Metadata { get; set; }  
+
+      // Relationship with Abnormality
+    public int? AbnormalityId { get; set; } // Nullable if not all notifications relate to abnormalities
+    public Abnormality? Abnormality { get; set; }
+
 }
