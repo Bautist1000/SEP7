@@ -9,10 +9,12 @@ public class DatabaseContext : DbContext
     public DbSet<Analyst> Analysts { get; set; }
     public DbSet<VisualDesigner> VisualDesigners { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Report> Reports { get; set; }
+    public DbSet<Visualisation> Visualisations { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer("YourConnectionStringHere");
+        optionsBuilder.UseSqlite("Data Source=database.db");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
