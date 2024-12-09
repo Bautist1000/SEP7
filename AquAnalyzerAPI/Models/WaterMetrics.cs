@@ -14,10 +14,21 @@ public class WaterMetrics
     {
 
     }
-    public WaterMetrics()
+    public WaterMetrics(int Id, DateTime DateGeneratedOn)
     {
-        StartDate = DateTime.Now;
-        EndDate = DateTime.Now;
-        HasAbnormalities = false;
+        this.Id = Id;
+        this.DateGeneratedOn = DateGeneratedOn;
     }
+
+    public WaterMetrics(int Id, DateTime DateGeneratedOn, double LeakageRate, double WaterEfficiencyRatio, double TotalWaterConsumption, double TotalWaterSaved, double RecycledWaterUsage)
+    {
+        this.Id = Id;
+        this.DateGeneratedOn = DateGeneratedOn;
+        this.LeakageRate = LeakageRate;
+        this.WaterEfficiencyRatio = WaterEfficiencyRatio;
+        this.TotalWaterConsumption = TotalWaterConsumption;
+        this.TotalWaterSaved = TotalWaterSaved;
+        this.RecycledWaterUsage = RecycledWaterUsage;
+    }
+
 }

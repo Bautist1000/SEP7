@@ -1,6 +1,6 @@
 public class VisualDesigner : User
 {
-    public List<WaterMetrics> GeneratedReports { get; set; }
+    public List<Report> GeneratedReports { get; set; }
     public VisualDesigner()
     {
     }
