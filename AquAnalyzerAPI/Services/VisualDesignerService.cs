@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using AquAnalyzerAPI.Files;
+using AquAnalyzerAPI.Models;
 using AquAnalyzerAPI.Interfaces;
+using AquAnalyzerAPI.Files;
+
 
 namespace AquAnalyzerAPI.Services
 {

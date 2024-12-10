@@ -1,3 +1,5 @@
+using AquAnalyzerAPI.Models;
+
 namespace AquAnalyzerAPI.Interfaces
 {
     public interface IVisualisationService

@@ -1,4 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using AquAnalyzerAPI.Files;
+using AquAnalyzerAPI.Interfaces;
+using AquAnalyzerAPI.Models;
+using AquAnalyzerAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
