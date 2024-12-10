@@ -1,8 +1,11 @@
-public class Visualisation
+namespace AquAnalyzerAPI.Models
 {
-    public int Id { get; set; }
-    public string Type { get; set; }
-    public List<WaterMetrics> MetricsUsed = [];
-    public List<WaterData> RawDataUsed = [];
+    public class Visualisation
+    {
+        public int Id { get; set; }
+        public string Type { get; set; }
+        public List<WaterMetrics> MetricsUsed = [];
+        public List<WaterData> RawDataUsed = [];
 
+    }
 }

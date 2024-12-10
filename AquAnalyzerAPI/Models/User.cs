@@ -1,26 +1,29 @@
-public abstract class User
+namespace AquAnalyzerAPI.Models
 {
-    public int Id { get; set; }
-    public string Username { get; set; }
-    public string Password { get; set; }
-    public string Email { get; set; }
-    public string Role { get; set; }
+    public abstract class User
+    {
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Email { get; set; }
+        public string Role { get; set; }
 
-    public User()
-    {
+        public User()
+        {
 
-    }
-    public User(int id, string username)
-    {
-        this.Id = id;
-        this.Username = username;
-    }
-    public User(int id, string username, string password, string email, string role)
-    {
-        this.Id = id;
-        this.Username = username;
-        this.Password = password;
-        this.Email = email;
-        this.Role = role;
+        }
+        public User(int Id, string Username)
+        {
+            this.Id = Id;
+            this.Username = Username;
+        }
+        public User(int Id, string Username, string Password, string Email, string Role)
+        {
+            this.Id = Id;
+            this.Username = Username;
+            this.Password = Password;
+            this.Email = Email;
+            this.Role = Role;
+        }
     }
 }
