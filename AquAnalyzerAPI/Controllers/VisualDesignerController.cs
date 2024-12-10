@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using AquAnalyzerAPI.Interfaces;
-using AquAnalyzerAPI.Models;
+using AquAnalyzerAPI.Services;
 
 namespace AquAnalyzerAPI.Controllers
 {
