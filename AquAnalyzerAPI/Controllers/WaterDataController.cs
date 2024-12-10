@@ -17,7 +17,7 @@ public class WaterDataController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<WaterData>> GetById(int id)
     {
-        var data = await _waterDataService.GetByIdAsync(id);
+        var data = await _waterDataService.GetWaterDataById(id);
         if (data == null)
             return NotFound();
         return Ok(data);
@@ -26,7 +26,7 @@ public class WaterDataController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<WaterData>>> GetAll()
     {
-        var data = await _waterDataService.GetAllAsync();
+        var data = await _waterDataService.GetAllWaterData();
         return Ok(data);
     }
 

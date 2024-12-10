@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 
 public interface IWaterDataService
 {
-    Task<WaterData> GetByIdAsync(int id);
-    Task<IEnumerable<WaterData>> GetAllAsync();
+    Task<WaterData> GetWaterDataById(int id);
+    Task<IEnumerable<WaterData>> GetAllWaterData();
     Task AddWaterDataAsync(WaterData data);
     Task UpdateWaterDataAsync(WaterData data);
     Task DeleteWaterDataAsync(int id);

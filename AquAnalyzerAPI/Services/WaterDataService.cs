@@ -12,12 +12,12 @@ public class WaterDataService : IWaterDataService
         this.context = context;
     }
 
-    public async Task<WaterData> GetByIdAsync(int id)
+    public async Task<WaterData> GetWaterDataById(int id)
     {
         return await context.WaterData.FindAsync(id);
     }
 
-    public async Task<IEnumerable<WaterData>> GetAllAsync()
+    public async Task<IEnumerable<WaterData>> GetAllWaterData()
     {
         return await context.WaterData.ToListAsync();
     }
@@ -36,7 +36,7 @@ public class WaterDataService : IWaterDataService
 
     public async Task DeleteWaterDataAsync(int id)
     {
-        var data = await GetByIdAsync(id);
+        var data = await GetWaterDataById(id);
         if (data != null)
         {
             context.WaterData.Remove(data);
