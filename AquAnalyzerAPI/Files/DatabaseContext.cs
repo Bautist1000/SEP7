@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using AquAnalyzerAPI.Models;
 
-namespace AquAnalyzerAPI.File
+namespace AquAnalyzerAPI.Files
 {
     public class DatabaseContext : DbContext
     {
