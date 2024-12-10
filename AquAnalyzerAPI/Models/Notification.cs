@@ -10,7 +10,20 @@ namespace AquAnalyzerAPI.Models
         public string Status { get; set; }
         public DateTime CreatedAt { get; set; } //Do we want a log of notifs?
         public DateTime? ReadAt { get; set; } //idk if this one is necessary ^
-                                              // Optional: Additional metadata or context
         public string Metadata { get; set; }
+        public int? AbnormalityId { get; set; } 
+        public Abnormality? Abnormality { get; set; }
+        public Notification(int Id, string Message, int UserId, string Type, string Status, DateTime CreatedAt, DateTime? ReadAt, string Metadata)
+        {
+            this.Id = Id;
+            this.Message = Message;
+            this.UserId = UserId;
+            this.Type = Type;
+            this.Status = Status;
+            this.CreatedAt = CreatedAt;
+            this.ReadAt = ReadAt;
+            this.Metadata = Metadata;
+        }
+        
     }
 }

@@ -11,8 +11,13 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IAnalystService, AnalystService>();
 builder.Services.AddScoped<IVisualDesignerService, VisualDesignerService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAbnormalityService, AbnormalityService>();
+builder.Services.AddScoped<IWaterDataService, WaterDataService>();
+builder.Services.AddScoped<IWaterMetricsService, WaterMetricsService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
-    
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -35,7 +40,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
