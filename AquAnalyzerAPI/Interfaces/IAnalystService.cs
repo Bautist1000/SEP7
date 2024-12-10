@@ -1,3 +1,5 @@
+namespace AquAnalyzerAPI.Interfaces
+{
 public interface IAnalystService
 {
     Task<IEnumerable<Analyst>> GetAllAnalysts();
@@ -5,4 +7,5 @@ public interface IAnalystService
     Task<Analyst> AddAnalyst(Analyst analyst);
     Task<Analyst> UpdateAnalyst(Analyst analyst);
     Task DeleteAnalyst(int id);
+}
 }
