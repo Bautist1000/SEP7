@@ -1,4 +1,4 @@
-/*using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -78,4 +78,4 @@ public class NotificationController : ControllerBase
         var notifications = await _notificationService.GetNotificationsByType(type);
         return Ok(notifications);
     }
-}*/
+}
