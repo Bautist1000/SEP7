@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-public class VisualisationService(DatabaseContext context) : IVisualisationService
+
+namespace AquAnalyzerAPI.Services
+{
+    public class VisualisationService(DatabaseContext context) : IVisualisationService
 {
     private readonly DatabaseContext _context = context;
 
@@ -55,4 +55,6 @@ public class VisualisationService(DatabaseContext context) : IVisualisationServi
             .Where(v => v.Type.ToLower().Contains(searchTerm.ToLower()))
             .ToListAsync();
     }
+}
+
 }
