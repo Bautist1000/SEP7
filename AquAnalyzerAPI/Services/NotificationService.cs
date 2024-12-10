@@ -1,4 +1,4 @@
-
+using AquAnalyzerAPI.Interfaces;
 
 public class NotificationService : INotificationService
 {
