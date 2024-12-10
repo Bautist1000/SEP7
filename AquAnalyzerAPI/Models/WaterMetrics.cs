@@ -20,16 +20,51 @@ namespace AquAnalyzerAPI.Models
             this.DateGeneratedOn = DateGeneratedOn;
         }
 
-        public WaterMetrics(int Id, DateTime DateGeneratedOn, double LeakageRate, double WaterEfficiencyRatio, double TotalWaterConsumption, double TotalWaterSaved, double RecycledWaterUsage)
-        {
-            this.Id = Id;
-            this.DateGeneratedOn = DateGeneratedOn;
-            this.LeakageRate = LeakageRate;
-            this.WaterEfficiencyRatio = WaterEfficiencyRatio;
-            this.TotalWaterConsumption = TotalWaterConsumption;
-            this.TotalWaterSaved = TotalWaterSaved;
-            this.RecycledWaterUsage = RecycledWaterUsage;
-        }
+    public WaterMetrics(int Id, DateTime DateGeneratedOn, double LeakageRate, double WaterEfficiencyRatio, double TotalWaterConsumption, double TotalWaterSaved, double RecycledWaterUsage)
+    {
+        this.Id = Id;
+        this.DateGeneratedOn = DateGeneratedOn;
+        this.LeakageRate = LeakageRate;
+        this.WaterEfficiencyRatio = WaterEfficiencyRatio;
+        this.TotalWaterConsumption = TotalWaterConsumption;
+        this.TotalWaterSaved = TotalWaterSaved;
+        this.RecycledWaterUsage = RecycledWaterUsage;
+    }
+    public void CalculateMetrics(IEnumerable<WaterData> waterData)
+    {
+        if (waterData == null || !waterData.Any())
+            throw new ArgumentException("WaterData cannot be null or empty");
+
+        LeakageRate = waterData.Count(wd => wd.LeakDetected == true) / (double)waterData.Count() * 100;
+
+        WaterEfficiencyRatio = waterData
+            .Where(wd => wd.ElectricityConsumption > 0)
+            .Average(wd => wd.UsageVolume / wd.ElectricityConsumption);
+
+        TotalWaterConsumption = waterData.Sum(wd => wd.UsageVolume);
+
+        TotalWaterSaved = waterData
+            .Where(wd => wd.SourceType.Equals("recycled", StringComparison.OrdinalIgnoreCase))
+            .Sum(wd => wd.UsageVolume);
+
+        RecycledWaterUsage = TotalWaterSaved;
+    }
+
+    public static double CalculateAverageFlowRate(IEnumerable<WaterData> waterData)
+    {
+        if (waterData == null || !waterData.Any())
+            throw new ArgumentException("WaterData cannot be null or empty");
+
+        return waterData.Average(wd => wd.FlowRate);
+    }
+
+    public static int CountAbnormalities(IEnumerable<WaterData> waterData)
+    {
+        if (waterData == null || !waterData.Any())
+            throw new ArgumentException("WaterData cannot be null or empty");
+
+        return waterData.Count(wd => wd.HasAbnormalities);
+    }
 
     }
 }
