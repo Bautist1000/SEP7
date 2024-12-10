@@ -1,62 +1,67 @@
+using Microsoft.EntityFrameworkCore;
+using AquAnalyzerAPI.Models;
 using AquAnalyzerAPI.Interfaces;
+using AquAnalyzerAPI.Files;
 
-public class NotificationService : INotificationService
+namespace AquAnalyzerAPI.Services
 {
-    private readonly DatabaseContext _context;
-
-    public NotificationService(DatabaseContext context)
+    public class NotificationService : INotificationService
     {
-        _context = context;
-    }
+        private readonly DatabaseContext _context;
 
-    public async Task<Notification> AddNotification(Notification notification)
-    {
-        await _context.Notifications.AddAsync(notification);
-        await _context.SaveChangesAsync();
-        return notification;
-    }
-
-    public async Task<IEnumerable<Notification>> GetAllNotifications()
-    {
-        return await _context.Notifications.ToListAsync();
-    }
-
-    public async Task<Notification> GetNotificationById(int id)
-    {
-        return await _context.Notifications.FindAsync(id);
-    }
-
-    public async Task<IEnumerable<Notification>> GetNotificationsByUserId(int userId)
-    {
-        return await _context.Notifications
-            .Where(n => n.UserId == userId)
-            .ToListAsync();
-    }
-
-    public async Task<bool> UpdateNotificationStatus(int id, string status)
-    {
-        var notification = await _context.Notifications.FindAsync(id);
-        if (notification == null)
+        public NotificationService(DatabaseContext context)
         {
-            return false;
+            _context = context;
         }
 
-        notification.Status = status;
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<bool> DeleteNotification(int id)
-    {
-        var notification = await _context.Notifications.FindAsync(id);
-        if (notification == null)
+        public async Task<Notification> AddNotification(Notification notification)
         {
-            return false;
+            await _context.Notifications.AddAsync(notification);
+            await _context.SaveChangesAsync();
+            return notification;
         }
 
-        _context.Notifications.Remove(notification);
-        await _context.SaveChangesAsync();
-        return true;
+        public async Task<IEnumerable<Notification>> GetAllNotifications()
+        {
+            return await _context.Notifications.ToListAsync();
+        }
+
+        public async Task<Notification> GetNotificationById(int id)
+        {
+            return await _context.Notifications.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<Notification>> GetNotificationsByUserId(int userId)
+        {
+            return await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateNotificationStatus(int id, string status)
+        {
+            var notification = await _context.Notifications.FindAsync(id);
+            if (notification == null)
+            {
+                return false;
+            }
+
+            notification.Status = status;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteNotification(int id)
+        {
+            var notification = await _context.Notifications.FindAsync(id);
+            if (notification == null)
+            {
+                return false;
+            }
+
+            _context.Notifications.Remove(notification);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
-
