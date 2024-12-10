@@ -1,56 +1,61 @@
 using Microsoft.AspNetCore.Mvc;
-[Route("api/[controller]")]
-[ApiController]
-public class AnalystController : ControllerBase
+using AquAnalyzerAPI.Interfaces;
+
+namespace AquAnalyzerAPI.Controllers
 {
-    private readonly IAnalystService _service;
-
-    public AnalystController(IAnalystService service)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AnalystController : ControllerBase
     {
-        _service = service;
-    }
+        private readonly IAnalystService _service;
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Analyst>>> GetAllAnalysts()
-    {
-        var analysts = await _service.GetAllAnalysts();
-        return Ok(analysts);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Analyst>> GetAnalystById(int id)
-    {
-        var analyst = await _service.GetAnalystById(id);
-        if (analyst == null)
+        public AnalystController(IAnalystService service)
         {
-            return NotFound();
-        }
-        return Ok(analyst);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<Analyst>> AddAnalyst(Analyst analyst)
-    {
-        var createdAnalyst = await _service.AddAnalyst(analyst);
-        return CreatedAtAction(nameof(GetAnalystById), new { id = createdAnalyst.Id }, createdAnalyst);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAnalyst(int id, Analyst analyst)
-    {
-        if (id != analyst.Id)
-        {
-            return BadRequest();
+            _service = service;
         }
 
-        await _service.UpdateAnalyst(analyst);
-        return NoContent();
-    }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Analyst>>> GetAllAnalysts()
+        {
+            var analysts = await _service.GetAllAnalysts();
+            return Ok(analysts);
+        }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteAnalyst(int id)
-    {
-        await _service.DeleteAnalyst(id);
-        return NoContent();
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Analyst>> GetAnalystById(int id)
+        {
+            var analyst = await _service.GetAnalystById(id);
+            if (analyst == null)
+            {
+                return NotFound();
+            }
+            return Ok(analyst);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Analyst>> AddAnalyst(Analyst analyst)
+        {
+            var createdAnalyst = await _service.AddAnalyst(analyst);
+            return CreatedAtAction(nameof(GetAnalystById), new { id = createdAnalyst.Id }, createdAnalyst);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAnalyst(int id, Analyst analyst)
+        {
+            if (id != analyst.Id)
+            {
+                return BadRequest();
+            }
+
+            await _service.UpdateAnalyst(analyst);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAnalyst(int id)
+        {
+            await _service.DeleteAnalyst(id);
+            return NoContent();
+        }
     }
 }

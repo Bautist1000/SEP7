@@ -1,58 +1,61 @@
 using Microsoft.AspNetCore.Mvc;
+using AquAnalyzerAPI.Interfaces;
 
-
-[Route("api/[controller]")]
-[ApiController]
-public class VisualDesignerController : ControllerBase
+namespace AquAnalyzerAPI.Controllers
 {
-    private readonly IVisualDesignerService _service;
-
-    public VisualDesignerController(IVisualDesignerService service)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class VisualDesignerController : ControllerBase
     {
-        _service = service;
-    }
+        private readonly IVisualDesignerService _service;
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<VisualDesigner>>> GetAllVisDesig()
-    {
-        var visualDesigners = await _service.GetAllVisDesig();
-        return Ok(visualDesigners);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<VisualDesigner>> GetByIdOfVisDesig(int id)
-    {
-        var visualDesigner = await _service.GetByIdOfVisDesig(id);
-        if (visualDesigner == null)
+        public VisualDesignerController(IVisualDesignerService service)
         {
-            return NotFound();
-        }
-        return Ok(visualDesigner);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<VisualDesigner>> AddVisDesig(VisualDesigner visualDesigner)
-    {
-        var createdVisualDesigner = await _service.AddVisDesig(visualDesigner);
-        return CreatedAtAction(nameof(GetByIdOfVisDesig), new { id = createdVisualDesigner.Id }, createdVisualDesigner);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateVisDesig(int id, VisualDesigner visualDesigner)
-    {
-        if (id != visualDesigner.Id)
-        {
-            return BadRequest();
+            _service = service;
         }
 
-        await _service.UpdateVisDesig(visualDesigner);
-        return NoContent();
-    }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<VisualDesigner>>> GetAllVisDesig()
+        {
+            var visualDesigners = await _service.GetAllVisDesig();
+            return Ok(visualDesigners);
+        }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteVisDesig(int id)
-    {
-        await _service.DeleteVisDesig(id);
-        return NoContent();
+        [HttpGet("{id}")]
+        public async Task<ActionResult<VisualDesigner>> GetByIdOfVisDesig(int id)
+        {
+            var visualDesigner = await _service.GetByIdOfVisDesig(id);
+            if (visualDesigner == null)
+            {
+                return NotFound();
+            }
+            return Ok(visualDesigner);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<VisualDesigner>> AddVisDesig(VisualDesigner visualDesigner)
+        {
+            var createdVisualDesigner = await _service.AddVisDesig(visualDesigner);
+            return CreatedAtAction(nameof(GetByIdOfVisDesig), new { id = createdVisualDesigner.Id }, createdVisualDesigner);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateVisDesig(int id, VisualDesigner visualDesigner)
+        {
+            if (id != visualDesigner.Id)
+            {
+                return BadRequest();
+            }
+
+            await _service.UpdateVisDesig(visualDesigner);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteVisDesig(int id)
+        {
+            await _service.DeleteVisDesig(id);
+            return NoContent();
+        }
     }
 }
