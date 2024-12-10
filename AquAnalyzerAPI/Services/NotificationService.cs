@@ -14,11 +14,10 @@ namespace AquAnalyzerAPI.Services
             _context = context;
         }
 
-        public async Task<Notification> AddNotification(Notification notification)
+        public async Task AddNotification(Notification notification)
         {
             await _context.Notifications.AddAsync(notification);
             await _context.SaveChangesAsync();
-            return notification;
         }
 
         public async Task<IEnumerable<Notification>> GetAllNotifications()
@@ -62,6 +61,25 @@ namespace AquAnalyzerAPI.Services
             _context.Notifications.Remove(notification);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> MarkNotificationAsRead(int id, DateTime readAt)
+        {
+            var notification = await _context.Notifications.FindAsync(id);
+            if (notification == null)
+            {
+                return false;
+            }
+
+            notification.ReadAt = readAt;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<IEnumerable<Notification>> GetNotificationsByType(string type)
+        {
+            return await _context.Notifications
+                .Where(n => n.Type == type)
+                .ToListAsync();
         }
     }
 }
