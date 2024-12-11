@@ -68,7 +68,6 @@ namespace AquAnalyzerAPI.Services
             await _context.SaveChangesAsync();
             return true;
         }
-    }
 
            public async Task<IEnumerable<Abnormality>> CheckWaterDataAbnormalities(int dataId)
         {
