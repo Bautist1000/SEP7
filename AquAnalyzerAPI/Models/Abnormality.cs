@@ -13,7 +13,9 @@ namespace AquAnalyzerAPI.Models
         public int? WaterMetricsId { get; set; }
         public WaterMetrics? WaterMetrics { get; set; }
 
-
+        public Abnormality()
+        {
+        }
         public Abnormality(int Id, DateTime Timestamp, string Description, string Type)
         {
             this.Id = Id;
