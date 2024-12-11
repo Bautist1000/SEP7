@@ -1,9 +1,10 @@
 @using AquAnalyzerAPI.Models
+@using AquAnalyzerAPI.Interfaces
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IWaterMetricsService WaterMetricsService
 @inject IWaterDataService WaterDataService
-
+@*
 @if (isAnalyst && hasAbnormalities)
 {
         <div class="abnormality-icon" @onclick="ShowDetails">
@@ -220,4 +221,4 @@
             transform: scale(1);
         }
     }
-</style>
+</style> *@

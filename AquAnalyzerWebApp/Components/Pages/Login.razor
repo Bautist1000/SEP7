@@ -1,0 +1,94 @@
+
+@page "/login"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+
+
+@using DNDBlazorApp.Data
+@using DNDBlazorApp.Models.ViewModels
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject NavigationManager navigationManager
+@inject AppDbContext appDbContext
+<div class="row">
+    <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
+        <EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
+            <DataAnnotationsValidator />
+            <div class="mb-3 text-center flex-column">
+                <img src="/images/avatar.png" style="max-height:5rem;" />
+                <h3>LOGIN</h3>
+            </div>
+            <div class="mb-3">
+                <label>Username</label>
+                <InputText @bind-Value="Model.Username" class="form-control" placeholder="Username" />
+                <ValidationMessage For="() => Model.Username" />
+            </div>
+            <div class="mb-3">
+                <label>Password</label>
+                <InputText @bind-Value="Model.Password" placeholder="Password" type="password" class="form-control" />
+                <ValidationMessage For="() => Model.Password" />
+            </div>
+            <div class="mb-3 text-center">
+                <span class="text-danger">@ErrorMessage</span>
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    public LoginViewModel Model { get; set; } = new();
+    private string? ErrorMessage;
+
+    private async Task Authenticate()
+    {
+        // Replace this endpoint with your actual API endpoint for user authentication
+        var response = await HttpClient.PostAsJsonAsync("/api/authenticate", Model);
+        if (!response.IsSuccessStatusCode)
+        {
+            ErrorMessage = "Invalid Username or Password";
+            return;
+        }
+
+        var user = await response.Content.ReadFromJsonAsync<User>();
+        if (user is null)
+        {
+            ErrorMessage = "Error retrieving user information";
+            return;
+        }
+
+        // Set up user claims
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role),
+        };
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContext!.SignInAsync(principal);
+
+        // Redirect based on role
+        if (user.Role == "VisualDesigner")
+        {
+            NavigationManager.NavigateTo("/water-data-dashboard");
+        }
+        else if (user.Role == "Analyst")
+        {
+            NavigationManager.NavigateTo("/manage-water-data");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    
+}
