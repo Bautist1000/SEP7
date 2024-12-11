@@ -1,0 +1,49 @@
+@inherits VisualisationBase
+
+<div class="visualisation">
+    <h5>Visualisation Type: @VisualisationData.Type</h5>
+
+    @if (VisualisationData.Type == "BarChart")
+    {
+        <p>Rendering a bar chart...</p>
+    }
+    else if (VisualisationData.Type == "LineChart")
+    {
+        <p>Rendering a line chart...</p>
+    }
+    else
+    {
+        <p>Unknown visualisation type.</p>
+    }
+
+    <p>Metrics Used:</p>
+    <ul>
+        @foreach (var metric in VisualisationData.MetricsUsed)
+        {
+            <li>Total Water Consumption: @metric.TotalWaterConsumption</li>
+            <li>Water Efficiency Ratio: @metric.WaterEfficiencyRatio</li>
+        }
+    </ul>
+
+    <p>Raw Data Used:</p>
+    <ul>
+        @foreach (var data in VisualisationData.RawDataUsed)
+        {
+            <li>@data.Timestamp: @data.UsageVolume m³ (@data.SourceType)</li>
+        }
+    </ul>
+</div>
+
+@code {
+    [Parameter]
+    public Visualisation VisualisationData { get; set; } = null!;
+}
+
+<style>
+    .visualisation {
+        border: 1px solid #ddd;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+</style>

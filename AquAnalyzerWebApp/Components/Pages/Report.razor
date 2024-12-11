@@ -1,0 +1,34 @@
+@page "/report"
+@inject HttpClient Http
+
+<h3>Report</h3>
+
+<div>
+    <h4>@Report.Title</h4>
+    <p>@Report.Description</p>
+    <p>Generated on: @Report.GeneratedDate</p>
+</div>
+
+@if (Report.Visualisations.Any())
+{
+    <div>
+        @foreach (var visualisation in Report.Visualisations)
+        {
+            <Visualisation VisualisationData="visualisation" />
+        }
+    </div>
+}
+else
+{
+    <p>No visualizations to display.</p>
+}
+
+@code {
+    private Report Report = new Report();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var reportId = 1; 
+        Report = await Http.GetFromJsonAsync<Report>($"api/reports/{reportId}");
+    }
+}
