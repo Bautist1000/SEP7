@@ -121,7 +121,7 @@ namespace AquAnalyzerAPI.Services
             var historicalData = await _context.WaterData
                 .Where(w => w.Location == waterData.Location && w.Timestamp < waterData.Timestamp)
                 .OrderByDescending(w => w.Timestamp)
-                .Take(30) 
+                .Take(30)
                 .ToListAsync();
 
             if (historicalData.Count > 10)
@@ -376,12 +376,12 @@ namespace AquAnalyzerAPI.Services
                 return abnormalities;
 
             // Check for unusual water efficiency ratio
-            if (metrics.WaterEfficiencyRatio < MIN_WATER_EFFICIENCY)
+            if (metrics.WaterEfficiencyRatio <= 0 || metrics.WaterEfficiencyRatio > 1)
             {
                 abnormalities.Add(new Abnormality
                 {
-                    Type = "Low Water Efficiency",
-                    Description = $"Water efficiency ratio is critically low: {metrics.WaterEfficiencyRatio:F2}",
+                    Type = "Invalid Water Efficiency Ratio",
+                    Description = $"Water efficiency ratio is outside the logical range: {metrics.WaterEfficiencyRatio:F2}",
                     Timestamp = DateTime.Now,
                     WaterMetricsId = metrics.Id,
                     WaterMetrics = metrics
@@ -401,8 +401,73 @@ namespace AquAnalyzerAPI.Services
                 });
             }
 
+            // Check TotalWaterConsumption for unusual values
+            if (metrics.TotalWaterConsumption <= 0)
+            {
+                abnormalities.Add(new Abnormality
+                {
+                    Type = "Invalid Total Water Consumption",
+                    Description = "Total water consumption is zero or negative, which is illogical.",
+                    Timestamp = DateTime.Now,
+                    WaterMetricsId = metrics.Id,
+                    WaterMetrics = metrics
+                });
+            }
+
+            // Check TotalWaterSaved exceeds TotalWaterConsumption
+            if (metrics.TotalWaterSaved > metrics.TotalWaterConsumption)
+            {
+                abnormalities.Add(new Abnormality
+                {
+                    Type = "Invalid Water Savings",
+                    Description = $"Total water saved ({metrics.TotalWaterSaved:F2}) exceeds total water consumption ({metrics.TotalWaterConsumption:F2}).",
+                    Timestamp = DateTime.Now,
+                    WaterMetricsId = metrics.Id,
+                    WaterMetrics = metrics
+                });
+            }
+
+            // Check RecycledWaterUsage is within expected norms
+            double recycledPercentage = metrics.RecycledWaterUsage / metrics.TotalWaterConsumption * 100;
+            if (recycledPercentage < 10 || recycledPercentage > 50)
+            {
+                abnormalities.Add(new Abnormality
+                {
+                    Type = "Unusual Recycled Water Usage",
+                    Description = $"Recycled water usage is {recycledPercentage:F2}% of total, outside expected range (10%-50%).",
+                    Timestamp = DateTime.Now,
+                    WaterMetricsId = metrics.Id,
+                    WaterMetrics = metrics
+                });
+            }
+
+            // Validate DateGeneratedOn
+            if (metrics.DateGeneratedOn > DateTime.Now)
+            {
+                abnormalities.Add(new Abnormality
+                {
+                    Type = "Future Date",
+                    Description = "DateGeneratedOn is set in the future, which is not valid.",
+                    Timestamp = DateTime.Now,
+                    WaterMetricsId = metrics.Id,
+                    WaterMetrics = metrics
+                });
+            }
+            else if ((DateTime.Now - metrics.DateGeneratedOn).TotalDays > 365)
+            {
+                abnormalities.Add(new Abnormality
+                {
+                    Type = "Outdated Metrics",
+                    Description = "DateGeneratedOn is older than a year, suggesting outdated metrics.",
+                    Timestamp = DateTime.Now,
+                    WaterMetricsId = metrics.Id,
+                    WaterMetrics = metrics
+                });
+            }
+
             return abnormalities;
         }
+
     }
 
 
