@@ -55,14 +55,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        @* var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity.IsAuthenticated)
         {
             await LoadAbnormalities();
             notifications = (await NotificationsService.GetAllNotifications()).ToList();
             unreadCount = notifications?.Count(n => !n.ReadAt.HasValue) ?? 0;
 
-        }
+        } *@
+
+        await LoadAbnormalities();
+        notifications = (await NotificationsService.GetAllNotifications()).ToList();
+        unreadCount = notifications?.Count(n => !n.ReadAt.HasValue) ?? 0;
     }
     private async Task LoadAbnormalities()
     {
