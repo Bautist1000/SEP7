@@ -38,7 +38,7 @@ namespace AquAnalyzerWebApp.Services
 
         public async Task<bool> MarkAbnormalityAsDealtWith(int id)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/abnormality/{id}/dealt-with", null);
+            var response = await _httpClient.PutAsJsonAsync<object>($"api/abnormality/{id}/dealt-with", null);
             return response.IsSuccessStatusCode;
         }
 

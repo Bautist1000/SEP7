@@ -48,6 +48,7 @@
 </div>
 
 @code {
+    private List<Abnormality> abnormalities;
     private List<Notification> notifications;
     private int unreadCount = 0;
 
@@ -57,10 +58,15 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity.IsAuthenticated)
         {
+            await LoadAbnormalities();
             notifications = (await NotificationsService.GetAllNotifications()).ToList();
             unreadCount = notifications?.Count(n => !n.ReadAt.HasValue) ?? 0;
 
         }
+    }
+    private async Task LoadAbnormalities()
+    {
+        abnormalities = (await NotificationsService.GetAllAbnormalities()).ToList();
     }
 
     private async Task MarkAsDealtWith(int id)

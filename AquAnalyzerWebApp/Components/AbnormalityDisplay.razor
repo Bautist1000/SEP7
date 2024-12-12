@@ -7,21 +7,19 @@
 @inject NavigationManager NavigationManager
 
 
-@if (isAnalyst && hasAbnormalities)
+
+@if (isAnalyst && pendingAbnormalities > 0)
 {
-    @if (isAnalyst && pendingAbnormalities > 0)
-    {
-        <button class="abnormality-button @(hasAbnormalities ? "alert" : "")" @onclick="NavigateToNotifications">
-            <i class="fas fa-exclamation-circle"></i>
-            <span class="badge @(pendingAbnormalities > 0 ? "badge-danger" : "badge-secondary")">
-                @pendingAbnormalities
-            </span>
-        </button>
-    }
+    <button class="abnormality-button @(pendingAbnormalities > 0 ? "alert" : "")" @onclick="NavigateToNotifications">
+        <i class="fas fa-exclamation-circle"></i>
+        <span class="badge @(pendingAbnormalities > 0 ? "badge-danger" : "badge-secondary")">
+            @pendingAbnormalities
+        </span>
+    </button>
 }
 
 @code {
-    private bool isAnalyst = false;
+    private bool isAnalyst = true;
     private int pendingAbnormalities = 0;
     private List<Abnormality> abnormalities = new();
 
