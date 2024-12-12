@@ -1,0 +1,111 @@
+@page "/register"
+@using AquAnalyzerAPI.Model
+@using AquAnalyzerAPI.Services
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<h1>Register</h1>
+<h5>Please fill in the details below:</h5>
+
+<EditForm Model="@newUser" OnValidSubmit="@RegisterUser">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="username">Username</label>
+        <InputText id="username" @bind-Value="newUser.Username" class="form-control" />
+        <ValidationMessage For="@(() => newUser.Username)" />
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="newUser.Email" class="form-control" />
+        <ValidationMessage For="@(() => newUser.Email)" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">Password</label>
+        <InputText id="password" @bind-Value="newUser.Password" class="form-control" type="password" />
+        <ValidationMessage For="@(() => newUser.Password)" />
+    </div>
+
+    <div class="form-group">
+        <label for="role">Role</label>
+        <InputSelect id="role" @bind-Value="selectedRole" class="form-control">
+            <option value="Analyst">Analyst</option>
+            <option value="VisualDesigner">Visual Designer</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => selectedRole)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Register</button>
+    <button type="button" class="btn btn-secondary" @onclick="GoToLogin">Already have an account?</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (showModal)
+{
+    <div class="modal"
+         style="display:block; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
+        <div class="modal-dialog"
+             style="background:white; margin:15% auto; padding:20px; max-width:400px; text-align:center; border-radius:10px;">
+            <h4>Registration Successful!</h4>
+            <p>Your account has been created successfully. Please log in to continue.</p>
+            <button class="btn btn-primary" @onclick="GoToLogin">Go to Login</button>
+        </div>
+    </div>
+}
+
+@code {
+    private User newUser = new User();
+    private string selectedRole = "Analyst";
+    private string? errorMessage;
+    private bool showModal = false;
+
+    private async Task RegisterUser()
+    {
+        try
+        {
+            if (selectedRole == "Analyst")
+            {
+                var analyst = new Analyst
+                {
+                    Username = newUser.Username,
+                    Email = newUser.Email,
+                    Password = newUser.Password,
+                    Role = "Analyst"
+                };
+                await AuthService.RegisterAnalystAsync(analyst);
+            }
+            else if (selectedRole == "VisualDesigner")
+            {
+                var visualDesigner = new VisualDesigner
+                {
+                    Username = newUser.Username,
+                    Email = newUser.Email,
+                    Password = newUser.Password,
+                    Role = "VisualDesigner"
+                };
+                await AuthService.RegisterVisualDesignerAsync(visualDesigner);
+            }
+
+            // Show success modal
+            showModal = true;
+        }
+        catch (Exception ex)
+        {
+            // Display error message
+            errorMessage = $"Registration failed: {ex.Message}";
+        }
+    }
+
+    private void GoToLogin()
+    {
+        showModal = false;
+        NavigationManager.NavigateTo("/login");
+    }
+}

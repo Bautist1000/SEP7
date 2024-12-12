@@ -3,12 +3,14 @@ using AquAnalyzerAPI.Files;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Models;
 using AquAnalyzerAPI.Services;
+using AquAnalyzerAPI.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddScoped<IAnalystService, AnalystService>();
 builder.Services.AddScoped<IVisualDesignerService, VisualDesignerService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
@@ -17,6 +19,27 @@ builder.Services.AddScoped<IWaterDataService, WaterDataService>();
 builder.Services.AddScoped<IWaterMetricsService, WaterMetricsService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 
+// Add Authorization Policies
+AuthorizationPolicies.AddPolicies(builder.Services);
+
+// Add Authentication and Authorization
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -33,13 +56,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Add Authentication and Authorization Middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapGet("/weatherforecast", () =>
+// Example Endpoint (secured with policy)
+app.MapGet("/weatherforecast", [Authorize(Policy = "MustBeAnalyst")] () =>
 {
+    var summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
     var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (

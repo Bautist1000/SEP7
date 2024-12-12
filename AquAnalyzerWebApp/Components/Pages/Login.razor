@@ -1,94 +1,96 @@
-
 @page "/login"
 @using System.Security.Claims
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Authentication.Cookies
+@using AquAnalyzerAPI.Services
+@inject IAuthService AuthService
 @inject NavigationManager NavigationManager
-@inject HttpClient HttpClient
 
-
-
-@using DNDBlazorApp.Data
-@using DNDBlazorApp.Models.ViewModels
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Authentication.Cookies
-@inject NavigationManager navigationManager
-@inject AppDbContext appDbContext
-<div class="row">
-    <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
-        <EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow-sm" style="max-width: 400px; width: 100%;">
+        <h3 class="text-center mb-4">Login</h3>
+        <EditForm OnValidSubmit="Authenticate">
             <DataAnnotationsValidator />
-            <div class="mb-3 text-center flex-column">
-                <img src="/images/avatar.png" style="max-height:5rem;" />
-                <h3>LOGIN</h3>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username:</label>
+                <InputText id="username" @bind-Value="Username" class="form-control" />
+                <ValidationMessage For="@(() => Username)" />
             </div>
             <div class="mb-3">
-                <label>Username</label>
-                <InputText @bind-Value="Model.Username" class="form-control" placeholder="Username" />
-                <ValidationMessage For="() => Model.Username" />
-            </div>
-            <div class="mb-3">
-                <label>Password</label>
-                <InputText @bind-Value="Model.Password" placeholder="Password" type="password" class="form-control" />
-                <ValidationMessage For="() => Model.Password" />
+                <label for="password" class="form-label">Password:</label>
+                <InputText id="password" @bind-Value="Password" class="form-control" type="password" />
+                <ValidationMessage For="@(() => Password)" />
             </div>
             <div class="mb-3 text-center">
                 <span class="text-danger">@ErrorMessage</span>
             </div>
-            <div class="mb-3 d-grid gap-2">
-                <button type="submit" class="btn btn-primary">Login</button>
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" type="submit">Login</button>
+                <button class="btn btn-secondary" @onclick="NavigateToRegister">Register</button>
             </div>
         </EditForm>
+        @if (IsLoading)
+        {
+            <div class="text-center mt-3">
+                <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+                <span>Logging in...</span>
+            </div>
+        }
     </div>
 </div>
 
 @code {
-    public LoginViewModel Model { get; set; } = new();
+    private string Username { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty;
     private string? ErrorMessage;
+    private bool IsLoading = false;
 
     private async Task Authenticate()
     {
-        // Replace this endpoint with your actual API endpoint for user authentication
-        var response = await HttpClient.PostAsJsonAsync("/api/authenticate", Model);
-        if (!response.IsSuccessStatusCode)
-        {
-            ErrorMessage = "Invalid Username or Password";
-            return;
-        }
+        ErrorMessage = null;
+        IsLoading = true;
 
-        var user = await response.Content.ReadFromJsonAsync<User>();
-        if (user is null)
+        try
         {
-            ErrorMessage = "Error retrieving user information";
-            return;
-        }
+            // Call IAuthService LoginAsync
+            await AuthService.LoginAsync(Username, Password, DetermineRole());
 
-        // Set up user claims
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role),
-        };
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
+            // Get ClaimsPrincipal to determine navigation
+            var principal = await AuthService.GetAuthAsync();
+            var role = principal.FindFirst(ClaimTypes.Role)?.Value;
 
-        await HttpContext!.SignInAsync(principal);
-
-        // Redirect based on role
-        if (user.Role == "VisualDesigner")
-        {
-            NavigationManager.NavigateTo("/water-data-dashboard");
+            // Navigate based on role
+            switch (role)
+            {
+                case "Analyst":
+                    NavigationManager.NavigateTo("/manage-water-data");
+                    break;
+                case "VisualDesigner":
+                    NavigationManager.NavigateTo("/water-data-dashboard");
+                    break;
+                default:
+                    NavigationManager.NavigateTo("/");
+                    break;
+            }
         }
-        else if (user.Role == "Analyst")
+        catch (Exception ex)
         {
-            NavigationManager.NavigateTo("/manage-water-data");
+            ErrorMessage = $"Login failed: {ex.Message}";
         }
-        else
+        finally
         {
-            NavigationManager.NavigateTo("/");
+            IsLoading = false;
         }
     }
 
-    
+    private bool DetermineRole()
+    {
+        // Placeholder for role-specific login logic if needed
+        // Return true for Analyst, false for VisualDesigner, or any other role-related conditions
+        return false;
+    }
+
+    private void NavigateToRegister()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
 }
+
