@@ -5,14 +5,16 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject INotificationsService NotificationsService
 @inject NavigationManager NavigationManager
+
+
 @if (isAnalyst && hasAbnormalities)
 {
-    @if (isAnalyst)
+    @if (isAnalyst && pendingAbnormalities > 0)
     {
         <button class="abnormality-button @(hasAbnormalities ? "alert" : "")" @onclick="NavigateToNotifications">
             <i class="fas fa-exclamation-circle"></i>
-            <span class="badge @(hasAbnormalities ? "badge-danger" : "badge-secondary")">
-                @(abnormalities?.Count ?? 0)
+            <span class="badge @(pendingAbnormalities > 0 ? "badge-danger" : "badge-secondary")">
+                @pendingAbnormalities
             </span>
         </button>
     }
@@ -20,9 +22,8 @@
 
 @code {
     private bool isAnalyst = false;
-    private bool hasAbnormalities = false;
+    private int pendingAbnormalities = 0;
     private List<Abnormality> abnormalities = new();
-    private bool showDetails = false;
 
     [Parameter]
     public int WaterMetricsId { get; set; }
@@ -59,13 +60,9 @@
             metrics.AddRange(await NotificationsService.CheckWaterDataAbnormalities(WaterDataId));
         }
         abnormalities = metrics;
-        hasAbnormalities = abnormalities.Any();
+        pendingAbnormalities = abnormalities.Count(a => !a.IsDealtWith);
     }
 
-    private void ShowDetails()
-    {
-        showDetails = !showDetails;
-    }
 }
 
 <style>

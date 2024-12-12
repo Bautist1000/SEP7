@@ -6,7 +6,7 @@ namespace AquAnalyzerAPI.Models
         public DateTime Timestamp { get; set; }
         public string Description { get; set; }
         public string Type { get; set; }
-
+        public bool IsDealtWith { get; set; } = false; 
         public int? WaterDataId { get; set; }
         public WaterData? WaterData { get; set; }
 

@@ -22,36 +22,28 @@
     }
     else
     {
-        @foreach (var notification in notifications)
-        {
-            <div class="notification-card @(notification.ReadAt.HasValue ? "read" : "unread")">
-                <div class="notification-header">
-                    <span class="notification-type @notification.Type.ToLower()">@notification.Type</span>
-                    <small class="notification-date">@notification.CreatedAt.ToString("g")</small>
+        <div class="notifications-container">
+            @foreach (var abnormality in abnormalities.OrderByDescending(a => a.Timestamp))
+            {
+                <div class="notification-card @(!abnormality.IsDealtWith ? "undealt" : "")">
+                    <div class="notification-header">
+                        <span class="notification-type">@abnormality.Type</span>
+                        <small class="notification-date">@abnormality.Timestamp.ToString("g")</small>
+                    </div>
+                    <div class="notification-body">
+                        <p>@abnormality.Description</p>
+                    </div>
+                    <div class="notification-actions">
+                        @if (!abnormality.IsDealtWith)
+                        {
+                            <button class="btn btn-primary" @onclick="() => MarkAsDealtWith(abnormality.Id)">
+                                Mark as Dealt With
+                            </button>
+                        }
+                    </div>
                 </div>
-                <div class="notification-body">
-                    <p>@notification.Message</p>
-                    @if (notification.Abnormality != null)
-                    {
-                        <div class="abnormality-details">
-                            <p><strong>Abnormality:</strong> @notification.Abnormality.Type</p>
-                            <p>@notification.Abnormality.Description</p>
-                        </div>
-                    }
-                </div>
-                <div class="notification-actions">
-                    @if (!notification.ReadAt.HasValue)
-                    {
-                        <button class="btn btn-primary" @onclick="() => MarkAsRead(notification.Id)">
-                            Mark as Read
-                        </button>
-                    }
-                    <button class="btn btn-danger" @onclick="() => DeleteNotification(notification.Id)">
-                        Delete
-                    </button>
-                </div>
-            </div>
-        }
+            }
+        </div>
     }
 </div>
 
@@ -71,16 +63,10 @@
         }
     }
 
-    private async Task MarkAsRead(int id)
+    private async Task MarkAsDealtWith(int id)
     {
-        await NotificationsService.MarkNotificationAsRead(id, DateTime.UtcNow);
-        notifications = (await NotificationsService.GetAllNotifications()).ToList();
-    }
-
-    private async Task DeleteNotification(int id)
-    {
-        await NotificationsService.DeleteNotification(id);
-        notifications = notifications.Where(n => n.Id != id).ToList();
+        await NotificationsService.MarkAbnormalityAsDealtWith(id);
+        await LoadAbnormalities();
     }
 }
 

@@ -36,6 +36,12 @@ namespace AquAnalyzerWebApp.Services
             return await _httpClient.GetFromJsonAsync<IEnumerable<Abnormality>>($"api/abnormality/type/{type}");
         }
 
+        public async Task<bool> MarkAbnormalityAsDealtWith(int id)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"api/abnormality/{id}/dealt-with", null);
+            return response.IsSuccessStatusCode;
+        }
+
         public async Task<bool> UpdateAbnormality(int id, string description, string type)
         {
             var abnormality = new Abnormality { Id = id, Description = description, Type = type };

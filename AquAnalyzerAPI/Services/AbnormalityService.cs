@@ -45,6 +45,26 @@ namespace AquAnalyzerAPI.Services
                 .ToListAsync();
         }
 
+        public async Task<bool> MarkAsDealtWith(int id)
+        {
+            try
+            {
+                var abnormality = await _context.Abnormalities.FindAsync(id);
+                if (abnormality == null)
+                {
+                    return false;
+                }
+
+                abnormality.IsDealtWith = true;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public async Task<bool> UpdateAbnormality(int id, string description, string type)
         {
             var abnormality = await _context.Abnormalities.FindAsync(id);
