@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using AquAnalyzerAPI.Models;
+using System.Security.Claims;
+
 
 namespace AquAnalyzerAPI.Services
 {
