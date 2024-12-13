@@ -6,6 +6,8 @@ namespace AquAnalyzerAPI.Services
 {
     public interface IAuthServiceAPI
     {
+        Task<User?> ValidateUserAsync(string username, string password);
+
         // Validate an Analyst's credentials
         Task<Analyst> ValidateAnalyst(string username, string password);
 

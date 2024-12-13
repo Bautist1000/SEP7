@@ -5,6 +5,7 @@ using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Files;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AquAnalyzerAPI.Services
@@ -25,7 +26,7 @@ namespace AquAnalyzerAPI.Services
         // Register a new Analyst
         public async Task RegisterAnalystAsync(Analyst analyst)
         {
-            if (_context.Users.Any(u => u.Username == analyst.Username || u.Email == analyst.Email))
+            if (await UserExistsAsync(analyst.Username, analyst.Email))
             {
                 throw new Exception("Username or email is already in use.");
             }
@@ -37,7 +38,7 @@ namespace AquAnalyzerAPI.Services
         // Register a new Visual Designer
         public async Task RegisterVisualDesignerAsync(VisualDesigner visualDesigner)
         {
-            if (_context.Users.Any(u => u.Username == visualDesigner.Username || u.Email == visualDesigner.Email))
+            if (await UserExistsAsync(visualDesigner.Username, visualDesigner.Email))
             {
                 throw new Exception("Username or email is already in use.");
             }
@@ -46,27 +47,50 @@ namespace AquAnalyzerAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        // Validate an Analyst's credentials
-        public async Task<Analyst> ValidateAnalyst(string username, string password)
-        {
-            var analyst = _context.Analysts.FirstOrDefault(a => a.Username == username && a.Password == password);
-            if (analyst == null)
-            {
-                throw new Exception("Invalid username or password.");
-            }
-            return analyst;
-        }
-
         // Validate a Visual Designer's credentials
         public async Task<VisualDesigner> ValidateVisualDesigner(string username, string password)
         {
-            var visualDesigner = _context.VisualDesigners.FirstOrDefault(v => v.Username == username && v.Password == password);
+            var visualDesigner = await _context.VisualDesigners.FirstOrDefaultAsync(v => v.Username == username && v.Password == password);
             if (visualDesigner == null)
             {
                 throw new Exception("Invalid username or password.");
             }
+
             return visualDesigner;
         }
+
+        // Validate an Analyst's credentials
+        public async Task<Analyst> ValidateAnalyst(string username, string password)
+        {
+            var analyst = await _context.Analysts.FirstOrDefaultAsync(a => a.Username == username && a.Password == password);
+            if (analyst == null)
+            {
+                throw new Exception("Invalid username or password.");
+            }
+
+            return analyst;
+        }
+
+        // Validate a user's credentials (either Analyst or Visual Designer)
+       public async Task<User?> ValidateUserAsync(string username, string password)
+{
+    // Search in Analysts table
+    var analyst = await _context.Analysts.FirstOrDefaultAsync(a => a.Username == username && a.Password == password);
+    if (analyst != null)
+    {
+        return analyst;
+    }
+
+    // If not found, search in Visual Designers table
+    var visualDesigner = await _context.VisualDesigners.FirstOrDefaultAsync(v => v.Username == username && v.Password == password);
+    if (visualDesigner != null)
+    {
+        return visualDesigner;
+    }
+
+    // If neither found, return null
+    throw new Exception("Invalid username or password.");
+}
 
         // Generate a JWT token
         public Task<string> GenerateTokenAsync(User user)
@@ -104,7 +128,14 @@ namespace AquAnalyzerAPI.Services
             return Task.CompletedTask;
         }
 
-        // Not yet implemented methods (optional to implement)
+        // Helper to check if a username or email is already in use
+        private async Task<bool> UserExistsAsync(string username, string email)
+        {
+            return await _context.Analysts.AnyAsync(a => a.Username == username || a.Email == email) ||
+                   await _context.VisualDesigners.AnyAsync(v => v.Username == username || v.Email == email);
+        }
+
+        // Not yet implemented methods
         public Task ChangeAnalystPasswordAsync(int id, string newPassword)
         {
             throw new NotImplementedException();
