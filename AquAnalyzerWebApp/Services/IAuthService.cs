@@ -1,11 +1,12 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AquAnalyzerAPI.Models;
+using AquAnalyzerAPI.Controllers;
 
 public interface IAuthService
 {
     // Login a user (Analyst or Visual Designer)
-    Task LoginAsync(int id, string username, string password, string role);
+    Task LoginAsync(int id, string username, string email, string password, string role);
 
     // Logout the current user
     Task LogoutAsync();

@@ -112,6 +112,7 @@ public async Task<ActionResult> RegisterVisualDesigner([FromBody] VisualDesigner
             new Claim("id", user.Id.ToString()),
             new Claim("username", user.Username),
             new Claim("email", user.Email),
+            new Claim("password", user.Password),
             new Claim("Role", user is Analyst ? "Analyst" : "VisualDesigner")
         };
 
