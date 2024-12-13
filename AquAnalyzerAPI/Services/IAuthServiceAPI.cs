@@ -1,6 +1,10 @@
 using System.Threading.Tasks;
 using AquAnalyzerAPI.Models;
 using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+
 
 
 namespace AquAnalyzerAPI.Services
