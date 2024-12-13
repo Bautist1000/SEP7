@@ -5,8 +5,6 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
-
-
 namespace AquAnalyzerAPI.Services
 {
     public interface IAuthServiceAPI
@@ -43,5 +41,8 @@ namespace AquAnalyzerAPI.Services
 
         // Validate an authentication token
         Task<ClaimsPrincipal> ValidateTokenAsync(string token);
+
+        // Event to notify changes in authentication state
+        Action<ClaimsPrincipal>? OnAuthStateChanged { get; set; }
     }
 }

@@ -1,3 +1,13 @@
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using Microsoft.JSInterop;
+using AquAnalyzerAPI.Services;
+using AquAnalyzerAPI.Interfaces;
+using AquAnalyzerAPI.Models;
+
+
+
 public class JwtAuthService(HttpClient client, IJSRuntime jsRuntime) : IAuthService
 {
     public string Jwt { get; private set; } = "";

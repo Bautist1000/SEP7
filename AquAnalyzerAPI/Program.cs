@@ -23,7 +23,7 @@ builder.Services.AddControllers()
 // Register application services
 builder.Services.AddScoped<IAnalystService, AnalystService>();
 builder.Services.AddScoped<IVisualDesignerService, VisualDesignerService>();
-builder.Services.AddScoped<IAuthServiceAPI, AuthService>();
+builder.Services.AddScoped<IAuthServiceAPI, AuthServiceAPI>();
 builder.Services.AddScoped<IAbnormalityService, AbnormalityService>();
 builder.Services.AddScoped<IWaterDataService, WaterDataService>();
 builder.Services.AddScoped<IWaterMetricsService, WaterMetricsService>();

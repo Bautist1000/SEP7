@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AquAnalyzerAPI.Interfaces; 
+using AquAnalyzerAPI.Services; 
 
 namespace AquAnalyzerWebApp.Auth
 {
