@@ -5,7 +5,7 @@ using AquAnalyzerAPI.Models;
 public interface IAuthService
 {
     // Login a user (Analyst or Visual Designer)
-    Task LoginAsync(int id, string password, string role);
+    Task LoginAsync(int id, string username, string password, string role);
 
     // Logout the current user
     Task LogoutAsync();

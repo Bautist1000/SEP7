@@ -13,7 +13,7 @@ public class JwtAuthService(HttpClient client, IJSRuntime jsRuntime) : IAuthServ
     public string Jwt { get; private set; } = "";
     public Action<ClaimsPrincipal> OnAuthStateChanged { get; set; } = null!;
 
-    public async Task LoginAsync(int id, string password, string role)
+    public async Task LoginAsync(int id, string username, string password, string role)
     {
         string userAsJson = JsonSerializer.Serialize(new { id, password });
         StringContent content = new(userAsJson, Encoding.UTF8, "application/json");

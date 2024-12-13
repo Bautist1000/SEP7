@@ -11,14 +11,21 @@
         <EditForm OnValidSubmit="Authenticate">
             <DataAnnotationsValidator />
             <div class="mb-3">
-                <label for="username" class="form-label">Username:</label>
-                <InputText id="username" @bind-Value="Username" class="form-control" />
-                <ValidationMessage For="@(() => Username)" />
+                <label for="id" class="form-label">ID:</label>
+                <InputNumber id="id" @bind-Value="UserId" class="form-control" />
+                <ValidationMessage For="@(() => UserId)" />
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password:</label>
                 <InputText id="password" @bind-Value="Password" class="form-control" type="password" />
                 <ValidationMessage For="@(() => Password)" />
+            </div>
+            <div class="mb-3">
+                <label for="role" class="form-label">Role:</label>
+                <InputSelect id="role" @bind-Value="SelectedRole" class="form-control">
+                    <option value="Analyst">Analyst</option>
+                    <option value="VisualDesigner">Visual Designer</option>
+                </InputSelect>
             </div>
             <div class="mb-3 text-center">
                 <span class="text-danger">@ErrorMessage</span>
@@ -39,8 +46,10 @@
 </div>
 
 @code {
-    private string Username { get; set; } = string.Empty;
+    private int UserId { get; set; }
+    private string Username {get; set;}
     private string Password { get; set; } = string.Empty;
+    private string SelectedRole { get; set; } = "Analyst";
     private string? ErrorMessage;
     private bool IsLoading = false;
 
@@ -52,7 +61,7 @@
         try
         {
             // Call IAuthService LoginAsync
-            await AuthService.LoginAsync(Username, Password, DetermineRole());
+            await AuthService.LoginAsync(UserId, Username, Password, SelectedRole);
 
             // Get ClaimsPrincipal to determine navigation
             var principal = await AuthService.GetAuthAsync();
@@ -80,13 +89,6 @@
         {
             IsLoading = false;
         }
-    }
-
-    private bool DetermineRole()
-    {
-        // Placeholder for role-specific login logic if needed
-        // Return true for Analyst, false for VisualDesigner, or any other role-related conditions
-        return false;
     }
 
     private void NavigateToRegister()
