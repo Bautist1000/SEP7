@@ -13,26 +13,25 @@ public class JwtAuthService(HttpClient client, IJSRuntime jsRuntime) : IAuthServ
     public string Jwt { get; private set; } = "";
     public Action<ClaimsPrincipal> OnAuthStateChanged { get; set; } = null!;
 
-    public async Task LoginAsync(int id, string username, string password, string role)
+    public async Task LoginAsync(string username, string password)
+{
+    string userAsJson = JsonSerializer.Serialize(new { username, password });
+    StringContent content = new(userAsJson, Encoding.UTF8, "application/json");
+
+    HttpResponseMessage response = await client.PostAsync("/auth/login", content);
+    string responseContent = await response.Content.ReadAsStringAsync();
+
+    if (!response.IsSuccessStatusCode)
     {
-        string userAsJson = JsonSerializer.Serialize(new { id, password });
-        StringContent content = new(userAsJson, Encoding.UTF8, "application/json");
-
-        HttpResponseMessage response = await client.PostAsync($"/auth/login-{role.ToLower()}", content);
-        string responseContent = await response.Content.ReadAsStringAsync();
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(responseContent);
-        }
-
-        Jwt = responseContent;
-        await CacheTokenAsync();
-
-        ClaimsPrincipal principal = await CreateClaimsPrincipal();
-        OnAuthStateChanged.Invoke(principal);
+        throw new Exception(responseContent);
     }
 
+    Jwt = responseContent;
+    await CacheTokenAsync();
+
+    ClaimsPrincipal principal = await CreateClaimsPrincipal();
+    OnAuthStateChanged.Invoke(principal);
+}
     public async Task LogoutAsync()
     {
         await ClearTokenFromCacheAsync();

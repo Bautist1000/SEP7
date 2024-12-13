@@ -15,13 +15,14 @@ namespace AquAnalyzerAPI.Services
         // Implement the OnAuthStateChanged property
         public Action<ClaimsPrincipal>? OnAuthStateChanged { get; set; }
 
-        public Task<Analyst> ValidateAnalyst(int id, string password)
+
+        public Task<Analyst> ValidateAnalyst(string username, string password)
         {
             // Logic to validate an Analyst
             throw new NotImplementedException();
         }
 
-        public Task<VisualDesigner> ValidateVisualDesigner(int id, string password)
+        public Task<VisualDesigner> ValidateVisualDesigner(string username, string password)
         {
             // Logic to validate a Visual Designer
             throw new NotImplementedException();

@@ -14,12 +14,38 @@ public class AuthController(IConfiguration config, IAuthServiceAPI authService) 
     private readonly IConfiguration _config = config;
     private readonly IAuthServiceAPI _authService = authService;
 
-    [HttpPost("register-analyst")]
-public async Task<ActionResult> RegisterAnalyst([FromBody] Analyst analyst)
+    [HttpPost("register")]
+public async Task<ActionResult> Register([FromBody] User user)
 {
     try
     {
-        await _authService.RegisterAnalystAsync(analyst);
+        if (user.Role == "Analyst")
+        {
+            var analyst = new Analyst
+            {
+                Username = user.Username,
+                Password = user.Password,
+                Email = user.Email,
+                Role = "Analyst"
+            };
+            await _authService.RegisterAnalystAsync(analyst);
+        }
+        else if (user.Role == "VisualDesigner")
+        {
+            var visualDesigner = new VisualDesigner
+            {
+                Username = user.Username,
+                Password = user.Password,
+                Email = user.Email,
+                Role = "VisualDesigner"
+            };
+            await _authService.RegisterVisualDesignerAsync(visualDesigner);
+        }
+        else
+        {
+            return BadRequest("Invalid role.");
+        }
+
         return Ok("Registration successful.");
     }
     catch (Exception ex)
@@ -28,19 +54,7 @@ public async Task<ActionResult> RegisterAnalyst([FromBody] Analyst analyst)
     }
 }
 
-[HttpPost("register-VisualDesigner")]
-public async Task<ActionResult> RegisterVisualDesigner([FromBody] VisualDesigner visualDesigner)
-{
-    try
-    {
-        await _authService.RegisterVisualDesignerAsync(visualDesigner);
-        return Ok("Registration successful.");
-    }
-    catch (Exception ex)
-    {
-        return BadRequest(ex.Message);
-    }
-}
+
 
 
     [HttpPost("login-analyst")]
@@ -49,7 +63,7 @@ public async Task<ActionResult> RegisterVisualDesigner([FromBody] VisualDesigner
         try
         {
             // Validate Analyst credentials
-            Analyst validatedAnalyst = await _authService.ValidateAnalyst(analyst.Id, analyst.Password);
+            Analyst validatedAnalyst = await _authService.ValidateAnalyst(analyst.Username, analyst.Password);
 
             // Generate JWT
             string token = GenerateJwt(validatedAnalyst);
@@ -68,7 +82,7 @@ public async Task<ActionResult> RegisterVisualDesigner([FromBody] VisualDesigner
         try
         {
             // Validate Visual Designer credentials
-            VisualDesigner validatedDesigner = await _authService.ValidateVisualDesigner(visualDesigner.Id, visualDesigner.Password);
+            VisualDesigner validatedDesigner = await _authService.ValidateVisualDesigner(visualDesigner.Username, visualDesigner.Password);
 
             // Generate JWT
             string token = GenerateJwt(validatedDesigner);

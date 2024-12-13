@@ -11,9 +11,9 @@
         <EditForm OnValidSubmit="Authenticate">
             <DataAnnotationsValidator />
             <div class="mb-3">
-                <label for="id" class="form-label">ID:</label>
-                <InputNumber id="id" @bind-Value="UserId" class="form-control" />
-                <ValidationMessage For="@(() => UserId)" />
+                <label for="id" class="form-label">Username:</label>
+                <InputNumber id="username" @bind-Value="Username" class="form-control" />
+                <ValidationMessage For="@(() => Username)" />
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password:</label>
@@ -48,6 +48,8 @@
 @code {
     private int UserId { get; set; }
     private string Username {get; set;}
+
+    private string Email {get; set;}
     private string Password { get; set; } = string.Empty;
     private string SelectedRole { get; set; } = "Analyst";
     private string? ErrorMessage;
@@ -61,7 +63,7 @@
         try
         {
             // Call IAuthService LoginAsync
-            await AuthService.LoginAsync(UserId, Username, Password, SelectedRole);
+            await AuthService.LoginAsync(Username, Password);
 
             // Get ClaimsPrincipal to determine navigation
             var principal = await AuthService.GetAuthAsync();
