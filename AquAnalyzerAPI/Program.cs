@@ -19,6 +19,9 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
+
+
+
 // Register application services
 builder.Services.AddScoped<IAnalystService, AnalystService>();
 builder.Services.AddScoped<IVisualDesignerService, VisualDesignerService>();
@@ -28,6 +31,8 @@ builder.Services.AddScoped<IWaterDataService, WaterDataService>();
 builder.Services.AddScoped<IWaterMetricsService, WaterMetricsService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddDbContext<DatabaseContext>(options =>
+    options.UseSqlite("Data Source=database.db"));
 
 // Add database context
 

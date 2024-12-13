@@ -1,3 +1,4 @@
+
 using System.Security.Claims;
 using AquAnalyzerAPI.Models;
 using AquAnalyzerAPI.Interfaces;
@@ -10,65 +11,66 @@ namespace AquAnalyzerAPI.Services
 {
     public class AuthServiceAPI : IAuthServiceAPI
     {
+        private readonly DatabaseContext _context;
         private ClaimsPrincipal _currentPrincipal = new ClaimsPrincipal();
 
-        // Implement the OnAuthStateChanged property
+        public AuthServiceAPI(DatabaseContext context)
+        {
+            _context = context;
+        }
+
+        // Event to notify about authentication state changes
         public Action<ClaimsPrincipal>? OnAuthStateChanged { get; set; }
 
-
-        public Task<Analyst> ValidateAnalyst(string username, string password)
+        // Register a new Analyst
+        public async Task RegisterAnalystAsync(Analyst analyst)
         {
-            // Logic to validate an Analyst
-            throw new NotImplementedException();
+            if (_context.Users.Any(u => u.Username == analyst.Username || u.Email == analyst.Email))
+            {
+                throw new Exception("Username or email is already in use.");
+            }
+
+            _context.Analysts.Add(analyst);
+            await _context.SaveChangesAsync();
         }
 
-        public Task<VisualDesigner> ValidateVisualDesigner(string username, string password)
+        // Register a new Visual Designer
+        public async Task RegisterVisualDesignerAsync(VisualDesigner visualDesigner)
         {
-            // Logic to validate a Visual Designer
-            throw new NotImplementedException();
+            if (_context.Users.Any(u => u.Username == visualDesigner.Username || u.Email == visualDesigner.Email))
+            {
+                throw new Exception("Username or email is already in use.");
+            }
+
+            _context.VisualDesigners.Add(visualDesigner);
+            await _context.SaveChangesAsync();
         }
 
-        public Task RegisterAnalystAsync(Analyst analyst)
+        // Validate an Analyst's credentials
+        public async Task<Analyst> ValidateAnalyst(string username, string password)
         {
-            // Logic to register a new Analyst
-            throw new NotImplementedException();
+            var analyst = _context.Analysts.FirstOrDefault(a => a.Username == username && a.Password == password);
+            if (analyst == null)
+            {
+                throw new Exception("Invalid username or password.");
+            }
+            return analyst;
         }
 
-        public Task RegisterVisualDesignerAsync(VisualDesigner visualDesigner)
+        // Validate a Visual Designer's credentials
+        public async Task<VisualDesigner> ValidateVisualDesigner(string username, string password)
         {
-            // Logic to register a new Visual Designer
-            throw new NotImplementedException();
+            var visualDesigner = _context.VisualDesigners.FirstOrDefault(v => v.Username == username && v.Password == password);
+            if (visualDesigner == null)
+            {
+                throw new Exception("Invalid username or password.");
+            }
+            return visualDesigner;
         }
 
-        public Task<ClaimsPrincipal> GetAuthAsync()
-        {
-            // Return the current authenticated principal
-            return Task.FromResult(_currentPrincipal);
-        }
-
-        public Task LogoutAsync()
-        {
-            // Clear the current principal and notify subscribers
-            _currentPrincipal = new ClaimsPrincipal();
-            OnAuthStateChanged?.Invoke(_currentPrincipal);
-            return Task.CompletedTask;
-        }
-
-        public Task ChangeAnalystPasswordAsync(int id, string newPassword)
-        {
-            // Logic to change password for an Analyst
-            throw new NotImplementedException();
-        }
-
-        public Task ChangeVisualDesignerPasswordAsync(int id, string newPassword)
-        {
-            // Logic to change password for a Visual Designer
-            throw new NotImplementedException();
-        }
-
+        // Generate a JWT token
         public Task<string> GenerateTokenAsync(User user)
         {
-            // Generate a JWT token
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, user.Username),
@@ -88,15 +90,38 @@ namespace AquAnalyzerAPI.Services
             return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
         }
 
+        // Get the current authenticated user
+        public Task<ClaimsPrincipal> GetAuthAsync()
+        {
+            return Task.FromResult(_currentPrincipal);
+        }
+
+        // Logout the current user
+        public Task LogoutAsync()
+        {
+            _currentPrincipal = new ClaimsPrincipal();
+            OnAuthStateChanged?.Invoke(_currentPrincipal);
+            return Task.CompletedTask;
+        }
+
+        // Not yet implemented methods (optional to implement)
+        public Task ChangeAnalystPasswordAsync(int id, string newPassword)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task ChangeVisualDesignerPasswordAsync(int id, string newPassword)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<string> RefreshTokenAsync(string expiredToken)
         {
-            // Logic to refresh an expired token
             throw new NotImplementedException();
         }
 
         public Task<ClaimsPrincipal> ValidateTokenAsync(string token)
         {
-            // Logic to validate an authentication token
             throw new NotImplementedException();
         }
     }
