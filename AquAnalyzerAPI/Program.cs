@@ -30,8 +30,11 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Add database context
+
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite("Data Source=database.db"));
+
+builder.Services.AddScoped<IAuthServiceAPI, AuthServiceAPI>();
 
 // Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();

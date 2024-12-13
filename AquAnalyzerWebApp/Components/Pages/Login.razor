@@ -8,24 +8,18 @@
 <div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="card p-4 shadow-sm" style="max-width: 400px; width: 100%;">
         <h3 class="text-center mb-4">Login</h3>
-        <EditForm OnValidSubmit="Authenticate">
+        <EditForm EditContext="@editContext" OnValidSubmit="Authenticate">
             <DataAnnotationsValidator />
+            <ValidationSummary />
             <div class="mb-3">
-                <label for="id" class="form-label">Username:</label>
-                <InputNumber id="username" @bind-Value="Username" class="form-control" />
+                <label for="username" class="form-label">Username:</label>
+                <InputText id="username" @bind-Value="Username" class="form-control" />
                 <ValidationMessage For="@(() => Username)" />
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password:</label>
                 <InputText id="password" @bind-Value="Password" class="form-control" type="password" />
                 <ValidationMessage For="@(() => Password)" />
-            </div>
-            <div class="mb-3">
-                <label for="role" class="form-label">Role:</label>
-                <InputSelect id="role" @bind-Value="SelectedRole" class="form-control">
-                    <option value="Analyst">Analyst</option>
-                    <option value="VisualDesigner">Visual Designer</option>
-                </InputSelect>
             </div>
             <div class="mb-3 text-center">
                 <span class="text-danger">@ErrorMessage</span>
@@ -46,14 +40,17 @@
 </div>
 
 @code {
-    private int UserId { get; set; }
-    private string Username {get; set;}
-
-    private string Email {get; set;}
+    private EditContext editContext; // Tracks form state and validation
+    private string Username { get; set; } = string.Empty;
     private string Password { get; set; } = string.Empty;
-    private string SelectedRole { get; set; } = "Analyst";
     private string? ErrorMessage;
     private bool IsLoading = false;
+
+    protected override void OnInitialized()
+    {
+        // Initialize EditContext with the current component as the validation target
+        editContext = new EditContext(this);
+    }
 
     private async Task Authenticate()
     {
@@ -98,4 +95,3 @@
         NavigationManager.NavigateTo("/register");
     }
 }
-
