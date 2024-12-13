@@ -2,8 +2,10 @@
 @using AquAnalyzerAPI.Models
 @using AquAnalyzerAPI.Services
 @using AquAnalyzerAPI.Interfaces
+@using AquAnalyzerAPI.Controllers
 @inject IAuthServiceAPI AuthService
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <h1>Register</h1>
 <h5>Please fill in the details below:</h5>
@@ -107,7 +109,7 @@
     private void GoToLogin()
     {
         showModal = false;
-        NavigationManager.NavigateTo("/login");
+        NavigationManager.NavigateTo("/Login");
     }
 
     private void OnRoleChanged(ChangeEventArgs e)

@@ -14,6 +14,35 @@ public class AuthController(IConfiguration config, IAuthServiceAPI authService) 
     private readonly IConfiguration _config = config;
     private readonly IAuthServiceAPI _authService = authService;
 
+    [HttpPost("register-analyst")]
+public async Task<ActionResult> RegisterAnalyst([FromBody] Analyst analyst)
+{
+    try
+    {
+        await _authService.RegisterAnalystAsync(analyst);
+        return Ok("Registration successful.");
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
+
+[HttpPost("register-VisualDesigner")]
+public async Task<ActionResult> RegisterVisualDesigner([FromBody] VisualDesigner visualDesigner)
+{
+    try
+    {
+        await _authService.RegisterVisualDesignerAsync(visualDesigner);
+        return Ok("Registration successful.");
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
+
+
     [HttpPost("login-analyst")]
     public async Task<ActionResult> LoginAnalyst([FromBody] Analyst analyst)
     {
