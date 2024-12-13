@@ -6,11 +6,14 @@ using Microsoft.EntityFrameworkCore;
 using AquAnalyzerWebApp.Auth;
 using AquAnalyzerAPI.Files; // Assuming DatabaseContext is defined here
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
 
 // Register HttpClient for API communication
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5044/") });

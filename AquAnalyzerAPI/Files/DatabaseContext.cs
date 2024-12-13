@@ -13,18 +13,19 @@ namespace AquAnalyzerAPI.Files
         public DbSet<Analyst> Analysts { get; set; }
         public DbSet<VisualDesigner> VisualDesigners { get; set; }
         public DbSet<Report> Reports { get; set; }
-        public DbSet<User> Users { get; set; }
         public DbSet<Visualisation> Visualisations { get; set; }
         public DbSet<WaterData> WaterData { get; set; }
         public DbSet<WaterMetrics> WaterMetrics { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("Data Source=database.db");
+                optionsBuilder.UseSqlite("Data Source=AquAnalyzerAPI.database.db"); // Make sure this path is correct
             }
-        }
+}
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
