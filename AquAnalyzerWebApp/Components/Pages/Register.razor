@@ -8,7 +8,7 @@
 <h1>Register</h1>
 <h5>Please fill in the details below:</h5>
 
-<EditForm Model="@newUser" OnValidSubmit="@RegisterUser">
+<EditForm Model="@newUser" OnValidSubmit="@RegisterUser" @formname="RegisterForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -32,7 +32,7 @@
 
     <div class="form-group">
         <label for="role">Role</label>
-        <InputSelect id="role" @bind-Value="selectedRole" class="form-control">
+        <InputSelect id="role" @bind-Value="selectedRole" @onchange="OnRoleChanged" class="form-control">
             <option value="Analyst">Analyst</option>
             <option value="VisualDesigner">Visual Designer</option>
         </InputSelect>
@@ -62,28 +62,10 @@
 }
 
 @code {
-    private User? newUser;
+    private User newUser = new Analyst(); // Default to Analyst
     private string selectedRole = "Analyst";
     private string? errorMessage;
     private bool showModal = false;
-
-    protected override void OnInitialized()
-    {
-        // Default to Analyst role
-        SetUserModel();
-    }
-
-    private void SetUserModel()
-    {
-        if (selectedRole == "Analyst")
-        {
-            newUser = new Analyst();
-        }
-        else if (selectedRole == "VisualDesigner")
-        {
-            newUser = new VisualDesigner();
-        }
-    }
 
     private async Task RegisterUser()
     {
@@ -93,9 +75,9 @@
             {
                 var analyst = new Analyst
                 {
-                    Username = newUser?.Username,
-                    Email = newUser?.Email,
-                    Password = newUser?.Password,
+                    Username = newUser.Username,
+                    Email = newUser.Email,
+                    Password = newUser.Password,
                     Role = "Analyst"
                 };
                 await AuthService.RegisterAnalystAsync(analyst);
@@ -104,9 +86,9 @@
             {
                 var visualDesigner = new VisualDesigner
                 {
-                    Username = newUser?.Username,
-                    Email = newUser?.Email,
-                    Password = newUser?.Password,
+                    Username = newUser.Username,
+                    Email = newUser.Email,
+                    Password = newUser.Password,
                     Role = "VisualDesigner"
                 };
                 await AuthService.RegisterVisualDesignerAsync(visualDesigner);
@@ -132,6 +114,18 @@
     {
         selectedRole = e.Value?.ToString() ?? "Analyst";
         SetUserModel();
+    }
+
+    private void SetUserModel()
+    {
+        if (selectedRole == "Analyst")
+        {
+            newUser = new Analyst();
+        }
+        else if (selectedRole == "VisualDesigner")
+        {
+            newUser = new VisualDesigner();
+        }
     }
 }
 
