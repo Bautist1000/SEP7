@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
-using AquAnalyzerAPI.Authorization;
+using AquAnalyzerAPI.Auth;
 using AquAnalyzerAPI.Files;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
