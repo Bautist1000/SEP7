@@ -13,13 +13,13 @@
             <ValidationSummary />
             <div class="mb-3">
                 <label for="username" class="form-label">Username:</label>
-                <InputText id="username" @bind-Value="Username" class="form-control" />
-                <ValidationMessage For="@(() => Username)" />
+                <InputText id="username" @bind-Value="loginModel.Username" class="form-control" />
+                <ValidationMessage For="@(() => loginModel.Username)" />
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password:</label>
-                <InputText id="password" @bind-Value="Password" class="form-control" type="password" />
-                <ValidationMessage For="@(() => Password)" />
+                <InputText id="password" @bind-Value="loginModel.Password" class="form-control" type="password" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
             </div>
             <div class="mb-3 text-center">
                 <span class="text-danger">@ErrorMessage</span>
@@ -41,15 +41,14 @@
 
 @code {
     private EditContext editContext; // Tracks form state and validation
-    private string Username { get; set; } = string.Empty;
-    private string Password { get; set; } = string.Empty;
+    private LoginModel loginModel = new(); // Encapsulate form data into a model
     private string? ErrorMessage;
     private bool IsLoading = false;
 
     protected override void OnInitialized()
     {
-        // Initialize EditContext with the current component as the validation target
-        editContext = new EditContext(this);
+        // Initialize EditContext with the LoginModel for validation tracking
+        editContext = new EditContext(loginModel);
     }
 
     private async Task Authenticate()
@@ -59,8 +58,8 @@
 
         try
         {
-            // Call IAuthService LoginAsync
-            await AuthService.LoginAsync(Username, Password);
+            // Call IAuthService LoginAsync with loginModel data
+            await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
 
             // Get ClaimsPrincipal to determine navigation
             var principal = await AuthService.GetAuthAsync();
@@ -93,5 +92,12 @@
     private void NavigateToRegister()
     {
         NavigationManager.NavigateTo("/register");
+    }
+
+    // LoginModel class to encapsulate form inputs
+    public class LoginModel
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 }
