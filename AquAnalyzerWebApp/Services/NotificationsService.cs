@@ -80,6 +80,12 @@ namespace AquAnalyzerWebApp.Services
             response.EnsureSuccessStatusCode();
         }
 
+        public async Task CreateNotificationFromAbnormality(Abnormality abnormality)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/notification/create-from-abnormality", abnormality);
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task<IEnumerable<Notification>> GetAllNotifications()
         {
             try

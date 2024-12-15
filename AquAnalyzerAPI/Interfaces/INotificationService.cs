@@ -12,6 +12,8 @@ namespace AquAnalyzerAPI.Interfaces
 
         Task AddNotification(Notification notification);
 
+        Task CreateNotificationFromAbnormality(Abnormality abnormality);
+
         Task<bool> UpdateNotificationStatus(int id, string status);
 
         Task<bool> MarkNotificationAsRead(int id, DateTime readAt);
