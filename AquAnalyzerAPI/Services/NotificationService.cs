@@ -20,6 +20,24 @@ namespace AquAnalyzerAPI.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task CreateNotificationFromAbnormality(Abnormality abnormality)
+        {
+            var notification = new Notification
+            {
+                Message = $"New abnormality detected: {abnormality.Description}",
+                Type = "Abnormality",
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                ReadAt = null,
+                UserId = 1, // Set appropriate user ID for analyst
+                Metadata = "{}",
+                AbnormalityId = abnormality.Id,
+                Abnormality = abnormality
+            };
+
+            await AddNotification(notification);
+        }
+
         public async Task<IEnumerable<Notification>> GetAllNotifications()
         {
             return await _context.Notifications.ToListAsync();

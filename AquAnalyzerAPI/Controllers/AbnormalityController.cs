@@ -18,7 +18,15 @@ namespace AquAnalyzerAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Abnormality>>> GetAllAbnormalities()
         {
-            return Ok(await _abnormalityService.GetAllAbnormalities());
+            try
+            {
+                var abnormalities = await _abnormalityService.GetAllAbnormalities();
+                return Ok(abnormalities);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpGet("{id}")]
@@ -26,7 +34,6 @@ namespace AquAnalyzerAPI.Controllers
         {
             var abnormality = await _abnormalityService.GetAbnormalityById(id);
             if (abnormality == null) return NotFound();
-
             return Ok(abnormality);
         }
 
@@ -44,6 +51,15 @@ namespace AquAnalyzerAPI.Controllers
         {
             await _abnormalityService.AddAbnormality(abnormality);
             return CreatedAtAction(nameof(GetAbnormalityById), new { id = abnormality.Id }, abnormality);
+        }
+
+
+        [HttpPut("{id}/dealt-with")]
+        public async Task<ActionResult> MarkAsDealtWith(int id)
+        {
+            var success = await _abnormalityService.MarkAsDealtWith(id);
+            if (!success) return NotFound();
+            return NoContent();
         }
 
         [HttpPut("{id}")]

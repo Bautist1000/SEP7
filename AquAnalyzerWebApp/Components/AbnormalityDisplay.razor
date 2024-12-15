@@ -1,0 +1,113 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using AquAnalyzerWebApp.Interfaces
+@using AquAnalyzerAPI.Models
+@using Microsoft.AspNetCore.Components.Routing
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject INotificationsService NotificationsService
+@inject NavigationManager NavigationManager
+
+
+
+@if (isAnalyst && pendingAbnormalities > 0)
+{
+    <button class="abnormality-button @(pendingAbnormalities > 0 ? "alert" : "")" @onclick="NavigateToNotifications">
+        <i class="fas fa-exclamation-circle"></i>
+        <span class="badge @(pendingAbnormalities > 0 ? "badge-danger" : "badge-secondary")">
+            @pendingAbnormalities
+        </span>
+    </button>
+}
+
+@code {
+    private bool isAnalyst = true;
+    private int pendingAbnormalities = 0;
+    private List<Abnormality> abnormalities = new();
+
+    [Parameter]
+    public int WaterMetricsId { get; set; }
+
+    [Parameter]
+    public int WaterDataId { get; set; }
+
+    private void NavigateToNotifications()
+    {
+        NavigationManager.NavigateTo("/notifications");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isAnalyst = user.IsInRole("Analyst");
+
+        if (isAnalyst)
+        {
+            await CheckForAbnormalities();
+        }
+    }
+
+    private async Task CheckForAbnormalities()
+    {
+        var metrics = new List<Abnormality>();
+        if (WaterMetricsId != 0)
+        {
+            metrics.AddRange(await NotificationsService.CheckWaterMetricsAbnormalities(WaterMetricsId));
+        }
+        if (WaterDataId != 0)
+        {
+            metrics.AddRange(await NotificationsService.CheckWaterDataAbnormalities(WaterDataId));
+        }
+        abnormalities = metrics;
+        pendingAbnormalities = abnormalities.Count(a => !a.IsDealtWith);
+    }
+
+}
+
+<style>
+    .abnormality-button {
+        position: relative;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 0.5rem;
+        transition: transform 0.2s;
+    }
+
+    .abnormality-button i {
+        font-size: 1.5rem;
+        color: #6c757d;
+    }
+
+    .abnormality-button.alert i {
+        color: #dc3545;
+        animation: pulse 2s infinite;
+    }
+
+    .badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        border-radius: 50%;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .description {
+        margin: 0.25rem 0;
+        color: #495057;
+    }
+
+    .timestamp {
+        color: #6c757d;
+    }
+</style>

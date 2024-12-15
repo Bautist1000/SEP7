@@ -1,0 +1,82 @@
+@page "/notifications"
+@using Microsoft.AspNetCore.Components.Authorization
+@using AquAnalyzerAPI.Models
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject INotificationsService NotificationsService
+@implements IDisposable
+
+<h3>
+    Notifications
+    @if (notifications?.Any(n => !n.ReadAt.HasValue) == true)
+    {
+        <span class="unread-badge">@(notifications.Count(n => !n.ReadAt.HasValue))</span>
+    }
+</h3>
+
+<div class="notifications-container">
+    @if (notifications == null)
+    {
+        <p>Loading...</p>
+    }
+    else if (!notifications.Any())
+    {
+        <p>No notifications found. Count: @(notifications?.Count() ?? 0)</p>
+    }
+    else
+    {
+        @foreach (var notification in notifications.OrderByDescending(n => n.CreatedAt))
+        {
+            <div class="notification-card @(notification.ReadAt.HasValue ? "read" : "unread")">
+                <div class="notification-header">
+                    <span class="notification-type">@notification.Type</span>
+                    <small class="notification-date">@notification.CreatedAt.ToString("g")</small>
+                </div>
+                <div class="notification-body">
+                    <p>@notification.Message</p>
+                    @if (notification.Abnormality != null)
+                    {
+                        <div class="abnormality-details">
+                            <p><strong>Type:</strong> @notification.Abnormality.Type</p>
+                            <p>@notification.Abnormality.Description</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<Notification> notifications;
+    private System.Threading.Timer timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNotifications();
+        timer = new System.Threading.Timer(async _ =>
+        {
+            await LoadNotifications();
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+    }
+
+    private async Task LoadNotifications()
+    {
+        try
+        {
+            var result = await NotificationsService.GetAllNotifications();
+            notifications = result?.ToList() ?? new List<Notification>();
+            Console.WriteLine($"Loaded {notifications.Count} notifications");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading notifications: {ex.Message}");
+            notifications = new List<Notification>();
+        }
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}
