@@ -17,6 +17,10 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
 builder.Services.AddScoped<IAbnormalityService, AbnormalityService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IWaterDataService, WaterDataService>();
+builder.Services.AddScoped<IWaterMetricsService, WaterMetricsService>();
+builder.Services.AddScoped<IWaterService, WaterService>();
+
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
