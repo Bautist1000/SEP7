@@ -35,4 +35,44 @@ Content-Type: application/json
 ### Delete Notification
 DELETE {{AquAnalyzerAPI_HostAddress}}/api/notification/1
 
+### Get All Reports
+GET {{AquAnalyzerAPI_HostAddress}}/api/report
+Accept: application/json
 
+### Get Report by ID
+GET {{AquAnalyzerAPI_HostAddress}}/api/report/1
+Accept: application/json
+
+### Create Report
+POST {{AquAnalyzerAPI_HostAddress}}/api/report
+Content-Type: application/json
+
+{
+    "title": "Test Report",
+    "description": "This is a test report",
+    "userId": 1,
+    "generatedDate": "2023-10-01T00:00:00Z",
+    "visualisations": [],
+    "visualDesignerId": 1
+}
+
+
+### Update Report
+PUT {{AquAnalyzerAPI_HostAddress}}/api/report/1
+Content-Type: application/json
+
+{
+    "id": 1,
+    "title": "Updated Test Report",
+    "description": "This is an updated test report",
+    "userId": 1,
+    "generatedDate": "2023-10-01T00:00:00Z",
+    "visualisations": []
+}
+
+### Delete Report
+DELETE {{AquAnalyzerAPI_HostAddress}}/api/report/1
+
+### Search Reports by Title
+GET {{AquAnalyzerAPI_HostAddress}}/api/report/search/Test
+Accept: application/json

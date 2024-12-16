@@ -12,8 +12,16 @@ namespace AquAnalyzerAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Report>>> GetAllReports()
         {
-            var reports = await _reportService.GetAllReports();
-            return Ok(reports);
+            try
+            {
+                var reports = await _reportService.GetAllReports();
+                return Ok(reports);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+
         }
 
         [HttpGet("{id}")]

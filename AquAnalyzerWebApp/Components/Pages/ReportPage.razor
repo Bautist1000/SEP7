@@ -3,40 +3,49 @@
 @using AquAnalyzerWebApp.Interfaces;
 @inject IReportPageService ReportPageService;
 
-<h3>Report</h3>
-
-<div>
-    <h4>@Report.Title</h4>
-    <p>@Report.Description</p>
-    @* <p>Generated on: @Report.GeneratedDate</p> *@
-</div>
-
-@if (Report.Visualisations.Any())
+@if (reports != null)
 {
-    <div>
-        @foreach (var visualisation in Report.Visualisations)
+    foreach (var report in reports)
+    {
+        <div>
+            <h3>@report.Title</h3>
+            <p>@report.Description</p>
+            @* <p>Generated on: @report.GeneratedDate</p> *@
+        </div>
+
+        @* @if (report.Visualisations != null && report.Visualisations.Any())
         {
-            <Visualisation VisualisationData="visualisation" />
+            <div>
+                @foreach (var visualisation in report.Visualisations)
+                {
+                    <Visualisation VisualisationData="visualisation" />
+                }
+            </div>
         }
-    </div>
+        else
+        {
+            <p>No visualizations to display.</p>
+        }
+        *@
+    }
 }
 else
 {
-    <p>No visualizations to display.</p>
+    <p>Loading...</p>
 }
+    
 
 @code {
-    private Report mockReport = new Report
-    {
-        Id = 1,
-        Title = "Report on Water",
-        Description = "This is a mock report about water analysis."
-    };
 
-    private Report Report { get; set; } = new Report(); // Initialize to avoid null
+    private List<Report> reports;
 
     protected override async Task OnInitializedAsync()
     {
-        Report = await ReportPageService.GetReportById(mockReport.Id) ?? new Report(); // Ensure Report is not null
+        await LoadReports();
+    }
+
+    private async Task LoadReports()
+    {
+        reports = (await ReportPageService.GetAllReports()).ToList();
     }
 }

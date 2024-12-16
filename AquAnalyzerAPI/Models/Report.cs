@@ -8,7 +8,7 @@ namespace AquAnalyzerAPI.Models
         public int UserId { get; set; }
         public DateTime GeneratedDate { get; set; }
         public List<Visualisation> Visualisations { get; set; } = new List<Visualisation>();
-        public VisualDesigner VisualDesigner { get; set; } = null!;
+        public VisualDesigner? VisualDesigner { get; set; } = null!;
 
         public Report()
         {
