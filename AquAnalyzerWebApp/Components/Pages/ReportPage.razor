@@ -27,16 +27,16 @@ else
 
 @code {
     private Report mockReport = new Report
-        {
-            Id = 1,
-            Title = "Report on Water",
-            Description = "This is a mock report about water analysis."
-        };
+    {
+        Id = 1,
+        Title = "Report on Water",
+        Description = "This is a mock report about water analysis."
+    };
 
-    private Report Report { get; set; }
+    private Report Report { get; set; } = new Report(); // Initialize to avoid null
 
     protected override async Task OnInitializedAsync()
     {
-        Report = await ReportPageService.GetReportById(mockReport.Id);
+        Report = await ReportPageService.GetReportById(mockReport.Id) ?? new Report(); // Ensure Report is not null
     }
 }
