@@ -8,6 +8,7 @@ namespace AquAnalyzerAPI.Services
     public class AbnormalityService : IAbnormalityService
     {
         private readonly DatabaseContext _context;
+        private readonly INotificationService _notificationService;
         private const double MAX_ALLOWED_FLOW_DURATION = 100.0; // Change to sensible values for Kamstrup.
         private const double MAX_ELECTRICITY_CONSUMPTION = 1000.0; // Change to sensible values for Kamstrup.
         private const double MIN_WATER_EFFICIENCY = 0.5; // Change to sensible values for Kamstrup.
@@ -16,15 +17,19 @@ namespace AquAnalyzerAPI.Services
         private const double ELECTRICITY_RATE_PER_FLOW = 0.1; // Change to sensible values for Kamstrup.
         private const double ELECTRICITY_TOLERANCE = 0.1; // Change to sensible values for Kamstrup.
 
-        public AbnormalityService(DatabaseContext context)
+        public AbnormalityService(DatabaseContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         public async Task<Abnormality> AddAbnormality(Abnormality abnormality)
         {
             await _context.Abnormalities.AddAsync(abnormality);
             await _context.SaveChangesAsync();
+
+            await _notificationService.CreateNotificationFromAbnormality(abnormality);
+
             return abnormality;
         }
 

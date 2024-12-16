@@ -3,4 +3,36 @@
 GET {{AquAnalyzerAPI_HostAddress}}/weatherforecast/
 Accept: application/json
 
-###
+### Get All Notifications
+GET {{AquAnalyzerAPI_HostAddress}}/api/notification
+Accept: application/json
+
+### Get Notification by ID
+GET {{AquAnalyzerAPI_HostAddress}}/api/notification/1
+Accept: application/json
+
+### Create Notification
+POST {{AquAnalyzerAPI_HostAddress}}/api/notification
+Content-Type: application/json
+
+{
+    "message": "Test notification",
+    "userId": 1,
+    "type": "Info",
+    "status": "Active",
+    "createdAt": "2024-03-19T10:00:00Z",
+    "metadata": "{}"
+}
+
+### Mark Notification as Read
+PUT {{AquAnalyzerAPI_HostAddress}}/api/notification/1/read
+Content-Type: application/json
+
+{
+    "readAt": "2024-03-19T10:30:00Z"
+}
+
+### Delete Notification
+DELETE {{AquAnalyzerAPI_HostAddress}}/api/notification/1
+
+

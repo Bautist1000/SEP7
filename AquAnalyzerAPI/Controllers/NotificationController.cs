@@ -18,7 +18,15 @@ namespace AquAnalyzerAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Notification>>> GetAllNotifications()
         {
-            return Ok(await _notificationService.GetAllNotifications());
+            try
+            {
+                var notifications = await _notificationService.GetAllNotifications();
+                return Ok(notifications);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpGet("{id}")]

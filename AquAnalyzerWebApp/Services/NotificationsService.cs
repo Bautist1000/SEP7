@@ -23,7 +23,15 @@ namespace AquAnalyzerWebApp.Services
 
         public async Task<IEnumerable<Abnormality>> GetAllAbnormalities()
         {
-            return await _httpClient.GetFromJsonAsync<IEnumerable<Abnormality>>("api/abnormality");
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<IEnumerable<Abnormality>>("api/Abnormality");
+                return result ?? new List<Abnormality>();
+            }
+            catch (Exception)
+            {
+                return new List<Abnormality>();
+            }
         }
 
         public async Task<Abnormality> GetAbnormalityById(int id)
@@ -72,9 +80,23 @@ namespace AquAnalyzerWebApp.Services
             response.EnsureSuccessStatusCode();
         }
 
+        public async Task CreateNotificationFromAbnormality(Abnormality abnormality)
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/notification/create-from-abnormality", abnormality);
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task<IEnumerable<Notification>> GetAllNotifications()
         {
-            return await _httpClient.GetFromJsonAsync<IEnumerable<Notification>>("api/notification");
+            try
+            {
+                var result = await _httpClient.GetFromJsonAsync<IEnumerable<Notification>>("api/notification");
+                return result ?? new List<Notification>();
+            }
+            catch (HttpRequestException)
+            {
+                return new List<Notification>();
+            }
         }
 
         public async Task<Notification> GetNotificationById(int id)

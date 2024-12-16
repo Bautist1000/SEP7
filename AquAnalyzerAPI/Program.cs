@@ -5,6 +5,8 @@ using AquAnalyzerAPI.Models;
 using AquAnalyzerAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers(); // Add this if missing
+
 
 // Add services to the container.
 builder.Services.AddDbContext<DatabaseContext>(options =>
@@ -23,6 +25,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseRouting();
+app.MapControllers();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
