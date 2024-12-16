@@ -1,7 +1,7 @@
-using AquAnalyzer.
 @page "/report"
-@inject HttpClient Http
-
+@using AquAnalyzerAPI.Models;
+@using AquAnalyzerWebApp.Interfaces;
+@inject IReportPageService ReportPageService;
 
 <h3>Report</h3>
 
@@ -31,10 +31,12 @@ else
             Id = 1,
             Title = "Report on Water",
             Description = "This is a mock report about water analysis."
-        }
+        };
 
-protected override async Task OnInitializedAsync()
+    private Report Report { get; set; }
+
+    protected override async Task OnInitializedAsync()
     {
-        Report = await Http.GetFromJsonAsync<Report>($"api/reports/{mockReport.Id}");
+        Report = await ReportPageService.GetReportById(mockReport.Id);
     }
 }
