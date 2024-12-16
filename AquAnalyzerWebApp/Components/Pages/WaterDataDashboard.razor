@@ -1,0 +1,91 @@
+@page "/dashboard"
+@using AquAnalyzerAPI.Services
+@using AquAnalyzerAPI.Interfaces
+@using AquAnalyzerAPI.Models
+@inject IWaterService WaterService
+@inject IWaterMetricsService WaterMetricsService
+@inject IWaterDataService WaterDataService
+
+
+<h1>Water Data Dashboard</h1>
+
+<div class="container-fluid">
+    <h1 class="mb-4">Water Data Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Raw Water Data</h3>
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm" style="width: 150px;">
+                            <input type="text" name="table_search" class="form-control float-right" placeholder="Search"
+                                @bind="searchTerm" @oninput="FilterData">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <table class="table table-hover text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Timestamp</th>
+                                <th>Location</th>
+                                <th>Usage Volume</th>
+                                <th>Flow Rate</th>
+                                <th>Electricity Consumption</th>
+                                <th>Source Type</th>
+                                <th>Leak Detected</th>
+                                <th>Clean Energy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var data in filteredWaterData)
+                            {
+                                <tr>
+                                    <td>@data.Id</td>
+                                    <td>@data.Timestamp.ToString("g")</td>
+                                    <td>@data.Location</td>
+                                    <td>@data.UsageVolume.ToString("N2")</td>
+                                    <td>@data.FlowRate.ToString("N2")</td>
+                                    <td>@data.ElectricityConsumption.ToString("N2")</td>
+                                    <td>@data.SourceType</td>
+                                    <td>@(data.LeakDetected == true ? "Yes" : "No")</td>
+                                    <td>@(data.UsesCleanEnergy ? "Yes" : "No")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    using AquAnalyzerAPI.Services;
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <WaterMetricsSummary />
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<WaterData> waterData = new List<WaterData>();
+    private List<WaterData> filteredWaterData = new List<WaterData>();
+    private string searchTerm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        waterData = (await WaterDataService.GetAllWaterDataAsync()).ToList();
+        filteredWaterData = waterData;
+    }
+
+    private void FilterData(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? "";
+        filteredWaterData = waterData.Where(wd =>
+        wd.Location.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+        wd.SourceType.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+        ).ToList();
+    }
+}

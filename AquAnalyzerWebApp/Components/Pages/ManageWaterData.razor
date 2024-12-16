@@ -1,0 +1,201 @@
+@page "/manage-waterdata"
+@using AquAnalyzerAPI.Services
+@using AquAnalyzerAPI.Interfaces
+@using AquAnalyzerAPI.Models
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+
+@inject IWaterDataService WaterDataService
+@inject NavigationManager NavigationManager
+
+<div class="container-fluid">
+    <h1 class="mb-4">Manage Water Data</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">@(IsEditMode ? "Edit Water Data" : "Add Water Data")</h3>
+                </div>
+                <EditForm Model="@waterData" OnValidSubmit="HandleSubmitAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>ID </label>
+                            <InputNumber class="form-control" @bind-Value="waterData.Id" />
+                        </div>
+                        <div class="form-group">
+                            <label>Timestamp</label>
+                            <InputDate class="form-control" @bind-Value="waterData.Timestamp" />
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <InputText class="form-control" @bind-Value="waterData.Location" />
+                        </div>
+                        <div class="form-group">
+                            <label>Usage Volume</label>
+                            <InputNumber class="form-control" @bind-Value="waterData.UsageVolume" />
+                        </div>
+                        <div class="form-group">
+                            <label>Flow Rate</label>
+                            <InputNumber class="form-control" @bind-Value="waterData.FlowRate" />
+                        </div>
+                        <div class="form-group">
+                            <label>Electricity Consumption</label>
+                            <InputNumber class="form-control" @bind-Value="waterData.ElectricityConsumption" />
+                        </div>
+                        <div class="form-group">
+                            <label>Product ID</label>
+                            <InputNumber class="form-control" @bind-Value="waterData.ProductId" />
+                        </div>
+                        <div class="form-group">
+                            <label>Source Type</label>
+                            <InputSelect class="form-control" @bind-Value="waterData.SourceType">
+                                <option value="">Select Source Type</option>
+                                <option value="freshwater">Freshwater</option>
+                                <option value="recycled">Recycled</option>
+                                <option value="groundwater">Groundwater</option>
+                                <option value="seawater">Seawater</option>
+                            </InputSelect>
+                        </div>
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="waterData.LeakDetected" />
+                            <label class="form-check-label">Leak Detected</label>
+                        </div>
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="waterData.HasAbnormalities" />
+                            <label class="form-check-label">Has Abnormalities</label>
+                        </div>
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="waterData.UsesCleanEnergy" />
+                            <label class="form-check-label">Uses Clean Energy</label>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            @(IsEditMode ? "Update" : "Add") Water Data
+                        </button>
+                        @if (IsEditMode)
+                        {
+                            <button type="button" class="btn btn-danger ml-2" @onclick="DeleteEntryAsync">
+                                Delete Entry
+                            </button>
+                        }
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-info">
+                <div class="card-header">
+                    <h3 class="card-title">Existing Water Data</h3>
+                </div>
+                <div class="card-body table-responsive p-0" style="max-height: 500px;">
+                    <table class="table table-hover text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Location</th>
+                                <th>Usage Volume</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var data in existingWaterData)
+                            {
+                                <tr>
+                                    <td>@data.Id</td>
+                                    <td>@data.Location</td>
+                                    <td>@data.UsageVolume.ToString("N2")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" @onclick="() => EditEntry(data)">
+                                            Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private WaterData waterData = new();
+    private List<WaterData> existingWaterData = new();
+    private bool IsEditMode;
+
+    protected override async Task OnInitializedAsync()
+    {
+        existingWaterData = (await WaterDataService.GetAllWaterDataAsync()).ToList();
+    }
+
+    private void EditEntry(WaterData data)
+    {
+        waterData = new WaterData
+            {
+                Id = data.Id,
+                Timestamp = data.Timestamp,
+                Location = data.Location,
+                UsageVolume = data.UsageVolume,
+                FlowRate = data.FlowRate,
+                ElectricityConsumption = data.ElectricityConsumption,
+                ProductId = data.ProductId,
+                SourceType = data.SourceType,
+                LeakDetected = data.LeakDetected,
+                HasAbnormalities = data.HasAbnormalities,
+                UsesCleanEnergy = data.UsesCleanEnergy
+            };
+        IsEditMode = true;
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        try
+        {
+            // Set default timestamp if not provided
+            if (waterData.Timestamp == default)
+            {
+                waterData.Timestamp = DateTime.UtcNow;
+            }
+
+            if (IsEditMode)
+            {
+                await WaterDataService.UpdateWaterDataAsync(waterData);
+            }
+            else
+            {
+                await WaterDataService.AddWaterDataAsync(waterData);
+            }
+
+            existingWaterData = (await WaterDataService.GetAllWaterDataAsync()).ToList();
+            waterData = new();
+            IsEditMode = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteEntryAsync()
+    {
+        if (waterData.Id > 0)
+        {
+            try
+            {
+                await WaterDataService.DeleteWaterDataAsync(waterData.Id);
+                existingWaterData = (await WaterDataService.GetAllWaterDataAsync()).ToList();
+                waterData = new();
+                IsEditMode = false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+    }
+}

@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using AquAnalyzerAPI.Models;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Files;
-
 namespace AquAnalyzerAPI.Services
 {
     public class AbnormalityService : IAbnormalityService
@@ -97,6 +100,7 @@ namespace AquAnalyzerAPI.Services
             return true;
         }
 
+        public async Task<IEnumerable<Abnormality>> CheckWaterDataAbnormalities(int dataId)
         public async Task<IEnumerable<Abnormality>> CheckWaterDataAbnormalities(int dataId)
         {
             var abnormalities = new List<Abnormality>();

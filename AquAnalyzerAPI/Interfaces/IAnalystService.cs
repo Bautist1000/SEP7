@@ -1,5 +1,6 @@
 using AquAnalyzerAPI.Models;
-
+using System.Threading.Tasks;
+using System.Collections.Generic;
 namespace AquAnalyzerAPI.Interfaces
 {
     public interface IAnalystService

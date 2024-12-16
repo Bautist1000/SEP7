@@ -1,13 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using AquAnalyzerAPI.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Files;
 
 namespace AquAnalyzerAPI.Services
 {
-    public class VisualisationService(DatabaseContext context) : IVisualisationService
+    public class VisualisationService : IVisualisationService
     {
-        private readonly DatabaseContext _context = context;
+        private readonly DatabaseContext _context;
+
+        public VisualisationService(DatabaseContext context)
+        {
+            _context = context;
+        }
 
         public async Task<Visualisation> AddVisualisation(Visualisation visualisation)
         {

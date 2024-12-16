@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 namespace AquAnalyzerAPI.Models
 {
     public class WaterData
@@ -10,10 +12,10 @@ namespace AquAnalyzerAPI.Models
         public double ProductId { get; set; }
         // freshwater, recycled, groundwater, seawater?
         public string SourceType { get; set; }
-        public bool? LeakDetected { get; set; }
+        public bool LeakDetected { get; set; } = false;
         public string Location { get; set; }
-        public bool HasAbnormalities { get; set; }
-        public bool UsesCleanEnergy { get; set; }
+        public bool HasAbnormalities { get; set; } = false;
+        public bool UsesCleanEnergy { get; set; } = false;
 
         public int WaterMetricsId { get; set; }
         public WaterMetrics WaterMetrics { get; set; }

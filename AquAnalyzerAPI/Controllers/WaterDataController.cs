@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Models;
-
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 namespace AquAnalyzerAPI.Controllers
 {
     [ApiController]
