@@ -15,7 +15,6 @@ builder.Services.AddRazorComponents()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5126/") });
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
-builder.Services.AddScoped<IAbnormalityService, AbnormalityService>();
 builder.Services.AddScoped<IReportPageService, ReportPageService>();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
