@@ -1,4 +1,4 @@
-@inherits VisualisationBase
+using AquAnalyzerAPI.Models.Visualisation
 
 <div class="visualisation">
     <h5>Visualisation Type: @VisualisationData.Type</h5>
@@ -36,7 +36,7 @@
 
 @code {
     [Parameter]
-    public Visualisation VisualisationData { get; set; } = null!;
+    public AquAnalyzerAPI.Models.Visualisation VisualisationData { get; set; } = null!;
 }
 
 <style>

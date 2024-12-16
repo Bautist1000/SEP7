@@ -1,12 +1,14 @@
+using AquAnalyzer.
 @page "/report"
 @inject HttpClient Http
+
 
 <h3>Report</h3>
 
 <div>
     <h4>@Report.Title</h4>
     <p>@Report.Description</p>
-    <p>Generated on: @Report.GeneratedDate</p>
+    @* <p>Generated on: @Report.GeneratedDate</p> *@
 </div>
 
 @if (Report.Visualisations.Any())
@@ -24,11 +26,15 @@ else
 }
 
 @code {
-    private Report Report = new Report();
+    private Report mockReport = new Report
+        {
+            Id = 1,
+            Title = "Report on Water",
+            Description = "This is a mock report about water analysis."
+        }
 
-    protected override async Task OnInitializedAsync()
+protected override async Task OnInitializedAsync()
     {
-        var reportId = 1; 
-        Report = await Http.GetFromJsonAsync<Report>($"api/reports/{reportId}");
+        Report = await Http.GetFromJsonAsync<Report>($"api/reports/{mockReport.Id}");
     }
 }

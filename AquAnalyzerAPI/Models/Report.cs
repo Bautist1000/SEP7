@@ -15,6 +15,13 @@ namespace AquAnalyzerAPI.Models
 
         }
 
+        public Report(int Id, string Title, string Description)
+        {
+            this.Id = Id;
+            this.Title = Title;
+            this.Description = Description;
+        }
+
         public Report(int Id, string Title, string Description, int UserId, DateTime GeneratedDate)
         {
             this.Id = Id;
