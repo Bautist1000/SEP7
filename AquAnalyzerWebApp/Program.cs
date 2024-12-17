@@ -4,47 +4,36 @@ using AquAnalyzerWebApp.Components;
 using AquAnalyzerWebApp.Services;
 using AquAnalyzerWebApp.Interfaces;
 using AquAnalyzerAPI.Files;
-using AquAnalyzerAPI.Interfaces;
-using AquAnalyzerAPI.Services;
+using AquAnalyzerAPI.Auth;
+using AquAnalyzerWebApp.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.EntityFrameworkCore;
-using AquAnalyzerWebApp.Auth;
-using AquAnalyzerWebApp.Services;
-using AquAnalyzerAPI.Files;
-using AquAnalyzerAPI;
-using AquAnalyzerAPI.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
 
 // Add services to the container
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5126/") });
+
+// Register HttpClient for API communication
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5044/") });
+
+// Register DatabaseContext
+builder.Services.AddDbContext<DatabaseContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register application services
+builder.Services.AddScoped<IAnalystService, AnalystService>();
+builder.Services.AddScoped<IVisualDesignerService, VisualDesignerService>();
+builder.Services.AddScoped<IAuthServiceAPI, AuthServiceAPI>();
+builder.Services.AddScoped<IAuthService, JwtAuthService>();
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
 builder.Services.AddScoped<IReportPageService, ReportPageService>();
 
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Register HttpClient for API communication
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5044/") });
-
-// Register application services
-builder.Services.AddScoped<IAnalystService, AnalystService>();
-builder.Services.AddScoped<IVisualDesignerService, VisualDesignerService>();
-builder.Services.AddScoped<IAuthServiceAPI, AuthServiceAPI>();
-builder.Services.AddScoped<IAuthService, JwtAuthService>();
+// Register Authentication State Provider for Blazor
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthProvider>();
 
-// Register DatabaseContext
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Add AuthorizationCore for Blazor's built-in authorization features
+// Add AuthorizationCore and policies
 builder.Services.AddAuthorizationCore();
 AuthorizationPolicies.AddPolicies(builder.Services);
 
@@ -57,38 +46,10 @@ builder.Services.AddAuthentication(options =>
 {
     options.LoginPath = "/login";
 });
-
-// Register HttpClient for API communication
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5044/") });
-
-// Register application services
-builder.Services.AddScoped<IAnalystService, AnalystService>();
-builder.Services.AddScoped<IVisualDesignerService, VisualDesignerService>();
-builder.Services.AddScoped<IAuthServiceAPI, AuthServiceAPI>();
-builder.Services.AddScoped<IAuthService, JwtAuthService>();
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthProvider>();
-
-// Register DatabaseContext
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Add AuthorizationCore for Blazor's built-in authorization features
-builder.Services.AddAuthorizationCore();
-AuthorizationPolicies.AddPolicies(builder.Services);
-
-// Configure Authentication (Single Registration)
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = "Cookies";
-})
-.AddCookie("Cookies", options =>
-{
-    options.LoginPath = "/login";
-});
-
-var app = builder.Build();
 
 // Configure the HTTP request pipeline
+var app = builder.Build();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -98,12 +59,11 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
-app.UseAuthentication(); // Add authentication middleware
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
-
 
