@@ -33,7 +33,7 @@ else
 {
     <p>Loading...</p>
 }
-    
+
 
 @code {
 
@@ -49,3 +49,35 @@ else
         reports = (await ReportPageService.GetAllReports()).ToList();
     }
 }
+
+<style>
+    .report-card {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .report-card h3 {
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .report-card p {
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .report-card p:last-child {
+        margin-bottom: 0;
+    }
+
+    .loading {
+        color: #999;
+        font-size: 18px;
+        text-align: center;
+        margin-top: 20px;
+    }
+</style>
