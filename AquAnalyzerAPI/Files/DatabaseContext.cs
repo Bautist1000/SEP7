@@ -9,6 +9,7 @@ namespace AquAnalyzerAPI.Files
         {
         }
         public DbSet<Abnormality> Abnormalities { get; set; }
+        public DbSet<User> Users { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Analyst> Analysts { get; set; }
         public DbSet<VisualDesigner> VisualDesigners { get; set; }
