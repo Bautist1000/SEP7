@@ -2,60 +2,53 @@
 @using AquAnalyzerAPI.Models
 @using AquAnalyzerAPI.Services
 @using AquAnalyzerAPI.Interfaces
-@using AquAnalyzerAPI.Controllers
-@inject IAuthServiceAPI AuthService
+@inject IAuthService AuthService
+@inject IAnalystService AnalystService
+@inject IVisualDesignerService VisualDesignerService
 @inject NavigationManager NavigationManager
-@rendermode InteractiveServer
 
 <h1>Register</h1>
-<h5>Please fill in the details below:</h5>
+<h5>Select your role and fill in the details:</h5>
 
-<EditForm Model="@newUser" OnValidSubmit="@RegisterUser">
+<div class="mb-4">
+    <label for="roleSelection" class="form-label">Role:</label>
+    <select id="roleSelection" class="form-control" @bind="selectedRole" @onchange="OnRoleChanged">
+        <option value="Analyst">Analyst</option>
+        <option value="VisualDesigner">Visual Designer</option>
+    </select>
+</div>
+
+<EditForm Model="@currentUser" OnValidSubmit="@RegisterUser">
     <DataAnnotationsValidator />
     <ValidationSummary />
-
     <div class="form-group">
         <label for="username">Username</label>
-        <InputText id="username" @bind-Value="newUser.Username" class="form-control" />
-        <ValidationMessage For="@(() => newUser.Username)" />
+        <InputText id="username" @bind-Value="currentUser.Username" class="form-control" />
+        <ValidationMessage For="@(() => currentUser.Username)" />
     </div>
-
     <div class="form-group">
         <label for="email">Email</label>
-        <InputText id="email" @bind-Value="newUser.Email" class="form-control" />
-        <ValidationMessage For="@(() => newUser.Email)" />
+        <InputText id="email" @bind-Value="currentUser.Email" class="form-control" />
+        <ValidationMessage For="@(() => currentUser.Email)" />
     </div>
-
     <div class="form-group">
         <label for="password">Password</label>
-        <InputText id="password" @bind-Value="newUser.Password" class="form-control" type="password" />
-        <ValidationMessage For="@(() => newUser.Password)" />
+        <InputText id="password" @bind-Value="currentUser.Password" class="form-control" type="password" />
+        <ValidationMessage For="@(() => currentUser.Password)" />
     </div>
-
-    <div class="form-group">
-        <label for="role">Role</label>
-        <InputSelect id="role" @bind-Value="selectedRole" @onchange="OnRoleChanged" class="form-control">
-            <option value="Analyst">Analyst</option>
-            <option value="VisualDesigner">Visual Designer</option>
-        </InputSelect>
-        <ValidationMessage For="@(() => selectedRole)" />
-    </div>
-
+    <input type="hidden" name="formname" value="@formName" />
     <button type="submit" class="btn btn-primary">Register</button>
-    <button type="button" class="btn btn-secondary" @onclick="GoToLogin">Already have an account?</button>
 </EditForm>
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
-    <div class="alert alert-danger">@errorMessage</div>
+    <div class="alert alert-danger mt-3">@errorMessage</div>
 }
 
 @if (showModal)
 {
-    <div class="modal"
-         style="display:block; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
-        <div class="modal-dialog"
-             style="background:white; margin:15% auto; padding:20px; max-width:400px; text-align:center; border-radius:10px;">
+    <div class="modal" style="display:block; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
+        <div class="modal-dialog" style="background:white; margin:15% auto; padding:20px; max-width:400px; text-align:center; border-radius:10px;">
             <h4>Registration Successful!</h4>
             <p>Your account has been created successfully. Please log in to continue.</p>
             <button class="btn btn-primary" @onclick="GoToLogin">Go to Login</button>
@@ -64,52 +57,15 @@
 }
 
 @code {
-    private User newUser = new Analyst(); // Default to Analyst
-    private string selectedRole = "Analyst";
+    private User currentUser = new Analyst() // Default initialization// Dynamic type based on selected role
+    private string selectedRole = "Analyst"; // Default role
+    private string formName = "AnalystForm"; // Dynamic form name
     private string? errorMessage;
     private bool showModal = false;
 
-    private async Task RegisterUser()
+    protected override void OnInitialized()
     {
-        try
-        {
-            if (selectedRole == "Analyst")
-            {
-                var analyst = new Analyst
-                {
-                    Username = newUser.Username,
-                    Email = newUser.Email,
-                    Password = newUser.Password,
-                    Role = "Analyst"
-                };
-                await AuthService.RegisterAnalystAsync(analyst);
-            }
-            else if (selectedRole == "VisualDesigner")
-            {
-                var visualDesigner = new VisualDesigner
-                {
-                    Username = newUser.Username,
-                    Email = newUser.Email,
-                    Password = newUser.Password,
-                    Role = "VisualDesigner"
-                };
-                await AuthService.RegisterVisualDesignerAsync(visualDesigner);
-            }
-
-            // Show success modal
-            showModal = true;
-        }
-        catch (Exception ex)
-        {
-            // Display error message
-            errorMessage = $"Registration failed: {ex.Message}";
-        }
-    }
-
-    private void GoToLogin()
-    {
-        showModal = false;
-        NavigationManager.NavigateTo("/Login");
+        SetUserModel();
     }
 
     private void OnRoleChanged(ChangeEventArgs e)
@@ -122,12 +78,40 @@
     {
         if (selectedRole == "Analyst")
         {
-            newUser = new Analyst();
+            currentUser = new Analyst();
+            formName = "AnalystForm";
         }
         else if (selectedRole == "VisualDesigner")
         {
-            newUser = new VisualDesigner();
+            currentUser = new VisualDesigner();
+            formName = "VisualDesignerForm";
         }
     }
-}
 
+    private async Task RegisterUser()
+    {
+        try
+        {
+            if (formName == "AnalystForm" && currentUser is Analyst analyst)
+            {
+                await AnalystService.AddAnalyst(analyst);
+            }
+            else if (formName == "VisualDesignerForm" && currentUser is VisualDesigner visualDesigner)
+            {
+                await VisualDesignerService.AddVisDesig(visualDesigner);
+            }
+
+            showModal = true; // Show success modal
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Registration failed: {ex.Message}";
+        }
+    }
+
+    private void GoToLogin()
+    {
+        showModal = false;
+        NavigationManager.NavigateTo("/Login");
+    }
+}
