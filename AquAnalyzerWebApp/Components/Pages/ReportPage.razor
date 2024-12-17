@@ -1,13 +1,13 @@
 @page "/report"
-@using AquAnalyzerAPI.Models;
-@using AquAnalyzerWebApp.Interfaces;
-@inject IReportPageService ReportPageService;
+@using AquAnalyzerAPI.Models
+@using AquAnalyzerWebApp.Interfaces
+@inject IReportPageService ReportPageService
 
 @if (reports != null)
 {
     foreach (var report in reports)
     {
-        <div>
+        <div class="report-card">
             <h3>@report.Title</h3>
             <p>@report.Description</p>
             @* <p>Generated on: @report.GeneratedDate</p> *@
@@ -31,12 +31,10 @@
 }
 else
 {
-    <p>Loading...</p>
+    <p class="loading">Loading...</p>
 }
 
-
 @code {
-
     private List<Report> reports;
 
     protected override async Task OnInitializedAsync()
@@ -52,32 +50,32 @@ else
 
 <style>
     .report-card {
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 16px;
-        margin: 16px 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #f0f8ff; /* Light blue background */
+        border: 1px solid #ccc; /* Light grey border */
+        border-radius: 8px; /* Rounded corners */
+        padding: 16px; /* Padding inside the card */
+        margin: 16px 0; /* Margin between cards */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     }
 
     .report-card h3 {
-        color: #333;
-        margin-bottom: 8px;
+        color: #2c3e50; /* Dark blue color */
+        margin-bottom: 8px; /* Space below the title */
     }
 
     .report-card p {
-        color: #666;
-        margin-bottom: 8px;
+        color: #34495e; /* Slightly lighter blue */
+        margin-bottom: 8px; /* Space below each paragraph */
     }
 
     .report-card p:last-child {
-        margin-bottom: 0;
+        margin-bottom: 0; /* Remove space below the last paragraph */
     }
 
     .loading {
-        color: #999;
-        font-size: 18px;
-        text-align: center;
-        margin-top: 20px;
+        color: #999; /* Grey color for loading text */
+        font-size: 18px; /* Larger font size */
+        text-align: center; /* Centered text */
+        margin-top: 20px; /* Space above the loading text */
     }
 </style>
