@@ -15,5 +15,11 @@ namespace AquAnalyzerAPI.Models
             Type = type;
             ReportId = reportId;
         }
-    }
+
+        public VisualisationData()
+        {
+            
+        }
+
+}
 }
