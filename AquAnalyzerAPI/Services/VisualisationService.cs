@@ -5,9 +5,14 @@ using AquAnalyzerAPI.Files;
 
 namespace AquAnalyzerAPI.Services
 {
-    public class VisualisationService(DatabaseContext context) : IVisualisationService
+    public class VisualisationService : IVisualisationService
     {
-        private readonly DatabaseContext _context = context;
+        private readonly DatabaseContext _context;
+
+        public VisualisationService(DatabaseContext context)
+        {
+            _context = context;
+        }
 
         public async Task<Visualisation> AddVisualisation(Visualisation visualisation)
         {
@@ -25,6 +30,13 @@ namespace AquAnalyzerAPI.Services
         public async Task<IEnumerable<Visualisation>> GetAllVisualisations()
         {
             return await _context.Visualisations.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Visualisation>> GetVisualisationsByReportId(int reportId)
+        {
+            return await _context.Visualisations
+                .Where(v => v.ReportId == reportId)
+                .ToListAsync();
         }
 
         public async Task UpdateVisualisation(Visualisation updatedVisualisation)
@@ -58,5 +70,4 @@ namespace AquAnalyzerAPI.Services
                 .ToListAsync();
         }
     }
-
 }

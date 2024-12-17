@@ -2,6 +2,7 @@
 @using AquAnalyzerAPI.Models
 @using AquAnalyzerWebApp.Interfaces
 @inject IReportPageService ReportPageService
+@inject IVisualisationPageService VisualisationPageService
 
 @if (reports != null)
 {
@@ -11,22 +12,21 @@
             <h3>@report.Title</h3>
             <p>@report.Description</p>
             @* <p>Generated on: @report.GeneratedDate</p> *@
-        </div>
 
-        @* @if (report.Visualisations != null && report.Visualisations.Any())
-        {
-            <div>
-                @foreach (var visualisation in report.Visualisations)
-                {
-                    <Visualisation VisualisationData="visualisation" />
-                }
-            </div>
-        }
-        else
-        {
-            <p>No visualizations to display.</p>
-        }
-        *@
+            @if (report.Visualisations != null && report.Visualisations.Any())
+            {
+                <div class="visualisations">
+                    @foreach (var visualisation in report.Visualisations)
+                    {
+                        <Visualisation VisualisationData="visualisation" />
+                    }
+                </div>
+            }
+            else
+            {
+                <p>No visualizations to display.</p>
+            }
+        </div>
     }
 }
 else
@@ -45,6 +45,11 @@ else
     private async Task LoadReports()
     {
         reports = (await ReportPageService.GetAllReports()).ToList();
+
+        foreach (var report in reports)
+        {
+            report.Visualisations = (await VisualisationPageService.GetVisualisationsByReportId(report.Id)).ToList();
+        }
     }
 }
 
@@ -70,6 +75,10 @@ else
 
     .report-card p:last-child {
         margin-bottom: 0; /* Remove space below the last paragraph */
+    }
+
+    .visualisations {
+        margin-top: 16px; /* Space above the visualisations */
     }
 
     .loading {
