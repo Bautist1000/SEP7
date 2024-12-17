@@ -1,10 +1,7 @@
 @page "/register"
 @using AquAnalyzerAPI.Models
-@using AquAnalyzerAPI.Services
 @using AquAnalyzerAPI.Interfaces
-@inject IAuthService AuthService
-@inject IAnalystService AnalystService
-@inject IVisualDesignerService VisualDesignerService
+@inject IAuthServiceAPI AuthServiceAPI
 @inject NavigationManager NavigationManager
 
 <h1>Register</h1>
@@ -12,7 +9,7 @@
 
 <div class="mb-4">
     <label for="roleSelection" class="form-label">Role:</label>
-    <select id="roleSelection" class="form-control" @bind="selectedRole" @onchange="OnRoleChanged">
+    <select id="roleSelection" class="form-control" @bind="selectedRole" @bind:event="onchange">
         <option value="Analyst">Analyst</option>
         <option value="VisualDesigner">Visual Designer</option>
     </select>
@@ -36,7 +33,7 @@
         <InputText id="password" @bind-Value="currentUser.Password" class="form-control" type="password" />
         <ValidationMessage For="@(() => currentUser.Password)" />
     </div>
-    <input type="hidden" name="formname" value="@formName" />
+
     <button type="submit" class="btn btn-primary">Register</button>
 </EditForm>
 
@@ -57,20 +54,13 @@
 }
 
 @code {
-    private User currentUser = new Analyst() // Default initialization// Dynamic type based on selected role
-    private string selectedRole = "Analyst"; // Default role
-    private string formName = "AnalystForm"; // Dynamic form name
+    private User currentUser = new Analyst { Role = "Analyst" }; // Default role
+    private string selectedRole = "Analyst";
     private string? errorMessage;
     private bool showModal = false;
 
-    protected override void OnInitialized()
+    private void OnRoleChanged()
     {
-        SetUserModel();
-    }
-
-    private void OnRoleChanged(ChangeEventArgs e)
-    {
-        selectedRole = e.Value?.ToString() ?? "Analyst";
         SetUserModel();
     }
 
@@ -78,13 +68,11 @@
     {
         if (selectedRole == "Analyst")
         {
-            currentUser = new Analyst();
-            formName = "AnalystForm";
+            currentUser = new Analyst { Role = "Analyst" };
         }
         else if (selectedRole == "VisualDesigner")
         {
-            currentUser = new VisualDesigner();
-            formName = "VisualDesignerForm";
+            currentUser = new VisualDesigner { Role = "VisualDesigner" };
         }
     }
 
@@ -92,16 +80,8 @@
     {
         try
         {
-            if (formName == "AnalystForm" && currentUser is Analyst analyst)
-            {
-                await AnalystService.AddAnalyst(analyst);
-            }
-            else if (formName == "VisualDesignerForm" && currentUser is VisualDesigner visualDesigner)
-            {
-                await VisualDesignerService.AddVisDesig(visualDesigner);
-            }
-
-            showModal = true; // Show success modal
+            await AuthServiceAPI.RegisterAnalystAsync((Analyst)currentUser);
+            showModal = true;
         }
         catch (Exception ex)
         {

@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 using AquAnalyzerAPI.Models;
 using AquAnalyzerAPI.Controllers;
 
+namespace AquAnalyzerWebApp.Services{
+
+
 public interface IAuthService
 {
     // Login a user (Analyst or Visual Designer)
@@ -22,4 +25,5 @@ public interface IAuthService
 
     // Register a new Visual Designer
     Task RegisterVisualDesignerAsync(VisualDesigner visualDesigner);
+}
 }

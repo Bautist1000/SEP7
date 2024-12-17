@@ -2,15 +2,15 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AquAnalyzerAPI.Interfaces; 
-using AquAnalyzerAPI.Services; 
+using AquAnalyzerWebApp.Services;
 
 namespace AquAnalyzerWebApp.Auth
 {
     public class CustomAuthProvider : AuthenticationStateProvider
     {
-        private readonly IAuthServiceAPI authService;
+        private readonly IAuthService authService;
 
-        public CustomAuthProvider(IAuthServiceAPI authService)
+        public CustomAuthProvider(IAuthService authService)
         {
             this.authService = authService;
             authService.OnAuthStateChanged += AuthStateChanged; // Ensure your auth service has this event

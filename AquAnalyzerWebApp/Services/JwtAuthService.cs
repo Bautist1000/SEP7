@@ -6,7 +6,8 @@ using AquAnalyzerAPI.Services;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Models;
 
-
+namespace AquAnalyzerWebApp.Services
+{
 
 public class JwtAuthService(HttpClient client, IJSRuntime jsRuntime) : IAuthService
 {
@@ -122,4 +123,4 @@ public class JwtAuthService(HttpClient client, IJSRuntime jsRuntime) : IAuthServ
     {
         await jsRuntime.InvokeVoidAsync("localStorage.setItem", "jwt", "");
     }
-}
+} }
