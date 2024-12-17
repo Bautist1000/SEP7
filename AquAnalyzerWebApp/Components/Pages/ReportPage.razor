@@ -2,6 +2,7 @@
 @using AquAnalyzerAPI.Models
 @using AquAnalyzerWebApp.Interfaces
 @inject IReportPageService ReportPageService
+@inject IVisualisationPageService VisualisationPageService
 
 @if (reports != null)
 {
@@ -44,6 +45,11 @@ else
     private async Task LoadReports()
     {
         reports = (await ReportPageService.GetAllReports()).ToList();
+
+        foreach (var report in reports)
+        {
+            report.Visualisations = (await VisualisationPageService.GetVisualisationsByReportId(report.Id)).ToList();
+        }
     }
 }
 
