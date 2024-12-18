@@ -101,7 +101,6 @@ namespace AquAnalyzerAPI.Services
         }
 
         public async Task<IEnumerable<Abnormality>> CheckWaterDataAbnormalities(int dataId)
-        public async Task<IEnumerable<Abnormality>> CheckWaterDataAbnormalities(int dataId)
         {
             var abnormalities = new List<Abnormality>();
             var waterData = await _context.WaterData

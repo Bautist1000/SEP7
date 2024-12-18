@@ -1,69 +1,54 @@
 @using AquAnalyzerAPI.Models
 @using AquAnalyzerAPI.Services
 @using AquAnalyzerAPI.Interfaces
-@using System.Linq
-@using System
-@using System.Threading.Tasks
-@using System.Collections.Generic
-@inject IWaterMetricsService WaterMetricsService
-
+@inject IWaterService WaterService
 
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Water Metrics Summary</h3>
+        <div class="card-tools">
+            <button class="btn btn-sm btn-primary" @onclick="RegenerateMetrics">
+                <i class="fas fa-sync"></i> Regenerate Metrics
+            </button>
+        </div>
     </div>
     <div class="card-body">
         @if (metrics != null)
         {
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="info-box">
                         <span class="info-box-icon bg-info"><i class="fas fa-tint"></i></span>
                         <div class="info-box-content">
                             <span class="info-box-text">Total Water Consumption</span>
-                            <span class="info-box-number">@metrics.TotalWaterConsumption.ToString("N2") m³</span>
+                            <span class="info-box-number">@metrics.TotalWaterConsumption.ToString("F2") m³</span>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="info-box">
                         <span class="info-box-icon bg-success"><i class="fas fa-recycle"></i></span>
                         <div class="info-box-content">
                             <span class="info-box-text">Recycled Water Usage</span>
-                            <span class="info-box-number">@metrics.RecycledWaterUsage.ToString("N2") m³</span>
+                            <span class="info-box-number">@metrics.RecycledWaterUsage.ToString("F2") m³</span>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="info-box">
-                        <span class="info-box-icon bg-warning"><i class="fas fa-water"></i></span>
+                        <span class="info-box-icon bg-warning"><i class="fas fa-exclamation-triangle"></i></span>
                         <div class="info-box-content">
                             <span class="info-box-text">Leakage Rate</span>
-                            <span class="info-box-number">@metrics.LeakageRate.ToString("N2")%</span>
+                            <span class="info-box-number">@metrics.LeakageRate.ToString("F2")%</span>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <div class="card card-info">
-                        <div class="card-header">
-                            <h3 class="card-title">Water Efficiency</h3>
-                        </div>
-                        <div class="card-body">
-                            <strong>Water Efficiency Ratio:</strong> @metrics.WaterEfficiencyRatio.ToString("N4")
-                            <p class="text-muted">Represents water volume per unit of electricity consumed</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card card-success">
-                        <div class="card-header">
-                            <h3 class="card-title">Total Water Saved</h3>
-                        </div>
-                        <div class="card-body">
-                            <strong>Water Saved:</strong> @metrics.TotalWaterSaved.ToString("N2") m³
-                            <p class="text-muted">Calculated from recycled water sources</p>
+                <div class="col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-danger"><i class="fas fa-bolt"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Water Efficiency Ratio</span>
+                            <span class="info-box-number">@metrics.WaterEfficiencyRatio.ToString("F4")</span>
                         </div>
                     </div>
                 </div>
@@ -71,17 +56,68 @@
         }
         else
         {
-            <p>Loading metrics...</p>
+            <div class="text-center">
+                <p>No metrics available. Click 'Regenerate Metrics' to calculate.</p>
+            </div>
         }
     </div>
 </div>
 
 @code {
-    private WaterMetrics? metrics;
+    [Parameter]
+    public EventCallback OnMetricsUpdated { get; set; }
+
+    private WaterMetrics metrics = new();
+    private string errorMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
-        var allMetrics = await WaterMetricsService.GetAllMetricsAsync();
-        metrics = allMetrics.OrderByDescending(m => m.DateGeneratedOn).FirstOrDefault();
+        await LoadMetrics();
+    }
+
+    private async Task LoadMetrics()
+    {
+        try
+        {
+            var allMetrics = await WaterService.GetAllMetricsAsync();
+            metrics = allMetrics.OrderByDescending(m => m.DateGeneratedOn).FirstOrDefault() ?? new WaterMetrics();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading metrics: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+    }
+
+    public async Task RegenerateMetrics()
+    {
+        try
+        {
+            // Get current water data
+            var waterData = (await WaterService.GetAllWaterDataAsync()).ToList();
+            if (!waterData.Any())
+            {
+                return;
+            }
+
+            // Create and calculate new metrics
+            var newMetrics = new WaterMetrics
+                {
+                    DateGeneratedOn = DateTime.UtcNow
+                };
+            newMetrics.CalculateMetrics(waterData);
+            await WaterService.AddMetricsAsync(newMetrics);
+
+            metrics = newMetrics;
+            StateHasChanged();
+
+            await OnMetricsUpdated.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error regenerating metrics: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
     }
 }

@@ -1,86 +1,44 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
 
 <nav class="navbar navbar-expand-lg navbar-light bg-water-light shadow-sm">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">
-            <img src="/water-logo.svg" width="40" height="40" class="d-inline-block align-top" alt="AquAnalyzer Logo" />
+            @* <img src="/water-logo.svg" width="40" height="40" class="d-inline-block align-top" alt="AquAnalyzer Logo" /> *@
             <span class="brand-text ml-2">AquAnalyzer</span>
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="hamburger" @onclick="ToggleMenu">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <div class="collapse navbar-collapse nav-links @(isMenuOpen ? "show" : "")" id="navbarNav">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <NavLink class="nav-link" href="water-dashboard">
+                    <NavLink class="nav-link" href="/water-dashboard">
                         <i class="fas fa-chart-line mr-2"></i>Dashboard
                     </NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link" href="manage-water-data">
+                    <NavLink class="nav-link" href="/manage-waterdata">
                         <i class="fas fa-water mr-2"></i>Manage Data
                     </NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link" href="analytics">
+                    <NavLink class="nav-link" href="/analytics">
                         <i class="fas fa-analytics mr-2"></i>Analytics
                     </NavLink>
                 </li>
             </ul>
-            <div class="navbar-tools">
-                <button class="btn btn-outline-primary mr-2">
-                    <i class="fas fa-bell"></i>
-                </button>
-                <div class="user-profile">
-                    <img src="/default-avatar.svg" class="user-avatar" alt="User Profile" />
-                </div>
-            </div>
         </div>
     </div>
 </nav>
 
-<style>
-    .navbar-light {
-        background-color: #e6f2ff !important;
-    }
+@code {
+    private bool isMenuOpen = false;
 
-    .brand-text {
-        color: #2c3e50;
-        font-weight: 600;
-        font-size: 1.25rem;
+    private void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
     }
-
-    .nav-link {
-        color: #2980b9 !important;
-        transition: all 0.3s ease;
-    }
-
-    .nav-link:hover {
-        color: #3498db !important;
-        transform: translateY(-2px);
-    }
-
-    .navbar-nav .nav-link.active {
-        font-weight: bold;
-        color: #2980b9 !important;
-        border-bottom: 2px solid #2980b9;
-    }
-
-    .user-profile .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 2px solid #3498db;
-    }
-
-    .navbar-tools {
-        display: flex;
-        align-items: center;
-    }
-
-    .btn-outline-primary {
-        border-color: #3498db;
-        color: #3498db;
-    }
-</style>
+}

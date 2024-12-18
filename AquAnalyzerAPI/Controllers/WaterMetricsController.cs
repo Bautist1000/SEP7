@@ -34,7 +34,7 @@ namespace AquAnalyzerAPI.Controllers
         }
 
         [HttpPost("generate")]
-        public async Task<IActionResult> GenerateMetrics([FromBody] IEnumerable<WaterData> waterData)
+        public async Task<IActionResult> GenerateMetrics(List<WaterData> waterData)
         {
             if (waterData == null || !waterData.Any())
                 return BadRequest("Water data cannot be null or empty");
@@ -43,8 +43,8 @@ namespace AquAnalyzerAPI.Controllers
             return Ok("Metrics generated successfully.");
         }
 
-        [HttpGet("average-flow-rate")]
-        public async Task<IActionResult> GetAverageFlowRate([FromBody] IEnumerable<WaterData> waterData)
+        [HttpPost("average-flowrate")]
+        public async Task<IActionResult> GetAverageFlowRate(List<WaterData> waterData)
         {
             if (waterData == null || !waterData.Any())
                 return BadRequest("Water data cannot be null or empty");
@@ -53,8 +53,8 @@ namespace AquAnalyzerAPI.Controllers
             return Ok(result);
         }
 
-        [HttpGet("count-abnormalities")]
-        public async Task<IActionResult> GetCountAbnormalities([FromBody] IEnumerable<WaterData> waterData)
+        [HttpPost("count-abnormalities")]
+        public async Task<IActionResult> GetCountAbnormalities(List<WaterData> waterData)
         {
             if (waterData == null || !waterData.Any())
                 return BadRequest("Water data cannot be null or empty");
@@ -64,14 +64,14 @@ namespace AquAnalyzerAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddMetrics([FromBody] WaterMetrics metrics)
+        public async Task<IActionResult> AddMetrics(WaterMetrics metrics)
         {
             await _waterMetricsService.AddMetricsAsync(metrics);
             return CreatedAtAction(nameof(GetMetricsById), new { id = metrics.Id }, metrics);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMetrics(int id, [FromBody] WaterMetrics metrics)
+        public async Task<IActionResult> UpdateMetrics(int id, WaterMetrics metrics)
         {
             if (id != metrics.Id)
                 return BadRequest("Metric ID mismatch");

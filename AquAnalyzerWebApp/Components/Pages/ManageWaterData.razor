@@ -1,34 +1,35 @@
 @page "/manage-waterdata"
+@page "/manage-waterdata/{Id:int}"
 @using AquAnalyzerAPI.Services
 @using AquAnalyzerAPI.Interfaces
 @using AquAnalyzerAPI.Models
 @using Microsoft.AspNetCore.Components.Forms
-@using System.ComponentModel.DataAnnotations
 
-@inject IWaterDataService WaterDataService
+@inject IWaterService WaterService
 @inject NavigationManager NavigationManager
 
 <div class="container-fluid">
-    <h1 class="mb-4">Manage Water Data</h1>
+    <h1 class="mb-4">@(IsEditMode ? "Edit" : "Add") Water Data</h1>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
+            @statusMessage
+            <button type="button" class="close" @onclick="@(() => statusMessage = null)">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
 
     <div class="row">
         <div class="col-md-6">
             <div class="card card-primary">
                 <div class="card-header">
-                    <h3 class="card-title">@(IsEditMode ? "Edit Water Data" : "Add Water Data")</h3>
+                    <h3 class="card-title">Water Data Form</h3>
                 </div>
-                <EditForm Model="@waterData" OnValidSubmit="HandleSubmitAsync">
+                <EditForm Model="@waterData" OnValidSubmit="HandleSubmit" FormName="waterDataForm">
                     <DataAnnotationsValidator />
-                    <ValidationSummary />
                     <div class="card-body">
-                        <div class="form-group">
-                            <label>ID </label>
-                            <InputNumber class="form-control" @bind-Value="waterData.Id" />
-                        </div>
-                        <div class="form-group">
-                            <label>Timestamp</label>
-                            <InputDate class="form-control" @bind-Value="waterData.Timestamp" />
-                        </div>
                         <div class="form-group">
                             <label>Location</label>
                             <InputText class="form-control" @bind-Value="waterData.Location" />
@@ -46,10 +47,6 @@
                             <InputNumber class="form-control" @bind-Value="waterData.ElectricityConsumption" />
                         </div>
                         <div class="form-group">
-                            <label>Product ID</label>
-                            <InputNumber class="form-control" @bind-Value="waterData.ProductId" />
-                        </div>
-                        <div class="form-group">
                             <label>Source Type</label>
                             <InputSelect class="form-control" @bind-Value="waterData.SourceType">
                                 <option value="">Select Source Type</option>
@@ -59,11 +56,11 @@
                                 <option value="seawater">Seawater</option>
                             </InputSelect>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check mb-2">
                             <InputCheckbox class="form-check-input" @bind-Value="waterData.LeakDetected" />
                             <label class="form-check-label">Leak Detected</label>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check mb-2">
                             <InputCheckbox class="form-check-input" @bind-Value="waterData.HasAbnormalities" />
                             <label class="form-check-label">Has Abnormalities</label>
                         </div>
@@ -78,124 +75,116 @@
                         </button>
                         @if (IsEditMode)
                         {
-                            <button type="button" class="btn btn-danger ml-2" @onclick="DeleteEntryAsync">
+                            <button type="button" class="btn btn-danger ml-2" @onclick="DeleteEntry">
                                 Delete Entry
                             </button>
                         }
+                        <button type="button" class="btn btn-secondary ml-2" @onclick="NavigateBack">
+                            Back
+                        </button>
                     </div>
                 </EditForm>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card card-info">
-                <div class="card-header">
-                    <h3 class="card-title">Existing Water Data</h3>
-                </div>
-                <div class="card-body table-responsive p-0" style="max-height: 500px;">
-                    <table class="table table-hover text-nowrap">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Location</th>
-                                <th>Usage Volume</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var data in existingWaterData)
-                            {
-                                <tr>
-                                    <td>@data.Id</td>
-                                    <td>@data.Location</td>
-                                    <td>@data.UsageVolume.ToString("N2")</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info" @onclick="() => EditEntry(data)">
-                                            Edit
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </div>
 </div>
 
 @code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string ReturnUrl { get; set; }
+
     private WaterData waterData = new();
+    private bool IsEditMode => Id.HasValue;
+    private string statusMessage;
+    private bool isSuccess;
     private List<WaterData> existingWaterData = new();
-    private bool IsEditMode;
 
     protected override async Task OnInitializedAsync()
     {
-        existingWaterData = (await WaterDataService.GetAllWaterDataAsync()).ToList();
-    }
-
-    private void EditEntry(WaterData data)
-    {
-        waterData = new WaterData
-            {
-                Id = data.Id,
-                Timestamp = data.Timestamp,
-                Location = data.Location,
-                UsageVolume = data.UsageVolume,
-                FlowRate = data.FlowRate,
-                ElectricityConsumption = data.ElectricityConsumption,
-                ProductId = data.ProductId,
-                SourceType = data.SourceType,
-                LeakDetected = data.LeakDetected,
-                HasAbnormalities = data.HasAbnormalities,
-                UsesCleanEnergy = data.UsesCleanEnergy
-            };
-        IsEditMode = true;
-    }
-
-    private async Task HandleSubmitAsync()
-    {
         try
         {
-            // Set default timestamp if not provided
-            if (waterData.Timestamp == default)
-            {
-                waterData.Timestamp = DateTime.UtcNow;
-            }
+            existingWaterData = (await WaterService.GetAllWaterDataAsync()).ToList();
 
-            if (IsEditMode)
+            if (Id.HasValue)
             {
-                await WaterDataService.UpdateWaterDataAsync(waterData);
+                var data = await WaterService.GetWaterDataByIdAsync(Id.Value);
+                if (data != null)
+                {
+                    waterData = data;
+                }
+                else
+                {
+                    SetStatusMessage("Water data entry not found.", false);
+                    await Task.Delay(2000); // Show message for 2 seconds
+                    NavigateBack();
+                }
             }
-            else
-            {
-                await WaterDataService.AddWaterDataAsync(waterData);
-            }
-
-            existingWaterData = (await WaterDataService.GetAllWaterDataAsync()).ToList();
-            waterData = new();
-            IsEditMode = false;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            SetStatusMessage($"Error loading data: {ex.Message}", false);
         }
     }
 
-    private async Task DeleteEntryAsync()
+    private async Task HandleSubmit()
     {
-        if (waterData.Id > 0)
+        try
         {
-            try
+            if (!IsEditMode)
             {
-                await WaterDataService.DeleteWaterDataAsync(waterData.Id);
-                existingWaterData = (await WaterDataService.GetAllWaterDataAsync()).ToList();
-                waterData = new();
-                IsEditMode = false;
+                // Set new ID as max + 1
+                waterData.Id = existingWaterData.Any() ? existingWaterData.Max(w => w.Id) + 1 : 1;
+                waterData.Timestamp = DateTime.UtcNow;
+                Console.WriteLine($"Updating water data: {System.Text.Json.JsonSerializer.Serialize(waterData)}");
+                await WaterService.AddWaterDataAsync(waterData);
+                SetStatusMessage("Water data added successfully!", true);
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                await WaterService.UpdateWaterDataAsync(waterData);
+                SetStatusMessage("Water data updated successfully!", true);
             }
+
+            // Wait briefly to show the success message
+            await Task.Delay(2000);
+            NavigateBack();
         }
+        catch (Exception ex)
+        {
+            SetStatusMessage($"Error saving data: {ex.Message}", false);
+        }
+    }
+
+    private async Task DeleteEntry()
+    {
+        try
+        {
+            await WaterService.DeleteWaterDataAsync(waterData.Id);
+            SetStatusMessage("Water data deleted successfully!", true);
+            await Task.Delay(2000);
+            NavigateBack();
+        }
+        catch (Exception ex)
+        {
+            SetStatusMessage($"Error deleting entry: {ex.Message}", false);
+        }
+    }
+
+    private void SetStatusMessage(string message, bool success)
+    {
+        statusMessage = message;
+        isSuccess = success;
+        StateHasChanged();
+    }
+
+    private void NavigateBack()
+    {
+        // If ReturnUrl is provided, use it; otherwise default to dashboard
+        var destination = string.IsNullOrEmpty(ReturnUrl) ? "/water-dashboard" : ReturnUrl;
+        NavigationManager.NavigateTo(destination);
     }
 }

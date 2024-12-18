@@ -10,7 +10,6 @@ namespace AquAnalyzerAPI.Models
         public double FlowRate { get; set; }
         public double ElectricityConsumption { get; set; }
         public double ProductId { get; set; }
-        // freshwater, recycled, groundwater, seawater?
         public string SourceType { get; set; }
         public bool LeakDetected { get; set; } = false;
         public string Location { get; set; }
@@ -19,9 +18,10 @@ namespace AquAnalyzerAPI.Models
 
         public int WaterMetricsId { get; set; }
         public WaterMetrics WaterMetrics { get; set; }
-        public List<Visualisation> Visualisations = [];
+
         public Abnormality? Abnormality { get; set; }
 
+        public List<Visualisation> Visualisations { get; set; } = new List<Visualisation>();
         public WaterData() { }
         public WaterData(int Id, DateTime Timestamp)
         {
