@@ -6,12 +6,12 @@ namespace AquAnalyzerAPI.Interfaces
 {
     public interface IVisualisationService
     {
-        Task<Visualisation> AddVisualisation(Visualisation visualisation);
-        Task<Visualisation> GetVisualisationById(int id);
-        Task<IEnumerable<Visualisation>> GetAllVisualisations();
-        Task<IEnumerable<Visualisation>> GetVisualisationsByReportId(int reportId);
-        Task UpdateVisualisation(Visualisation updatedVisualisation);
+        Task<VisualisationData> AddVisualisation(VisualisationData visualisation);
+        Task<VisualisationData> GetVisualisationById(int id);
+        Task<IEnumerable<VisualisationData>> GetAllVisualisations();
+        Task<IEnumerable<VisualisationData>> GetVisualisationsByReportId(int reportId);
+        Task UpdateVisualisation(VisualisationData updatedVisualisation);
         Task<bool> DeleteVisualisation(int id);
-        Task<IEnumerable<Visualisation>> SearchVisualisationsByType(string searchTerm);
+        Task<IEnumerable<VisualisationData>> SearchVisualisationsByType(string searchTerm);
     }
 }
