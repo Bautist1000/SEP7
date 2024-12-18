@@ -16,35 +16,35 @@ namespace AquAnalyzerWebApp.Services
             _httpClient = httpClient;
         }
 
-        public async Task<Visualisation> GetVisualisationById(int id)
+        public async Task<VisualisationData> GetVisualisationById(int id)
         {
             var response = await _httpClient.GetAsync($"api/visualisations/{id}");
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<Visualisation>() ?? new Visualisation(id, string.Empty, 0);
+            return await response.Content.ReadFromJsonAsync<VisualisationData>() ?? new VisualisationData(id, string.Empty, 0);
         }
 
-        public async Task<IEnumerable<Visualisation>> GetAllVisualisations()
+        public async Task<IEnumerable<VisualisationData>> GetAllVisualisations()
         {
             var response = await _httpClient.GetAsync("api/visualisations");
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<IEnumerable<Visualisation>>() ?? new List<Visualisation>();
+            return await response.Content.ReadFromJsonAsync<IEnumerable<VisualisationData>>() ?? new List<VisualisationData>();
         }
 
-        public async Task<IEnumerable<Visualisation>> GetVisualisationsByReportId(int reportId)
+        public async Task<IEnumerable<VisualisationData>> GetVisualisationsByReportId(int reportId)
         {
             var response = await _httpClient.GetAsync($"api/visualisations/report/{reportId}");
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<IEnumerable<Visualisation>>() ?? new List<Visualisation>();
+            return await response.Content.ReadFromJsonAsync<IEnumerable<VisualisationData>>() ?? new List<VisualisationData>();
         }
 
-        public async Task<Visualisation> AddVisualisation(Visualisation visualisation)
+        public async Task<VisualisationData> AddVisualisation(VisualisationData visualisation)
         {
             var response = await _httpClient.PostAsJsonAsync("api/visualisations", visualisation);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<Visualisation>() ?? new Visualisation(0, string.Empty, 0);
+            return await response.Content.ReadFromJsonAsync<VisualisationData>() ?? new VisualisationData(0, string.Empty, 0);
         }
 
-        public async Task UpdateVisualisation(Visualisation visualisation)
+        public async Task UpdateVisualisation(VisualisationData visualisation)
         {
             var response = await _httpClient.PutAsJsonAsync($"api/visualisations/{visualisation.Id}", visualisation);
             response.EnsureSuccessStatusCode();

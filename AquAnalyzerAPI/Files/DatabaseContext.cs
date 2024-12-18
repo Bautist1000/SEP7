@@ -15,7 +15,7 @@ namespace AquAnalyzerAPI.Files
         public DbSet<Analyst> Analysts { get; set; }
         public DbSet<VisualDesigner> VisualDesigners { get; set; }
         public DbSet<Report> Reports { get; set; }
-        public DbSet<Visualisation> Visualisations { get; set; }
+        public DbSet<VisualisationData> Visualisations { get; set; }
         public DbSet<WaterData> WaterData { get; set; }
         public DbSet<WaterMetrics> WaterMetrics { get; set; }
 
@@ -42,7 +42,7 @@ namespace AquAnalyzerAPI.Files
                 .WithMany(v => v.MetricsUsed)
                 .UsingEntity(
                     "WaterMetricsVisualisation",
-                    l => l.HasOne(typeof(Visualisation)).WithMany().HasForeignKey("VisualisationId"),
+                    l => l.HasOne(typeof(VisualisationData)).WithMany().HasForeignKey("VisualisationId"),
                     r => r.HasOne(typeof(WaterMetrics)).WithMany().HasForeignKey("WaterMetricsId"));
 
             modelBuilder.Entity<WaterData>()
@@ -50,7 +50,7 @@ namespace AquAnalyzerAPI.Files
                 .WithMany(v => v.RawDataUsed)
                 .UsingEntity(
                     "WaterDataVisualisation",
-                    l => l.HasOne(typeof(Visualisation)).WithMany().HasForeignKey("VisualisationId"),
+                    l => l.HasOne(typeof(VisualisationData)).WithMany().HasForeignKey("VisualisationId"),
                     r => r.HasOne(typeof(WaterData)).WithMany().HasForeignKey("WaterDataId"));
 
             modelBuilder.Entity<WaterData>()

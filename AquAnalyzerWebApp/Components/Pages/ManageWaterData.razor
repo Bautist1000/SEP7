@@ -13,12 +13,12 @@
 
     @if (!string.IsNullOrEmpty(statusMessage))
     {
-        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
+            <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
             @statusMessage
-            <button type="button" class="close" @onclick="@(() => statusMessage = null)">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
+                <button type="button" class="close" @onclick="@(() => statusMessage = null)">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
     }
 
     <div class="row">
@@ -75,9 +75,9 @@
                         </button>
                         @if (IsEditMode)
                         {
-                            <button type="button" class="btn btn-danger ml-2" @onclick="DeleteEntry">
-                                Delete Entry
-                            </button>
+                                <button type="button" class="btn btn-danger ml-2" @onclick="DeleteEntry">
+                                    Delete Entry
+                                </button>
                         }
                         <button type="button" class="btn btn-secondary ml-2" @onclick="NavigateBack">
                             Back
