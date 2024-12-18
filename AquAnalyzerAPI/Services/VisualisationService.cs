@@ -35,6 +35,13 @@ namespace AquAnalyzerAPI.Services
             return await _context.Visualisations.ToListAsync();
         }
 
+        public async Task<IEnumerable<Visualisation>> GetVisualisationsByReportId(int reportId)
+        {
+            return await _context.Visualisations
+                .Where(v => v.ReportId == reportId)
+                .ToListAsync();
+        }
+
         public async Task UpdateVisualisation(Visualisation updatedVisualisation)
         {
             var visualisationToUpdate = await _context.Visualisations.FirstOrDefaultAsync(v => v.Id == updatedVisualisation.Id);
@@ -66,5 +73,4 @@ namespace AquAnalyzerAPI.Services
                 .ToListAsync();
         }
     }
-
 }

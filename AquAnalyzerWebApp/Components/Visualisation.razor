@@ -1,0 +1,86 @@
+@using AquAnalyzerAPI.Models
+@inject IVisualisationPageService VisualisationPageService;
+
+<div class="visualisation">
+    <h5>Visualisation Type: @VisualisationData.Type</h5>
+
+    @if (VisualisationData.Type == "BarChart")
+    {
+        <p>Rendering a bar chart...</p>
+    }
+    else if (VisualisationData.Type == "LineChart")
+    {
+        <p>Rendering a line chart...</p>
+    }
+    else
+    {
+        <p>Unknown visualisation type.</p>
+    }
+
+    <p>Metrics Used:</p>
+    <ul>
+        @foreach (var metric in VisualisationData.MetricsUsed)
+        {
+            <li>Total Water Consumption: @metric.TotalWaterConsumption</li>
+            <li>Water Efficiency Ratio: @metric.WaterEfficiencyRatio</li>
+        }
+    </ul>
+
+    <p>Raw Data Used:</p>
+    <ul>
+        @foreach (var data in VisualisationData.RawDataUsed)
+        {
+            <li>@data.Timestamp: @data.UsageVolume m³ (@data.SourceType)</li>
+        }
+    </ul>
+</div>
+
+@code {
+    [Parameter]
+    public int ReportId;
+    public List<AquAnalyzerAPI.Models.VisualisationData> VisualisationData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVisualisation();
+    }
+
+    private async Task LoadVisualisation()
+    {
+        VisualisationData = (await VisualisationPageService.GetVisualisationsByReportId(ReportId)).ToList();
+    }
+}
+
+<style>
+    .visualisation {
+        background-color: #e0f7fa;
+        /* Light cyan background */
+        border: 1px solid #00796b;
+        /* Teal border */
+        border-radius: 8px;
+        /* Rounded corners */
+        padding: 16px;
+        /* Padding inside the visualisation */
+        margin: 16px 0;
+        /* Margin between visualisations */
+    }
+
+    .visualisation h4 {
+        color: #004d40;
+        /* Dark teal color */
+        margin-bottom: 8px;
+        /* Space below the title */
+    }
+
+    .visualisation p {
+        color: #00695c;
+        /* Slightly lighter teal */
+        margin-bottom: 8px;
+        /* Space below each paragraph */
+    }
+
+    .visualisation p:last-child {
+        margin-bottom: 0;
+        /* Remove space below the last paragraph */
+    }
+</style>
