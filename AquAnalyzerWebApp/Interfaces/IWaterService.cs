@@ -1,23 +1,26 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AquAnalyzerAPI.Models;
+using AquAnalyzerWebApp.Models;
 
 public interface IWaterService
 {
-    // Water Data 
-    Task<WaterData> GetWaterDataByIdAsync(int id);
-    Task<IEnumerable<WaterData>> GetAllWaterDataAsync();
-    Task AddWaterDataAsync(WaterData data);
-    Task UpdateWaterDataAsync(WaterData data);
-    Task DeleteWaterDataAsync(int id);
+    // Water Data Methods
+    Task<WaterDataDto> GetWaterDataByIdAsync(int id);
+    Task<IEnumerable<WaterDataDto>> GetAllWaterDataAsync();
+    Task<WaterDataDto> AddWaterDataAsync(WaterDataDto data);
+    Task<WaterDataDto> UpdateWaterDataAsync(int id, WaterDataDto data);
+    Task<bool> DeleteWaterDataAsync(int id);
 
-    // Water Metrics 
-    Task<IEnumerable<WaterMetrics>> GetAllMetricsAsync();
-    Task<WaterMetrics> GetMetricsByIdAsync(int id);
-    Task GenerateMetricsAsync(IEnumerable<WaterData> waterData);
-    Task<double> CalculateAverageFlowRateAsync(IEnumerable<WaterData> waterData);
-    Task<int> CountAbnormalitiesAsync(IEnumerable<WaterData> waterData);
-    Task AddMetricsAsync(WaterMetrics metrics);
-    Task UpdateMetricsAsync(WaterMetrics metrics);
-    Task DeleteMetricsAsync(int id);
+    // Water Metrics Methods
+    Task<IEnumerable<WaterMetricsDto>> GetAllMetricsAsync();
+    Task<WaterMetricsDto> GetMetricsByIdAsync(int id);
+    Task<WaterMetricsDto> AddMetricsAsync(WaterMetricsDto metrics);
+    Task<WaterMetricsDto> UpdateMetricsAsync(WaterMetricsDto metrics);
+    Task<bool> DeleteMetricsAsync(int id);
+    Task GenerateMetricsAsync(IEnumerable<WaterDataDto> waterData);
+    Task<double> CalculateAverageFlowRateAsync(IEnumerable<WaterDataDto> waterData);
+    Task<int> CountAbnormalitiesAsync(IEnumerable<WaterDataDto> waterData);
+
+    // Calculate Metrics
+    WaterMetricsDto CalculateMetrics(List<WaterDataDto> waterData);
 }

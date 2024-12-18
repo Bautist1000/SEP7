@@ -1,4 +1,4 @@
-@using AquAnalyzerAPI.Models
+@* @using AquAnalyzerAPI.Models
 @inject IVisualisationPageService VisualisationPageService;
 
 <div class="visualisation">
@@ -6,23 +6,23 @@
 
     @if (VisualisationData.Type == "BarChart")
     {
-        <p>Rendering a bar chart...</p>
+            <p>Rendering a bar chart...</p>
     }
     else if (VisualisationData.Type == "LineChart")
     {
-        <p>Rendering a line chart...</p>
+            <p>Rendering a line chart...</p>
     }
     else
     {
-        <p>Unknown visualisation type.</p>
+            <p>Unknown visualisation type.</p>
     }
 
     <p>Metrics Used:</p>
     <ul>
         @foreach (var metric in VisualisationData.MetricsUsed)
         {
-            <li>Total Water Consumption: @metric.TotalWaterConsumption</li>
-            <li>Water Efficiency Ratio: @metric.WaterEfficiencyRatio</li>
+                <li>Total Water Consumption: @metric.TotalWaterConsumption</li>
+                <li>Water Efficiency Ratio: @metric.WaterEfficiencyRatio</li>
         }
     </ul>
 
@@ -30,14 +30,14 @@
     <ul>
         @foreach (var data in VisualisationData.RawDataUsed)
         {
-            <li>@data.Timestamp: @data.UsageVolume m³ (@data.SourceType)</li>
+                <li>@data.Timestamp: @data.UsageVolume m³ (@data.SourceType)</li>
         }
     </ul>
 </div>
 
 @code {
     [Parameter]
-    public int ReportId;
+    public int ReportId { get; set; }
     public List<AquAnalyzerAPI.Models.VisualisationData> VisualisationData;
 
     protected override async Task OnInitializedAsync()
@@ -83,4 +83,4 @@
         margin-bottom: 0;
         /* Remove space below the last paragraph */
     }
-</style>
+</style> *@

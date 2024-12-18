@@ -51,23 +51,14 @@ namespace AquAnalyzerAPI.Controllers
                 return BadRequest("ID mismatch");
             }
 
-            if (waterData.WaterMetricsId <= 0)
+            if (waterData == null)
             {
-                return BadRequest("Valid WaterMetricsId is required.");
+                return BadRequest("Water data cannot be null");
             }
 
-            try
-            {
-                await _waterDataService.UpdateWaterDataAsync(waterData);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            await _waterDataService.UpdateWaterDataAsync(waterData);
+            return NoContent();
         }
-
-
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWaterData(int id)

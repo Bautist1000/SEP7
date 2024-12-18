@@ -1,4 +1,4 @@
-@using AquAnalyzerAPI.Models
+@using AquAnalyzerWebApp.Models
 @using AquAnalyzerAPI.Services
 @using AquAnalyzerAPI.Interfaces
 @inject IWaterService WaterService
@@ -67,7 +67,7 @@
     [Parameter]
     public EventCallback OnMetricsUpdated { get; set; }
 
-    private WaterMetrics metrics = new();
+    private WaterMetricsDto metrics = new();
     private string errorMessage = "";
 
     protected override async Task OnInitializedAsync()
@@ -80,7 +80,7 @@
         try
         {
             var allMetrics = await WaterService.GetAllMetricsAsync();
-            metrics = allMetrics.OrderByDescending(m => m.DateGeneratedOn).FirstOrDefault() ?? new WaterMetrics();
+            metrics = allMetrics.OrderByDescending(m => m.DateGeneratedOn).FirstOrDefault() ?? new WaterMetricsDto();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -102,17 +102,11 @@
             }
 
             // Create and calculate new metrics
-            var newMetrics = new WaterMetrics
-                {
-                    DateGeneratedOn = DateTime.UtcNow
-                };
-            newMetrics.CalculateMetrics(waterData);
+            var newMetrics = WaterService.CalculateMetrics(waterData);
             await WaterService.AddMetricsAsync(newMetrics);
 
             metrics = newMetrics;
             StateHasChanged();
-
-            await OnMetricsUpdated.InvokeAsync();
         }
         catch (Exception ex)
         {
