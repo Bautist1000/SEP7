@@ -26,7 +26,7 @@ namespace AquAnalyzerAPI.Files
             {
                 optionsBuilder.UseSqlite("Data Source=AquAnalyzerAPI.database.db"); // Make sure this path is correct
             }
-}
+        }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -57,6 +57,7 @@ namespace AquAnalyzerAPI.Files
                 .HasOne(w => w.WaterMetrics)
                 .WithMany(m => m.WaterData)
                 .HasForeignKey(w => w.WaterMetricsId)
+                .IsRequired(false) // Make relationship optional
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<WaterData>()
