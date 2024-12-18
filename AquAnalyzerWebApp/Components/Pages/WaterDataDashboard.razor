@@ -1,6 +1,185 @@
-@page "/water-data-dashboard"
-@using Microsoft.AspNetCore.Authorization
+@page "/water-dashboard"
+@using AquAnalyzerAPI.Services
+@using AquAnalyzerAPI.Interfaces
+@using AquAnalyzerAPI.Models
+@inject IWaterService WaterService
+@inject NavigationManager NavigationManager
 
-@attribute [Authorize(Roles = "VisualDesigner")]
-<h3>Water Data Dashboard</h3>
-<!-- Page Content -->
+<div class="container-fluid">
+    <h1 class="mb-4">Water Data Dashboard</h1>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="close" @onclick="@(() => errorMessage = null)">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <a href="/manage-waterdata" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Water Data
+            </a>
+        </div>
+    </div>
+
+    <WaterMetricsSummary />
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="card-title">Water Data</h3>
+                        <div class="input-group" style="width: 300px;">
+                            <input @bind="searchTerm" @bind:event="oninput" class="form-control"
+                                placeholder="Search..." />
+                            @if (!string.IsNullOrEmpty(searchTerm))
+                            {
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (!filteredWaterData.Any())
+                    {
+                        <div class="text-center">
+                            <p>No water data found.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Location</th>
+                                        <th>Usage Volume</th>
+                                        <th>Flow Rate</th>
+                                        <th>Source Type</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in filteredWaterData)
+                                    {
+                                        <tr>
+                                            <td>@item.Id</td>
+                                            <td>@item.Location</td>
+                                            <td>@item.UsageVolume.ToString("N2")</td>
+                                            <td>@item.FlowRate.ToString("N2")</td>
+                                            <td>@item.SourceType</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button class="btn btn-sm btn-info"
+                                                        @onclick="() => NavigateToEdit(item.Id)">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger"
+                                                        @onclick="async () => await DeleteAsync(item.Id)">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<WaterData> waterData = new();
+    private List<WaterData> filteredWaterData = new();
+    private string searchTerm = "";
+    private string errorMessage;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            isLoading = true;
+            waterData = (await WaterService.GetAllWaterDataAsync()).ToList();
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading data: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ApplyFilter()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredWaterData = waterData;
+        }
+        else
+        {
+            filteredWaterData = waterData.Where(w =>
+            (w.Location?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (w.SourceType?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            w.Id.ToString().Contains(searchTerm) ||
+            w.UsageVolume.ToString().Contains(searchTerm)
+            ).ToList();
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = "";
+        ApplyFilter();
+        StateHasChanged();
+    }
+
+    private void NavigateToEdit(int id)
+    {
+        NavigationManager.NavigateTo($"/manage-waterdata/{id}");
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        try
+        {
+            await WaterService.DeleteWaterDataAsync(id);
+            await LoadDataAsync(); // Refresh the data
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting data: {ex.Message}";
+        }
+    }
+}

@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Models;
+using AquAnalyzerAPI.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AquAnalyzerAPI.Interfaces;
 
 namespace AquAnalyzerAPI.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class WaterDataController : ControllerBase
     {
         private readonly IWaterDataService _waterDataService;
@@ -16,43 +19,58 @@ namespace AquAnalyzerAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<WaterData>> GetById(int id)
+        public async Task<ActionResult<WaterData>> GetWaterDataById(int id)
         {
-            var data = await _waterDataService.GetWaterDataByIdAsync(id);
-            if (data == null)
+            var waterData = await _waterDataService.GetWaterDataByIdAsync(id);
+            if (waterData == null)
+            {
                 return NotFound();
-            return Ok(data);
+            }
+            return Ok(waterData);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WaterData>>> GetAll()
+        public async Task<ActionResult<IEnumerable<WaterData>>> GetAllWaterData()
         {
-            var data = await _waterDataService.GetAllWaterDataAsync();
-            return Ok(data);
+            var waterData = await _waterDataService.GetAllWaterDataAsync();
+            return Ok(waterData);
         }
 
         [HttpPost]
-        public async Task<ActionResult<WaterData>> Add([FromBody] WaterData data)
+        public async Task<ActionResult> AddWaterData(WaterData waterData)
         {
-            if (data == null)
-                return BadRequest("Water data is required.");
-
-            await _waterDataService.AddWaterDataAsync(data);
-            return CreatedAtAction(nameof(GetById), new { id = data.Id }, data);
+            await _waterDataService.AddWaterDataAsync(waterData);
+            return CreatedAtAction(nameof(GetWaterDataById), new { id = waterData.Id }, waterData);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] WaterData data)
+        public async Task<IActionResult> UpdateWaterData(int id, WaterData waterData)
         {
-            if (id != data.Id)
-                return BadRequest("Water data ID mismatch.");
+            if (id != waterData.Id)
+            {
+                return BadRequest("ID mismatch");
+            }
 
-            await _waterDataService.UpdateWaterDataAsync(data);
-            return NoContent();
+            if (waterData.WaterMetricsId <= 0)
+            {
+                return BadRequest("Valid WaterMetricsId is required.");
+            }
+
+            try
+            {
+                await _waterDataService.UpdateWaterDataAsync(waterData);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
+
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> DeleteWaterData(int id)
         {
             await _waterDataService.DeleteWaterDataAsync(id);
             return NoContent();

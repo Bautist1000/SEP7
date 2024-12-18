@@ -8,6 +8,7 @@ namespace AquAnalyzerAPI.Files
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
         {
         }
+
         public DbSet<Abnormality> Abnormalities { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Notification> Notifications { get; set; }
@@ -36,23 +37,33 @@ namespace AquAnalyzerAPI.Files
             modelBuilder.Entity<Analyst>().ToTable("Analyst").Property(s => s.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<VisualDesigner>().ToTable("VisualDesigner").Property(s => s.Id).ValueGeneratedOnAdd();
 
-
             modelBuilder.Entity<WaterMetrics>()
-                       .HasMany(w => w.Visualisations)
-                       .WithMany(v => v.MetricsUsed)
-                       .UsingEntity(
-                           "WaterMetricsVisualisation",
-                           l => l.HasOne(typeof(Visualisation)).WithMany().HasForeignKey("VisualisationId"),
-                           r => r.HasOne(typeof(WaterMetrics)).WithMany().HasForeignKey("WaterMetricsId"));
+                .HasMany(w => w.Visualisations)
+                .WithMany(v => v.MetricsUsed)
+                .UsingEntity(
+                    "WaterMetricsVisualisation",
+                    l => l.HasOne(typeof(Visualisation)).WithMany().HasForeignKey("VisualisationId"),
+                    r => r.HasOne(typeof(WaterMetrics)).WithMany().HasForeignKey("WaterMetricsId"));
 
             modelBuilder.Entity<WaterData>()
-                    .HasMany(w => w.Visualisations)
-                    .WithMany(v => v.RawDataUsed)
-                    .UsingEntity(
-                         "WaterDataVisualisation",
-                         l => l.HasOne(typeof(Visualisation)).WithMany().HasForeignKey("VisualisationId"),
-                        r => r.HasOne(typeof(WaterData)).WithMany().HasForeignKey("WaterDataId"));
+                .HasMany(w => w.Visualisations)
+                .WithMany(v => v.RawDataUsed)
+                .UsingEntity(
+                    "WaterDataVisualisation",
+                    l => l.HasOne(typeof(Visualisation)).WithMany().HasForeignKey("VisualisationId"),
+                    r => r.HasOne(typeof(WaterData)).WithMany().HasForeignKey("WaterDataId"));
+
+            modelBuilder.Entity<WaterData>()
+                .HasOne(w => w.WaterMetrics)
+                .WithMany(m => m.WaterData)
+                .HasForeignKey(w => w.WaterMetricsId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WaterData>()
+                .HasOne(w => w.Abnormality)
+                .WithOne(a => a.WaterData)
+                .HasForeignKey<Abnormality>(a => a.WaterDataId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
-
