@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using AquAnalyzerAPI.Dtos;
 using AquAnalyzerAPI.Models;
+using AquAnalyzerWebApp.Models;
 using Microsoft.Extensions.Logging;
 
 public class WaterService : IWaterService
@@ -23,18 +25,20 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation($"Fetching water data by ID: {id}");
             var response = await _httpClient.GetAsync($"api/waterdata/{id}");
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<WaterDataDto>();
+
             if (result == null)
-            {
-                throw new NullReferenceException("Failed to retrieve water data. No data with that id exists.");
-            }
+                throw new NullReferenceException("Failed to retrieve water data. No data with that ID exists.");
+
             return result;
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to retrieve water data. {ex.Message}");
+            _logger.LogError(ex, "Error fetching water data by ID: {id}");
+            throw;
         }
     }
 
@@ -42,18 +46,20 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation("Fetching all water data.");
             var response = await _httpClient.GetAsync("api/waterdata");
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<IEnumerable<WaterDataDto>>();
+
             if (result == null)
-            {
                 throw new NullReferenceException("Failed to retrieve water data.");
-            }
+
             return result;
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to retrieve water data. {ex.Message}");
+            _logger.LogError(ex, "Error fetching all water data.");
+            throw;
         }
     }
 
@@ -61,36 +67,30 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation($"Adding new water data: {System.Text.Json.JsonSerializer.Serialize(data)}");
             var response = await _httpClient.PostAsJsonAsync("api/waterdata", data);
-            var responseContent = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<WaterDataDto>();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            _logger.LogError(ex, "Error adding water data.");
             throw;
         }
     }
-
 
     public async Task<WaterDataDto> UpdateWaterDataAsync(int id, WaterDataDto data)
     {
         try
         {
-            Console.WriteLine($"Sending PUT request for id: {id}");
-            Console.WriteLine($"Request data: {System.Text.Json.JsonSerializer.Serialize(data)}");
-
+            _logger.LogInformation($"Updating water data for ID: {id}");
             var response = await _httpClient.PutAsJsonAsync($"api/waterdata/{id}", data);
-            var content = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Update response: {response.StatusCode}, Content: {content}");
-
             response.EnsureSuccessStatusCode();
-            return data; // Return the updated data since the API returns NoContent
+            return await response.Content.ReadFromJsonAsync<WaterDataDto>() ?? data;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Update exception: {ex.Message}");
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            _logger.LogError(ex, $"Error updating water data for ID: {id}");
             throw;
         }
     }
@@ -99,13 +99,14 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation($"Deleting water data for ID: {id}");
             var response = await _httpClient.DeleteAsync($"api/waterdata/{id}");
-            var content = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Delete exception: {ex}");
+            _logger.LogError(ex, $"Error deleting water data for ID: {id}");
             throw;
         }
     }
@@ -115,18 +116,15 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation("Fetching all water metrics.");
             var response = await _httpClient.GetAsync("api/watermetrics");
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<IEnumerable<WaterMetricsDto>>();
-            if (result == null)
-            {
-                throw new NullReferenceException("Failed to retrieve water metrics.");
-            }
-            return result;
+            return await response.Content.ReadFromJsonAsync<IEnumerable<WaterMetricsDto>>();
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to retrieve water metrics. {ex.Message}");
+            _logger.LogError(ex, "Error fetching all water metrics.");
+            throw;
         }
     }
 
@@ -134,18 +132,15 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation($"Fetching metrics by ID: {id}");
             var response = await _httpClient.GetAsync($"api/watermetrics/{id}");
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<WaterMetricsDto>();
-            if (result == null)
-            {
-                throw new NullReferenceException("Failed to retrieve metrics by id. No metrics with that id exists.");
-            }
-            return result;
+            return await response.Content.ReadFromJsonAsync<WaterMetricsDto>();
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to retrieve metrics by id. {ex.Message}");
+            _logger.LogError(ex, $"Error fetching metrics by ID: {id}");
+            throw;
         }
     }
 
@@ -153,38 +148,47 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation("Adding new water metrics.");
             var response = await _httpClient.PostAsJsonAsync("api/watermetrics", metrics);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<WaterMetricsDto>();
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to add metrics. {ex.Message}");
+            _logger.LogError(ex, "Error adding water metrics.");
+            throw;
         }
     }
 
     public async Task<WaterMetricsDto> UpdateMetricsAsync(WaterMetricsDto metrics)
     {
-        var response = await _httpClient.PutAsJsonAsync($"api/watermetrics/{metrics.Id}", metrics);
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<WaterMetricsDto>();
-        if (result == null)
+        try
         {
-            throw new NullReferenceException("Failed to update metrics. No metrics with that id exists.");
+            _logger.LogInformation($"Updating water metrics for ID: {metrics.Id}");
+            var response = await _httpClient.PutAsJsonAsync($"api/watermetrics/{metrics.Id}", metrics);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<WaterMetricsDto>();
         }
-        return result;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error updating metrics for ID: {metrics.Id}");
+            throw;
+        }
     }
 
     public async Task<bool> DeleteMetricsAsync(int id)
     {
         try
         {
+            _logger.LogInformation($"Deleting water metrics for ID: {id}");
             var response = await _httpClient.DeleteAsync($"api/watermetrics/{id}");
+            response.EnsureSuccessStatusCode();
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to delete metrics. {ex.Message}");
+            _logger.LogError(ex, $"Error deleting metrics for ID: {id}");
+            throw;
         }
     }
 
@@ -192,16 +196,14 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation("Generating water metrics.");
             var response = await _httpClient.PostAsJsonAsync("api/watermetrics/generate", waterData);
             response.EnsureSuccessStatusCode();
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException($"Failed to generate metrics: {response.StatusCode}");
-            }
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to generate metrics. {ex.Message}");
+            _logger.LogError(ex, "Error generating water metrics.");
+            throw;
         }
     }
 
@@ -209,18 +211,15 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation("Calculating average flow rate.");
             var response = await _httpClient.PostAsJsonAsync("api/watermetrics/average-flowrate", waterData);
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<double>();
-            if (result == null)
-            {
-                throw new NullReferenceException("Failed to calculate average flow rate.");
-            }
-            return result;
+            return await response.Content.ReadFromJsonAsync<double>();
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to calculate average flow rate. {ex.Message}");
+            _logger.LogError(ex, "Error calculating average flow rate.");
+            throw;
         }
     }
 
@@ -228,24 +227,21 @@ public class WaterService : IWaterService
     {
         try
         {
+            _logger.LogInformation("Counting abnormalities in water data.");
             var response = await _httpClient.PostAsJsonAsync("api/watermetrics/count-abnormalities", waterData);
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<int>();
-            if (result == null)
-            {
-                throw new NullReferenceException("Failed to count abnormalities.");
-            }
-            return result;
+            return await response.Content.ReadFromJsonAsync<int>();
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to count abnormalities. {ex.Message}");
+            _logger.LogError(ex, "Error counting abnormalities.");
+            throw;
         }
     }
 
     public WaterMetricsDto CalculateMetrics(List<WaterDataDto> waterData)
     {
-        // Convert DTOs to models
+        _logger.LogInformation("Calculating metrics locally.");
         var waterDataModels = waterData.Select(dto => new WaterData
         {
             Id = dto.Id,
@@ -261,14 +257,12 @@ public class WaterService : IWaterService
             UsesCleanEnergy = dto.UsesCleanEnergy
         }).ToList();
 
-        // Create a new WaterMetrics model and calculate metrics
         var metrics = new WaterMetrics
         {
             DateGeneratedOn = DateTime.UtcNow
         };
         metrics.CalculateMetrics(waterDataModels);
 
-        // Convert the model back to a DTO
         return new WaterMetricsDto
         {
             DateGeneratedOn = metrics.DateGeneratedOn,
