@@ -1,90 +1,345 @@
-@page "/report"
+@page "/report/view/{Id:int}"
+@page "/report/edit/{Id:int}"
+@page "/report/new/{Id:int}"
 @using AquAnalyzerAPI.Models
-@using AquAnalyzerWebApp.Interfaces
+@using Radzen.Blazor
 @inject IReportPageService ReportPageService
 @inject IVisualisationPageService VisualisationPageService
+@inject NavigationManager NavigationManager
 
-@if (reports != null)
-{
-    foreach (var report in reports)
-    {
-        <div class="report-card">
-            <h3>@report.Title</h3>
-            <p>@report.Description</p>
-            @* <p>Generated on: @report.GeneratedDate</p> *@
-
-            @if (report.Visualisations != null && report.Visualisations.Any())
+<div class="container">
+    <div class="header d-flex justify-content-between align-items-center mb-4">
+        <h3>
+            @switch (currentMode)
             {
-                <div class="visualisations">
-                    @foreach (var visualisation in report.Visualisations)
-                    {
-                        <Visualisation VisualisationData="visualisation" />
-                    }
+                case PageMode.View:
+                    <text>View Report</text>
+                    break;
+                case PageMode.Edit:
+                    <text>Edit Report</text>
+                    break;
+                case PageMode.New:
+                    <text>Create New Report</text>
+                    break;
+            }
+        </h3>
+        <div>
+            @if (currentMode == PageMode.View)
+            {
+                <button class="btn btn-primary me-2" @onclick="() => EditReport(report.Id)">Edit</button>
+            }
+            <button class="btn btn-outline-secondary" @onclick="BackToList">Back to Reports</button>
+        </div>
+    </div>
+
+    @if (currentMode == PageMode.View)
+    {
+        <div class="report-view">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4>@report.Title</h4>
+                    <p class="text-muted">Created on @report.GeneratedDate.ToShortDateString()</p>
+                    <p>@report.Description</p>
+                </div>
+            </div>
+
+            @if (report.Visualisations?.Any() == true)
+            {
+                <div class="visualisations-list">
+                    <h4>Visualisations</h4>
+                    <div class="row">
+                        @foreach (var vis in report.Visualisations)
+                        {
+                            <div class="col-12 mb-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <Visualisation VisualisationData="@vis" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </div>
             }
             else
             {
-                <p>No visualizations to display.</p>
+                <div class="alert alert-info">
+                    No visualisations in this report.
+                </div>
             }
         </div>
     }
-}
-else
-{
-    <p class="loading">Loading...</p>
-}
+    else
+    {
+        <div class="report-form">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label>Title</label>
+                        <input class="form-control" @bind="report.Title" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Description</label>
+                        <textarea class="form-control" rows="3" @bind="report.Description"></textarea>
+                    </div>
+
+                    <div class="time-range-section mb-4">
+                        <h5>1. Select Time Range</h5>
+                        <div class="d-flex gap-3 align-items-center">
+                            <div class="flex-grow-1">
+                                <label>Start Date</label>
+                                <RadzenDatePicker @bind-Value="startDate" Class="w-100" DateFormat="d" />
+                            </div>
+                            <div class="flex-grow-1">
+                                <label>End Date</label>
+                                <RadzenDatePicker @bind-Value="endDate" Class="w-100" DateFormat="d" />
+                            </div>
+                            <div class="d-flex align-items-end">
+                                <button class="btn btn-primary" @onclick="ApplyTimeRange"
+                                    disabled="@(!startDate.HasValue || !endDate.HasValue)">
+                                    Apply Range
+                                </button>
+                            </div>
+                        </div>
+                        @if (showNoDataMessage)
+                        {
+                            <div class="alert alert-warning mt-3">
+                                No data found within this range. Please select different dates.
+                            </div>
+                        }
+                    </div>
+
+                    @if (isTimeRangeSelected && !showNoDataMessage)
+                    {
+                        <div class="data-selection card p-3 mb-4">
+                            <h5>2. Select Data and Chart Type</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group mb-3">
+                                        <label>Chart Type</label>
+                                        <RadzenDropDown @bind-Value="selectedVisualisationType" Data="@chartTypes" Class="w-100" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Water Data</label>
+                                        <RadzenListBox @bind-Value="selectedWaterDataIds" Multiple="true" Data="@filteredWaterDataList"
+                                            TextProperty="Location" ValueProperty="Id" Change=@(args => OnDataSelectionChange())
+                                            Class="w-100" Style="height: 200px;" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Metrics</label>
+                                        <RadzenListBox @bind-Value="selectedMetricsIds" Multiple="true"
+                                            Data="@filteredWaterMetricsList" TextProperty="DateGeneratedOn" ValueProperty="Id" Class="w-100" Style="height: 200px;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="actions mt-4">
+                <button class="btn btn-primary me-2" @onclick="SaveReport">Save Report</button>
+                <button class="btn btn-secondary" @onclick="BackToList">Cancel</button>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
-    private List<Report> reports;
+    [Parameter]
+    public int Id { get; set; }
+
+    public enum PageMode {
+        View, Edit, New
+    }
+    
+    private Report report = new();
+    private PageMode currentMode;
+    private DateTime? startDate;
+    private DateTime? endDate;
+    private bool isTimeRangeSelected;
+    private bool showNoDataMessage;
+    private string selectedVisualisationType;
+    private List<WaterData> waterDataList = new();
+    private List<WaterMetrics> waterMetricsList = new();
+    private List<WaterData> filteredWaterDataList = new();
+    private List<WaterMetrics> filteredWaterMetricsList = new();
+    private List<int> selectedWaterDataIds = new();
+    private List<int> selectedMetricsIds = new();
+    private List<string> chartTypes = new()
+    {
+        "barchart",
+        "linechart",
+        "metricsbar"
+    };
+
+    private bool CanAddVisualisation =>
+        !string.IsNullOrEmpty(selectedVisualisationType) &&
+        isTimeRangeSelected &&
+        (selectedWaterDataIds.Any() || selectedMetricsIds.Any());
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadReports();
-    }
+        if (NavigationManager.Uri.Contains("/view/"))
+            currentMode = PageMode.View;
+        else if (NavigationManager.Uri.Contains("/edit/"))
+            currentMode = PageMode.Edit;
+        else
+            currentMode = PageMode.New;
 
-    private async Task LoadReports()
-    {
-        reports = (await ReportPageService.GetAllReports()).ToList();
-
-        foreach (var report in reports)
+        try
         {
-            report.Visualisations = (await VisualisationPageService.GetVisualisationsByReportId(report.Id)).ToList();
+            if (currentMode != PageMode.New)
+            {
+                report = await ReportPageService.GetReportById(Id);
+
+                if (currentMode == PageMode.Edit)
+                {
+                    await LoadData();
+                }
+            }
+            else
+            {
+                report = new Report
+                {
+                    Id = Id,
+                    GeneratedDate = DateTime.Now
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing report: {ex.Message}");
+            NavigationManager.NavigateTo("/reports");
         }
     }
+
+    private async Task LoadData()
+    {
+        waterDataList = (await VisualisationPageService.GetAllWaterDataAsync()).ToList();
+        waterMetricsList = (await VisualisationPageService.GetAllWaterMetricsAsync()).ToList();
+    }
+
+    private void ApplyTimeRange()
+    {
+        if (startDate.HasValue && endDate.HasValue)
+        {
+            filteredWaterDataList = waterDataList
+                .Where(w => w.Timestamp >= startDate.Value && w.Timestamp <= endDate.Value)
+                .OrderBy(w => w.Timestamp)
+                .ToList();
+
+            filteredWaterMetricsList = waterMetricsList
+                .Where(m => m.DateGeneratedOn >= startDate.Value && m.DateGeneratedOn <= endDate.Value)
+                .OrderBy(m => m.DateGeneratedOn)
+                .ToList();
+
+            if (!filteredWaterDataList.Any() && !filteredWaterMetricsList.Any())
+            {
+                showNoDataMessage = true;
+                isTimeRangeSelected = false;
+            }
+            else
+            {
+                showNoDataMessage = false;
+                isTimeRangeSelected = true;
+            }
+        }
+        else
+        {
+            isTimeRangeSelected = false;
+            showNoDataMessage = false;
+            filteredWaterDataList.Clear();
+            filteredWaterMetricsList.Clear();
+        }
+    }
+
+    private async Task AddVisualisation()
+    {
+        if (!CanAddVisualisation) return;
+
+        try
+        {
+            if (currentMode == PageMode.New)
+            {
+                await SaveReport();
+            }
+
+            var selectedWaterDataItems = filteredWaterDataList
+                .Where(w => selectedWaterDataIds.Contains(w.Id))
+                .ToList();
+
+            var selectedMetricsItems = filteredWaterMetricsList
+                .Where(m => selectedMetricsIds.Contains(m.Id))
+                .ToList();
+
+            var vis = new VisualisationData
+            {
+                Type = selectedVisualisationType,
+                ReportId = report.Id,
+                RawDataUsed = selectedWaterDataItems,
+                MetricsUsed = selectedMetricsItems,
+                ChartConfig = new ChartConfiguration
+                {
+                    Title = $"{selectedVisualisationType} - {DateTime.Now.ToShortDateString()}",
+                    XAxisLabel = "Time",
+                    YAxisLabel = "Value",
+                    ShowLegend = true,
+                    ShowGrid = true
+                }
+            };
+
+            await VisualisationPageService.AddVisualisation(vis);
+            report.Visualisations.Add(vis);
+
+            // Reset selections
+            selectedVisualisationType = null;
+            selectedWaterDataIds.Clear();
+            selectedMetricsIds.Clear();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding visualisation: {ex.Message}");
+        }
+    }
+
+    private async Task SaveReport()
+    {
+        try
+        {
+            if (currentMode == PageMode.New)
+            {
+                report = await ReportPageService.AddReport(report);
+            }
+            else
+            {
+                await ReportPageService.UpdateReport(report);
+            }
+            NavigationManager.NavigateTo("/reports");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving report: {ex.Message}");
+        }
+    }
+
+    private void EditReport(int reportId)
+    {
+        NavigationManager.NavigateTo($"/report/edit/{reportId}");
+    }
+
+    private void BackToList()
+    {
+        NavigationManager.NavigateTo("/reports");
+    }
+
+    private void OnDataSelectionChange()
+    {
+        StateHasChanged();
+    }
 }
-
-<style>
-    .report-card {
-        background-color: #f0f8ff; /* Light blue background */
-        border: 1px solid #ccc; /* Light grey border */
-        border-radius: 8px; /* Rounded corners */
-        padding: 16px; /* Padding inside the card */
-        margin: 16px 0; /* Margin between cards */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    }
-
-    .report-card h3 {
-        color: #2c3e50; /* Dark blue color */
-        margin-bottom: 8px; /* Space below the title */
-    }
-
-    .report-card p {
-        color: #34495e; /* Slightly lighter blue */
-        margin-bottom: 8px; /* Space below each paragraph */
-    }
-
-    .report-card p:last-child {
-        margin-bottom: 0; /* Remove space below the last paragraph */
-    }
-
-    .visualisations {
-        margin-top: 16px; /* Space above the visualisations */
-    }
-
-    .loading {
-        color: #999; /* Grey color for loading text */
-        font-size: 18px; /* Larger font size */
-        text-align: center; /* Centered text */
-        margin-top: 20px; /* Space above the loading text */
-    }
-</style>

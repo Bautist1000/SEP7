@@ -1,86 +1,126 @@
-@* @using AquAnalyzerAPI.Models
-@inject IVisualisationPageService VisualisationPageService;
+@using AquAnalyzerAPI.Models
+@using Radzen.Blazor
 
-<div class="visualisation">
-    <h5>Visualisation Type: @VisualisationData.Type</h5>
-
-    @if (VisualisationData.Type == "BarChart")
+<div class="visualization-container">
+    @if (VisualisationData == null)
     {
-            <p>Rendering a bar chart...</p>
-    }
-    else if (VisualisationData.Type == "LineChart")
-    {
-            <p>Rendering a line chart...</p>
+        <p>Loading visualization...</p>
     }
     else
     {
-            <p>Unknown visualisation type.</p>
+        <div class="chart-controls mb-3">
+            <h4>@VisualisationData.ChartConfig.Title</h4>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-secondary" @onclick="RefreshData">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+                <button class="btn btn-sm btn-outline-danger" @onclick="DeleteVisualization">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            @switch (VisualisationData.Type.ToLower())
+            {
+                case "barchart":
+                    <RadzenChart>
+                        <RadzenBarSeries Data="@VisualisationData.RawDataUsed" CategoryProperty="Timestamp"
+                            ValueProperty="UsageVolume" Title="Water Usage">
+                        </RadzenBarSeries>
+                        <RadzenValueAxis>
+                            <RadzenGridLines Visible="@VisualisationData.ChartConfig.ShowGrid" />
+                            <RadzenAxisTitle Text="@VisualisationData.ChartConfig.YAxisLabel" />
+                        </RadzenValueAxis>
+                        <RadzenCategoryAxis>
+                            <RadzenGridLines Visible="@VisualisationData.ChartConfig.ShowGrid" />
+                            <RadzenAxisTitle Text="@VisualisationData.ChartConfig.XAxisLabel" />
+                        </RadzenCategoryAxis>
+                        <RadzenLegend Visible="@VisualisationData.ChartConfig.ShowLegend" />
+                    </RadzenChart>
+                    break;
+
+                case "linechart":
+                    <RadzenChart>
+                        <RadzenLineSeries Data="@VisualisationData.RawDataUsed" CategoryProperty="Timestamp"
+                            ValueProperty="UsageVolume" Title="Water Usage Trend">
+                        </RadzenLineSeries>
+                        <RadzenValueAxis>
+                            <RadzenGridLines Visible="@VisualisationData.ChartConfig.ShowGrid" />
+                            <RadzenAxisTitle Text="@VisualisationData.ChartConfig.YAxisLabel" />
+                        </RadzenValueAxis>
+                        <RadzenCategoryAxis>
+                            <RadzenGridLines Visible="@VisualisationData.ChartConfig.ShowGrid" />
+                            <RadzenAxisTitle Text="@VisualisationData.ChartConfig.XAxisLabel" />
+                        </RadzenCategoryAxis>
+                        <RadzenLegend Visible="@VisualisationData.ChartConfig.ShowLegend" />
+                    </RadzenChart>
+                    break;
+
+                case "metricsbar":
+                    <RadzenChart>
+                        <RadzenColumnSeries Data="@VisualisationData.MetricsUsed" CategoryProperty="MetricName"
+                            ValueProperty="Value" Title="Water Metrics">
+                        </RadzenColumnSeries>
+                        <RadzenValueAxis>
+                            <RadzenGridLines Visible="@VisualisationData.ChartConfig.ShowGrid" />
+                            <RadzenAxisTitle Text="Value" />
+                        </RadzenValueAxis>
+                        <RadzenCategoryAxis>
+                            <RadzenGridLines Visible="@VisualisationData.ChartConfig.ShowGrid" />
+                            <RadzenAxisTitle Text="Metric" />
+                        </RadzenCategoryAxis>
+                        <RadzenLegend Visible="@VisualisationData.ChartConfig.ShowLegend" />
+                    </RadzenChart>
+                    break;
+
+                default:
+                    <p>Unsupported chart type: @VisualisationData.Type</p>
+                    break;
+            }
+        </div>
     }
-
-    <p>Metrics Used:</p>
-    <ul>
-        @foreach (var metric in VisualisationData.MetricsUsed)
-        {
-                <li>Total Water Consumption: @metric.TotalWaterConsumption</li>
-                <li>Water Efficiency Ratio: @metric.WaterEfficiencyRatio</li>
-        }
-    </ul>
-
-    <p>Raw Data Used:</p>
-    <ul>
-        @foreach (var data in VisualisationData.RawDataUsed)
-        {
-                <li>@data.Timestamp: @data.UsageVolume m³ (@data.SourceType)</li>
-        }
-    </ul>
 </div>
 
 @code {
     [Parameter]
-    public int ReportId { get; set; }
-    public List<AquAnalyzerAPI.Models.VisualisationData> VisualisationData;
+    public VisualisationData VisualisationData { get; set; }
+
+    [Inject]
+    public IVisualisationPageService VisualisationService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadVisualisation();
+        if (VisualisationData != null)
+        {
+            await RefreshData();
+        }
     }
 
-    private async Task LoadVisualisation()
+    private async Task RefreshData()
     {
-        VisualisationData = (await VisualisationPageService.GetVisualisationsByReportId(ReportId)).ToList();
+        try
+        {
+            VisualisationData.RawDataUsed = (await VisualisationService.GetWaterDataForChart(
+            VisualisationData.Id,
+            DateTime.Now.AddDays(-30),
+            DateTime.Now
+            )).ToList();
+
+            VisualisationData.MetricsUsed = (await VisualisationService.GetMetricsForChart(
+            VisualisationData.Id,
+            DateTime.Now.AddDays(-30),
+            DateTime.Now
+            )).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error refreshing visualization data: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteVisualization()
+    {
+        await VisualisationService.DeleteVisualisation(VisualisationData.Id);
     }
 }
-
-<style>
-    .visualisation {
-        background-color: #e0f7fa;
-        /* Light cyan background */
-        border: 1px solid #00796b;
-        /* Teal border */
-        border-radius: 8px;
-        /* Rounded corners */
-        padding: 16px;
-        /* Padding inside the visualisation */
-        margin: 16px 0;
-        /* Margin between visualisations */
-    }
-
-    .visualisation h4 {
-        color: #004d40;
-        /* Dark teal color */
-        margin-bottom: 8px;
-        /* Space below the title */
-    }
-
-    .visualisation p {
-        color: #00695c;
-        /* Slightly lighter teal */
-        margin-bottom: 8px;
-        /* Space below each paragraph */
-    }
-
-    .visualisation p:last-child {
-        margin-bottom: 0;
-        /* Remove space below the last paragraph */
-    }
-</style> *@

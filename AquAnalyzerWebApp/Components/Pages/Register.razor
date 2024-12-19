@@ -1,9 +1,8 @@
 @page "/register"
 @using AquAnalyzerAPI.Models
-@using AquAnalyzerWebApp.Services
+@using AquAnalyzerAPI.Interfaces
+@inject IAuthServiceAPI AuthServiceAPI
 @inject NavigationManager NavigationManager
-@inject IAuthService AuthService
-@rendermode InteractiveServer
 
 <h1>Register</h1>
 <h5>Select your role and fill in the details:</h5>
@@ -45,8 +44,8 @@
 
 @if (showModal)
 {
-    <div class="modal-backdrop" @onclick="GoToLogin">
-        <div class="modal-dialog" @onclick:stopPropagation>
+    <div class="modal" style="display:block; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
+        <div class="modal-dialog" style="background:white; margin:15% auto; padding:20px; max-width:400px; text-align:center; border-radius:10px;">
             <h4>Registration Successful!</h4>
             <p>Your account has been created successfully. Please log in to continue.</p>
             <button class="btn btn-primary" @onclick="GoToLogin">Go to Login</button>
@@ -55,50 +54,25 @@
 }
 
 @code {
-    private User currentUser = new Analyst { Role = "Analyst" };
+    private User currentUser = new Analyst { Role = "Analyst" }; // Default role
     private string selectedRole = "Analyst";
     private string? errorMessage;
     private bool showModal = false;
 
-    protected override void OnInitialized()
-    {
-        SetUserModel(); // Initialize user model
-    }
-
     private void OnRoleChanged()
     {
         SetUserModel();
-        StateHasChanged();
     }
 
     private void SetUserModel()
     {
-        try
+        if (selectedRole == "Analyst")
         {
-            Console.WriteLine($"Setting user model for role: {selectedRole}");
-            currentUser = selectedRole switch
-            {
-                "Analyst" => new Analyst
-                    {
-                        Role = "Analyst",
-                        Username = currentUser?.Username ?? "",
-                        Password = currentUser?.Password ?? "",
-                        Email = currentUser?.Email ?? ""
-                    },
-                "VisualDesigner" => new VisualDesigner
-                    {
-                        Role = "VisualDesigner",
-                        Username = currentUser?.Username ?? "",
-                        Password = currentUser?.Password ?? "",
-                        Email = currentUser?.Email ?? ""
-                    },
-                _ => throw new ArgumentException($"Invalid role: {selectedRole}")
-            };
+            currentUser = new Analyst { Role = "Analyst" };
         }
-        catch (Exception ex)
+        else if (selectedRole == "VisualDesigner")
         {
-            Console.WriteLine($"Error in SetUserModel: {ex.Message}");
-            errorMessage = $"Error setting user model: {ex.Message}";
+            currentUser = new VisualDesigner { Role = "VisualDesigner" };
         }
     }
 
@@ -106,84 +80,18 @@
     {
         try
         {
-            Console.WriteLine($"Attempting to register user with role: {selectedRole}");
-            Console.WriteLine($"User data: Username={currentUser.Username}, Email={currentUser.Email}, Role={currentUser.Role}");
-
-            if (selectedRole == "Analyst")
-            {
-                var analyst = new Analyst
-                    {
-                        Username = currentUser.Username,
-                        Password = currentUser.Password,
-                        Email = currentUser.Email,
-                        Role = "Analyst"
-                    };
-                await AuthService.RegisterAnalystAsync(analyst);
-            }
-            else if (selectedRole == "VisualDesigner")
-            {
-                var designer = new VisualDesigner
-                    {
-                        Username = currentUser.Username,
-                        Password = currentUser.Password,
-                        Email = currentUser.Email,
-                        Role = "VisualDesigner"
-                    };
-                await AuthService.RegisterVisualDesignerAsync(designer);
-            }
-
+            await AuthServiceAPI.RegisterAnalystAsync((Analyst)currentUser);
             showModal = true;
-            errorMessage = null;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Registration error: {ex.Message}");
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
             errorMessage = $"Registration failed: {ex.Message}";
         }
     }
+
     private void GoToLogin()
     {
-        NavigationManager.NavigateTo("/login");
+        showModal = false;
+        NavigationManager.NavigateTo("/Login");
     }
 }
-
-
-<style>
-    .modal-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1050;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal-dialog {
-        background: white;
-        padding: 2rem;
-        border-radius: 10px;
-        max-width: 400px;
-        text-align: center;
-        z-index: 1051;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-dialog h4 {
-        margin-bottom: 1rem;
-        color: #333;
-    }
-
-    .modal-dialog p {
-        margin-bottom: 1.5rem;
-        color: #666;
-    }
-
-    .modal-dialog .btn {
-        min-width: 120px;
-    }
-</style>

@@ -1,16 +1,26 @@
-using AquAnalyzerAPI.Models;
+
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using AquAnalyzerAPI.Dtos;
+using AquAnalyzerAPI.Models;
+
 namespace AquAnalyzerAPI.Interfaces
+
 {
     public interface IReportService
     {
-        Task<Report> AddReport(Report report);
-        Task<Report> GetReportById(int id);
-        Task<IEnumerable<Report>> GetAllReports();
-        Task UpdateReport(Report updatedReport);
+
+        Task<ReportDto> AddReport(Report report);
+
+        Task<ReportDto> GetReportById(int id);
+
+        Task<IEnumerable<ReportDto>> GetAllReports();
+
+        Task<ReportDto> UpdateReport(Report updatedReport);
+
         Task<bool> DeleteReport(int id);
-        Task<IEnumerable<Report>> SearchReportsByTitle(string searchTerm);
+
+        Task<IEnumerable<ReportDto>> SearchReportsByTitle(string searchTerm);
+
     }
 
 }

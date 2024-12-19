@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AquAnalyzerWebApp.Models;
+using AquAnalyzerAPI.Dtos;
 
 public interface IWaterService
 {

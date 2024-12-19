@@ -65,21 +65,14 @@ namespace AquAnalyzerAPI.Controllers
             return NoContent();
         }
 
-        [HttpPut("{id}/read")]
-        public async Task<IActionResult> MarkAsRead(int id, [FromBody] DateTime readAt)
-        {
-            var result = await _notificationService.MarkAsRead(id, readAt);
-            if (!result) return NotFound();
-            return NoContent();
-        }
+        // [HttpPut("{id}/mark-as-read")]
+        // public async Task<ActionResult> MarkNotificationAsRead(int id)
+        // {
+        //     var success = await _notificationService.MarkNotificationAsRead(id, DateTime.UtcNow);
+        //     if (!success) return NotFound();
 
-        [HttpPut("{id}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] bool isResolved)
-        {
-            var result = await _notificationService.UpdateStatus(id, isResolved);
-            if (!result) return NotFound();
-            return NoContent();
-        }
+        //     return NoContent();
+        // }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNotification(int id)

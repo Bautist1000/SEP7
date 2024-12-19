@@ -2,6 +2,52 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="home-container">
+    <h1>Welcome to AquAnalyzer!</h1>
 
-Welcome to your new app.
+    <p class="product-description">Your ultimate tool for tracking water sustainability! Designed for Kamstrup,
+        AquAnalyzer helps you monitor water usage and improve ESG performance with ease. Dive into data, visualize
+        metrics, and make every drop count!</p>
+
+    <div class="image-container">
+        <img src="images/AquAnalyzerPersonPic.png" alt="PersonPic" class="image">
+        <img src="images/AquAnalyzerNaturePic.png" alt="NaturePic" class="image">
+    </div>
+</div>
+
+<style>
+    .home-container {
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        color: #2c3e50;
+        margin-bottom: 16px;
+    }
+
+    .product-description {
+        color: #34495e;
+        margin-bottom: 24px;
+        padding: 16px;
+        border-radius: 8px;
+        background-color: #f0f8ff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin-top: 24px;
+    }
+
+    .image {
+        width: 300px;
+        height: 200px;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>

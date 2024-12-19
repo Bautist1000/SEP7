@@ -10,11 +10,13 @@
     <link rel="stylesheet" href="AquAnalyzerWebApp.styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/default.css">
     <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
 
 <body>
     <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>
 

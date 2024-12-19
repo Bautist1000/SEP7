@@ -9,8 +9,17 @@ namespace AquAnalyzerWebApp.Interfaces
         Task<VisualisationData> GetVisualisationById(int id);
         Task<IEnumerable<VisualisationData>> GetAllVisualisations();
         Task<IEnumerable<VisualisationData>> GetVisualisationsByReportId(int reportId);
-        Task<VisualisationData> AddVisualisation(VisualisationData visualisation);
+        Task AddVisualisation(VisualisationData visualisation);
         Task UpdateVisualisation(VisualisationData visualisation);
         Task DeleteVisualisation(int id);
+
+        // New chart-specific methods
+        Task<IEnumerable<WaterData>> GetWaterDataForChart(int visualisationId, DateTime? startDate = null, DateTime? endDate = null);
+        Task<IEnumerable<WaterMetrics>> GetMetricsForChart(int visualisationId, DateTime? startDate = null, DateTime? endDate = null);
+        Task UpdateChartType(int visualisationId, string chartType);
+        Task<IEnumerable<WaterData>> GetAllWaterDataAsync();
+        Task<IEnumerable<WaterMetrics>> GetAllWaterMetricsAsync();
+
+
     }
 }
