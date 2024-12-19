@@ -9,7 +9,7 @@ namespace AquAnalyzerWebApp.Services{
 public interface IAuthService
 {
     // Login a user (Analyst or Visual Designer)
-    Task LoginAsync(string username, string password);
+    Task<bool> LoginAsync(string username, string password);
 
     // Logout the current user
     Task LogoutAsync();
@@ -27,3 +27,4 @@ public interface IAuthService
     Task RegisterVisualDesignerAsync(VisualDesigner visualDesigner);
 }
 }
+
