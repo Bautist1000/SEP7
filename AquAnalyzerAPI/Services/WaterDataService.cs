@@ -12,14 +12,10 @@ namespace AquAnalyzerAPI.Services
     public class WaterDataService : IWaterDataService
     {
         private readonly DatabaseContext context;
-        private readonly IAbnormalityService _abnormalityService;
 
-
-        public WaterDataService(DatabaseContext context, IAbnormalityService abnormalityService)
+        public WaterDataService(DatabaseContext context)
         {
             this.context = context;
-            _abnormalityService = abnormalityService;
-
         }
 
         public async Task<WaterData> GetWaterDataByIdAsync(int id)
@@ -34,36 +30,14 @@ namespace AquAnalyzerAPI.Services
 
         public async Task AddWaterDataAsync(WaterData data)
         {
-            using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                // Remove Id assignment - let database generate it
-                data.Id = 0;
-
-                // Add water data
                 await context.WaterData.AddAsync(data);
                 await context.SaveChangesAsync();
-
-                // Check for abnormalities
-                var abnormalities = await _abnormalityService.CheckWaterDataAbnormalities(data.Id);
-
-                if (abnormalities.Any())
-                {
-                    data.HasAbnormalities = true;
-                    context.Entry(data).State = EntityState.Modified;
-
-                    foreach (var abnormality in abnormalities)
-                    {
-                        await context.Abnormalities.AddAsync(abnormality);
-                    }
-                    await context.SaveChangesAsync();
-                }
-
-                await transaction.CommitAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 throw;
             }
         }

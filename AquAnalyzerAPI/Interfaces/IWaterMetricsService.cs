@@ -8,7 +8,7 @@ namespace AquAnalyzerAPI.Interfaces
     {
         Task<IEnumerable<WaterMetrics>> GetAllMetricsAsync();
         Task<WaterMetrics> GetMetricsByIdAsync(int id);
-        Task<WaterMetrics> GenerateMetricsAsync(IEnumerable<WaterData> waterData);
+        Task GenerateMetricsAsync(IEnumerable<WaterData> waterData);
         Task<double> CalculateAverageFlowRateAsync(IEnumerable<WaterData> waterData);
         Task<int> CountAbnormalitiesAsync(IEnumerable<WaterData> waterData);
         Task AddMetricsAsync(WaterMetrics metrics);
