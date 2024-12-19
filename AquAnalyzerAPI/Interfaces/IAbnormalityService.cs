@@ -14,5 +14,7 @@ namespace AquAnalyzerAPI.Interfaces
         Task<bool> DeleteAbnormality(int id);
         Task<IEnumerable<Abnormality>> CheckWaterDataAbnormalities(int dataId);
         Task<IEnumerable<Abnormality>> CheckWaterMetricsAbnormalities(int metricsId);
+        Task RemoveDuplicateAbnormalities(int waterDataId);
+
     }
 }

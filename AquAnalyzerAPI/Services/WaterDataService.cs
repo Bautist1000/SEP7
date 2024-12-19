@@ -34,8 +34,12 @@ namespace AquAnalyzerAPI.Services
 
         public async Task AddWaterDataAsync(WaterData data)
         {
+            using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
+                // Remove Id assignment - let database generate it
+                data.Id = 0;
+
                 // Add water data
                 await context.WaterData.AddAsync(data);
                 await context.SaveChangesAsync();
@@ -45,20 +49,21 @@ namespace AquAnalyzerAPI.Services
 
                 if (abnormalities.Any())
                 {
-                    // Update water data to reflect abnormalities
                     data.HasAbnormalities = true;
-                    await UpdateWaterDataAsync(data);
+                    context.Entry(data).State = EntityState.Modified;
 
-                    // Add abnormalities (this will create notifications internally)
                     foreach (var abnormality in abnormalities)
                     {
-                        await _abnormalityService.AddAbnormality(abnormality);
+                        await context.Abnormalities.AddAsync(abnormality);
                     }
+                    await context.SaveChangesAsync();
                 }
+
+                await transaction.CommitAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                await transaction.RollbackAsync();
                 throw;
             }
         }
