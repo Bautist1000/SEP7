@@ -10,16 +10,7 @@
 
 <div class="container-fluid">
     <h1 class="mb-4">@(IsEditMode ? "Edit" : "Add") Water Data</h1>
-    @* 
-    @if (!string.IsNullOrEmpty(statusMessage))
-    {
-        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
-            @statusMessage
-            <button type="button" class="close" @onclick="@(() => statusMessage = null)">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    } *@
+    
 
     <div class="row">
         <div class="col-md-6">
