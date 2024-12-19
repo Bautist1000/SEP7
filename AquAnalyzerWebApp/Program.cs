@@ -14,8 +14,11 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5126/") });
-builder.Services.AddScoped<INotificationsService, NotificationsService>();
-
+builder.Services.AddHttpClient<INotificationsService, NotificationsService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5126/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
