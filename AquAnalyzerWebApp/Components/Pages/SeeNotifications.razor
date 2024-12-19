@@ -9,42 +9,39 @@
     Notifications
     @if (notifications?.Any(n => !n.ReadAt.HasValue) == true)
     {
-                        <span class="unread-badge">@(notifications.Count(n => !n.ReadAt.HasValue))</span>
+                            <span class="unread-badge">@(notifications.Count(n => !n.ReadAt.HasValue))</span>
     }
 </h3>
 
 <div class="notifications-container">
-    <button class="create-notification-btn" @onclick="CreateTestNotification">
-        <i class="fas fa-plus"></i> Create Test Notification
-    </button>
     @if (notifications == null)
     {
-                        <p>Loading...</p>
+                            <p>Loading...</p>
     }
     else if (!notifications.Any())
     {
-                        <p>No notifications found. Count: @(notifications?.Count() ?? 0)</p>
+                            <p>No notifications found. Count: @(notifications?.Count() ?? 0)</p>
     }
     else
     {
         @foreach (var notification in notifications.OrderByDescending(n => n.CreatedAt))
         {
-                                            <div class="notification-card @(notification.ReadAt.HasValue ? "read" : "unread")">
-                                                <div class="notification-header">
-                                                    <span class="notification-type">@notification.Type</span>
-                                                    <small class="notification-date">@notification.CreatedAt.ToString("g")</small>
-                                                </div>
-                                                <div class="notification-body">
-                                                    <p>@notification.Message</p>
+                                                    <div class="notification-card @(notification.ReadAt.HasValue ? "read" : "unread")">
+                                                        <div class="notification-header">
+                                                            <span class="notification-type">@notification.Type</span>
+                                                            <small class="notification-date">@notification.CreatedAt.ToString("g")</small>
+                                                        </div>
+                                                        <div class="notification-body">
+                                                            <p>@notification.Message</p>
                     @if (notification.Abnormality != null)
                     {
-                                                                        <div class="abnormality-details">
-                                                                            <p><strong>Type:</strong> @notification.Abnormality.Type</p>
-                                                                            <p>@notification.Abnormality.Description</p>
-                                                                        </div>
+                                                                                    <div class="abnormality-details">
+                                                                                        <p><strong>Type:</strong> @notification.Abnormality.Type</p>
+                                                                                        <p>@notification.Abnormality.Description</p>
+                                                                                    </div>
                     }
-                                                </div>
-                                            </div>
+                                                        </div>
+                                                    </div>
         }
     }
 </div>
