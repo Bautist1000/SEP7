@@ -109,15 +109,32 @@ namespace AquAnalyzerWebApp.Services
             return await _httpClient.GetFromJsonAsync<IEnumerable<Notification>>($"api/notification/user/{userId}");
         }
 
-        public async Task<bool> UpdateNotificationStatus(int id, string status)
+        public async Task<bool> MarkNotificationAsRead(int notificationId, DateTime readAt)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/notification/{id}/status", new { status });
-            return response.IsSuccessStatusCode;
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"api/notification/{notificationId}/read", readAt);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error marking notification as read: {ex.Message}");
+                return false;
+            }
         }
-        public async Task<bool> MarkNotificationAsRead(int id, System.DateTime readAt)
+
+        public async Task<bool> UpdateNotificationStatus(int notificationId, bool isResolved)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/notification/{id}/read", new { readAt });
-            return response.IsSuccessStatusCode;
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"api/notification/{notificationId}/status", isResolved);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating notification status: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<bool> DeleteNotification(int id)
