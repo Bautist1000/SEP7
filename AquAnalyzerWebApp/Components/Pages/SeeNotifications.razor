@@ -9,39 +9,42 @@
     Notifications
     @if (notifications?.Any(n => !n.ReadAt.HasValue) == true)
     {
-                            <span class="unread-badge">@(notifications.Count(n => !n.ReadAt.HasValue))</span>
+                        <span class="unread-badge">@(notifications.Count(n => !n.ReadAt.HasValue))</span>
     }
 </h3>
 
 <div class="notifications-container">
+    <button class="create-notification-btn" @onclick="CreateTestNotification">
+        <i class="fas fa-plus"></i> Create Test Notification
+    </button>
     @if (notifications == null)
     {
-                            <p>Loading...</p>
+                        <p>Loading...</p>
     }
     else if (!notifications.Any())
     {
-                            <p>No notifications found. Count: @(notifications?.Count() ?? 0)</p>
+                        <p>No notifications found. Count: @(notifications?.Count() ?? 0)</p>
     }
     else
     {
         @foreach (var notification in notifications.OrderByDescending(n => n.CreatedAt))
         {
-                                                    <div class="notification-card @(notification.ReadAt.HasValue ? "read" : "unread")">
-                                                        <div class="notification-header">
-                                                            <span class="notification-type">@notification.Type</span>
-                                                            <small class="notification-date">@notification.CreatedAt.ToString("g")</small>
-                                                        </div>
-                                                        <div class="notification-body">
-                                                            <p>@notification.Message</p>
+                                            <div class="notification-card @(notification.ReadAt.HasValue ? "read" : "unread")">
+                                                <div class="notification-header">
+                                                    <span class="notification-type">@notification.Type</span>
+                                                    <small class="notification-date">@notification.CreatedAt.ToString("g")</small>
+                                                </div>
+                                                <div class="notification-body">
+                                                    <p>@notification.Message</p>
                     @if (notification.Abnormality != null)
                     {
-                                                                                    <div class="abnormality-details">
-                                                                                        <p><strong>Type:</strong> @notification.Abnormality.Type</p>
-                                                                                        <p>@notification.Abnormality.Description</p>
-                                                                                    </div>
+                                                                        <div class="abnormality-details">
+                                                                            <p><strong>Type:</strong> @notification.Abnormality.Type</p>
+                                                                            <p>@notification.Abnormality.Description</p>
+                                                                        </div>
                     }
-                                                        </div>
-                                                    </div>
+                                                </div>
+                                            </div>
         }
     }
 </div>
@@ -79,94 +82,46 @@
     {
         timer?.Dispose();
     }
+
+    private async Task CreateTestNotification()
+    {
+        var testNotification = new Notification
+            {
+                Message = "Test notification created at " + DateTime.Now.ToString("g"),
+                Type = "Test",
+                CreatedAt = DateTime.Now,
+                Status = "Active",
+                UserId = 1
+            };
+
+        await NotificationsService.AddNotification(testNotification);
+        await LoadNotifications();
+    }
 }
 
 <style>
-    .notifications-container {
-        max-width: 800px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-    }
 
-    .notification-card {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1rem;
-        padding: 1.5rem;
-        transition: all 0.3s ease;
-        border: 1px solid #e1e1e1;
-    }
-
-    .notification-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .notification-card.unread {
-        border-left: 4px solid #007AFF;
-        background: linear-gradient(to right, #f0f7ff, #ffffff);
-    }
-
-    .notification-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .notification-type {
-        font-weight: 600;
-        color: #007AFF;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .notification-date {
-        color: #8e8e93;
-        font-size: 0.85rem;
-    }
-
-    .notification-body {
-        color: #1c1c1e;
-        line-height: 1.5;
-    }
-
-    .notification-body p {
-        margin: 0.5rem 0;
-    }
-
-    .abnormality-details {
-        background: #f2f2f7;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-top: 1rem;
-    }
-
-    .abnormality-details p {
-        margin: 0.25rem 0;
-        font-size: 0.95rem;
-    }
-
-    .abnormality-details strong {
-        color: #007AFF;
-    }
-
-    .unread-badge {
-        background: #007AFF;
+    .create-notification-btn {
+        background-color: #007AFF;
         color: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.85rem;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
         font-weight: 600;
-        margin-left: 0.75rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
     }
 
-    h3 {
-        color: #1c1c1e;
-        font-weight: 600;
-        font-size: 1.75rem;
-        margin-bottom: 2rem;
+    .create-notification-btn:hover {
+        background-color: #0056b3;
+        transform: translateY(-1px);
+    }
+
+    .create-notification-btn i {
+        font-size: 0.9rem;
     }
 </style>

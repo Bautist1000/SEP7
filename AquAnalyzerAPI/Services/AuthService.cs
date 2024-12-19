@@ -14,11 +14,9 @@ namespace AquAnalyzerAPI.Services
     {
         private readonly DatabaseContext _context;
         private ClaimsPrincipal _currentPrincipal = new ClaimsPrincipal();
-        private readonly IConfiguration _config;
-        public AuthServiceAPI(DatabaseContext context, IConfiguration config)
-        {
-            _config = config;
 
+        public AuthServiceAPI(DatabaseContext context)
+        {
             _context = context;
         }
 
@@ -74,46 +72,43 @@ namespace AquAnalyzerAPI.Services
         }
 
         // Validate a user's credentials (either Analyst or Visual Designer)
-        public async Task<User?> ValidateUserAsync(string username, string password)
-        {
-            // Search in Analysts table
-            var analyst = await _context.Analysts.FirstOrDefaultAsync(a => a.Username == username && a.Password == password);
-            if (analyst != null)
-            {
-                return analyst;
-            }
+       public async Task<User?> ValidateUserAsync(string username, string password)
+{
+    // Search in Analysts table
+    var analyst = await _context.Analysts.FirstOrDefaultAsync(a => a.Username == username && a.Password == password);
+    if (analyst != null)
+    {
+        return analyst;
+    }
 
-            // If not found, search in Visual Designers table
-            var visualDesigner = await _context.VisualDesigners.FirstOrDefaultAsync(v => v.Username == username && v.Password == password);
-            if (visualDesigner != null)
-            {
-                return visualDesigner;
-            }
+    // If not found, search in Visual Designers table
+    var visualDesigner = await _context.VisualDesigners.FirstOrDefaultAsync(v => v.Username == username && v.Password == password);
+    if (visualDesigner != null)
+    {
+        return visualDesigner;
+    }
 
-            // If neither found, return null
-            throw new Exception("Invalid username or password.");
-        }
+    // If neither found, return null
+    throw new Exception("Invalid username or password.");
+}
 
         // Generate a JWT token
         public Task<string> GenerateTokenAsync(User user)
         {
             var claims = new[]
             {
-        new Claim(ClaimTypes.Name, user.Username),
-        new Claim(ClaimTypes.Role, user.Role)
-    };
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config["Jwt:Key"] ??
-                "MypussytasteslikePepsicolaMyeyesarewidelikecherrypiesIgotsweettasteformenwhoareolderIt'salwaysbeenso,it'snosurprise"));
-
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKey123"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: "YourIssuer",
+                audience: "YourAudience",
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);
 
             return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
