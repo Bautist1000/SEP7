@@ -1,6 +1,6 @@
-@page "/report/{Id:int}"
-@page "/report/new/{Id:int}"
+@page "/report/view/{Id:int}"
 @page "/report/edit/{Id:int}"
+@page "/report/new/{Id:int}"
 @using AquAnalyzerAPI.Models
 @using Radzen.Blazor
 @inject IReportPageService ReportPageService
@@ -9,117 +9,186 @@
 
 <div class="container">
     <div class="header d-flex justify-content-between align-items-center mb-4">
-        <h3>@(isNewReport ? "Create Report" : "Edit Report")</h3>
-        <button class="btn btn-outline-secondary" @onclick="BackToList">Back to Reports</button>
+        <h3>
+            @switch (currentMode)
+            {
+                case PageMode.View:
+                    <text>View Report</text>
+                    break;
+                case PageMode.Edit:
+                    <text>Edit Report</text>
+                    break;
+                case PageMode.New:
+                    <text>Create New Report</text>
+                    break;
+            }
+        </h3>
+        <div>
+            @if (currentMode == PageMode.View)
+            {
+                <button class="btn btn-primary me-2" @onclick="() => EditReport(report.Id)">Edit</button>
+            }
+            <button class="btn btn-outline-secondary" @onclick="BackToList">Back to Reports</button>
+        </div>
     </div>
 
-    <div class="report-form">
-        <div class="form-group mb-3">
-            <label>Title</label>
-            <input class="form-control" @bind="report.Title" />
-        </div>
-
-        <div class="form-group mb-3">
-            <label>Description</label>
-            <textarea class="form-control" rows="3" @bind="report.Description"></textarea>
-        </div>
-
-        @if (!isNewReport)
-        {
-            <div class="visualisation-section mt-4">
-                <div class="section-header d-flex justify-content-between align-items-center">
-                    <h4>Add Visualisation</h4>
+    @if (currentMode == PageMode.View)
+    {
+        <div class="report-view">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4>@report.Title</h4>
+                    <p class="text-muted">Created on @report.GeneratedDate.ToShortDateString()</p>
+                    <p>@report.Description</p>
                 </div>
+            </div>
 
-                <div class="time-range-section card p-3 mb-4">
-                    <h5>1. Select Time Range</h5>
-                    <div class="d-flex gap-3 align-items-center">
-                        <div class="flex-grow-1">
-                            <label>Start Date</label>
-                            <RadzenDatePicker @bind-Value="startDate" Class="w-100" DateFormat="d" />
-                        </div>
-                        <div class="flex-grow-1">
-                            <label>End Date</label>
-                            <RadzenDatePicker @bind-Value="endDate" Class="w-100" DateFormat="d" />
-                        </div>
-                        <div class="d-flex align-items-end">
-                            <button class="btn btn-primary" @onclick="ApplyTimeRange"
-                                disabled="@(!startDate.HasValue || !endDate.HasValue)">
-                                Apply Range
-                            </button>
-                        </div>
+            @if (report.Visualisations?.Any() == true)
+            {
+                <div class="visualisations-list">
+                    <h4>Visualisations</h4>
+                    <div class="row">
+                        @foreach (var vis in report.Visualisations)
+                        {
+                            <div class="col-12 mb-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <Visualisation VisualisationData="@vis" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
                     </div>
-                    @if (showNoDataMessage)
-                    {
-                        <div class="alert alert-warning mt-3">
-                            No data found within this range. Please select different dates.
-                        </div>
-                    }
                 </div>
-
-                @if (isTimeRangeSelected && !showNoDataMessage)
-                {
-                    <div class="data-selection card p-3 mb-4">
-                        <h5>2. Select Data and Chart Type</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    <label>Chart Type</label>
-                                    <RadzenDropDown @bind-Value="selectedVisualisationType" Data="@chartTypes" Class="w-100" />
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Water Data</label>
-                                    <RadzenListBox @bind-Value="selectedWaterData" Multiple="true" Data="@filteredWaterDataList"
-                                        TextProperty="Location" ValueProperty="Id" Change=@(args => OnDataSelectionChange())
-                                        Class="w-100" Style="height: 200px;" />
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Metrics</label>
-                                    <RadzenListBox @bind-Value="selectedMetrics" Multiple="true"
-                                        Data="@filteredWaterMetricsList" TextProperty="DateGeneratedOn" ValueProperty="Id"
-                                        Change=@(args => OnDataSelectionChange()) Class="w-100" Style="height: 200px;" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <button class="btn btn-primary" @onclick="AddVisualisation" disabled="@(!CanAddVisualisation)">
-                                Add Visualisation
-                            </button>
-                        </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    No visualisations in this report.
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="report-form">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label>Title</label>
+                        <input class="form-control" @bind="report.Title" />
                     </div>
-                }
 
-                @if (report.Visualisations?.Any() == true)
-                {
-                    <div class="visualisations-list mt-4">
-                        <h4>Current Visualisations</h4>
-                        <div class="row">
-                            @foreach (var vis in report.Visualisations)
+                    <div class="form-group mb-3">
+                        <label>Description</label>
+                        <textarea class="form-control" rows="3" @bind="report.Description"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            @if (currentMode == PageMode.Edit)
+            {
+                <div class="visualisation-section">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h4>Add Visualisation</h4>
+
+                            <div class="time-range-section mb-4">
+                                <h5>1. Select Time Range</h5>
+                                <div class="d-flex gap-3 align-items-center">
+                                    <div class="flex-grow-1">
+                                        <label>Start Date</label>
+                                        <RadzenDatePicker @bind-Value="startDate" Class="w-100" DateFormat="d" />
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <label>End Date</label>
+                                        <RadzenDatePicker @bind-Value="endDate" Class="w-100" DateFormat="d" />
+                                    </div>
+                                    <div class="d-flex align-items-end">
+                                        <button class="btn btn-primary" @onclick="ApplyTimeRange"
+                                            disabled="@(!startDate.HasValue || !endDate.HasValue)">
+                                            Apply Range
+                                        </button>
+                                    </div>
+                                </div>
+                                @if (showNoDataMessage)
+                                {
+                                    <div class="alert alert-warning mt-3">
+                                        No data found within this range. Please select different dates.
+                                    </div>
+                                }
+                            </div>
+
+                            @if (isTimeRangeSelected && !showNoDataMessage)
                             {
-                                <div class="col-12 mb-4">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <Visualisation VisualisationData="@vis" />
+                                <div class="data-selection mb-4">
+                                    <h5>2. Select Data and Chart Type</h5>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group mb-3">
+                                                <label>Chart Type</label>
+                                                <RadzenDropDown @bind-Value="selectedVisualisationType" Data="@chartTypes"
+                                                    Class="w-100" />
+                                            </div>
                                         </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Water Data</label>
+                                                <RadzenListBox @bind-Value="selectedWaterData" Multiple="true"
+                                                    Data="@filteredWaterDataList" TextProperty="Location" ValueProperty="Id"
+                                                    Change=@(args => OnDataSelectionChange()) Class="w-100"
+                                                    Style="height: 200px;" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Metrics</label>
+                                                <RadzenListBox @bind-Value="selectedMetrics" Multiple="true"
+                                                    Data="@filteredWaterMetricsList" TextProperty="DateGeneratedOn"
+                                                    ValueProperty="Id" Change=@(args => OnDataSelectionChange()) Class="w-100"
+                                                    Style="height: 200px;" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3">
+                                        <button class="btn btn-primary" @onclick="AddVisualisation"
+                                            disabled="@(!CanAddVisualisation)">
+                                            Add Visualisation
+                                        </button>
                                     </div>
                                 </div>
                             }
                         </div>
                     </div>
-                }
-            </div>
-        }
 
-        <div class="actions mt-4">
-            <button class="btn btn-primary me-2" @onclick="SaveReport">Save Report</button>
-            <button class="btn btn-secondary" @onclick="BackToList">Cancel</button>
+                    @if (report.Visualisations?.Any() == true)
+                    {
+                        <div class="visualisations-list">
+                            <h4>Current Visualisations</h4>
+                            <div class="row">
+                                @foreach (var vis in report.Visualisations)
+                                {
+                                    <div class="col-12 mb-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <Visualisation VisualisationData="@vis" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="actions mt-4">
+                <button class="btn btn-primary me-2" @onclick="SaveReport">Save Report</button>
+                <button class="btn btn-secondary" @onclick="BackToList">Cancel</button>
+            </div>
         </div>
-    </div>
+    }
 </div>
 
 @code {
@@ -127,24 +196,32 @@
     public int Id { get; set; }
 
     private Report report = new();
-    private bool isNewReport;
+    private PageMode currentMode;
     private DateTime? startDate;
     private DateTime? endDate;
     private bool isTimeRangeSelected;
-    private string selectedVisualisationType;
     private bool showNoDataMessage;
+    private string selectedVisualisationType;
     private List<WaterData> waterDataList = new();
     private List<WaterMetrics> waterMetricsList = new();
     private List<WaterData> filteredWaterDataList = new();
     private List<WaterMetrics> filteredWaterMetricsList = new();
     private List<WaterData> selectedWaterData = new();
     private List<WaterMetrics> selectedMetrics = new();
+
     private List<string> chartTypes = new()
 {
 "barchart",
 "linechart",
 "metricsbar"
 };
+
+    private enum PageMode
+    {
+        View,
+        Edit,
+        New
+    }
 
     private bool CanAddVisualisation =>
     !string.IsNullOrEmpty(selectedVisualisationType) &&
@@ -153,13 +230,23 @@
 
     protected override async Task OnInitializedAsync()
     {
-        isNewReport = NavigationManager.Uri.Contains("/new/");
+        if (NavigationManager.Uri.Contains("/view/"))
+            currentMode = PageMode.View;
+        else if (NavigationManager.Uri.Contains("/edit/"))
+            currentMode = PageMode.Edit;
+        else
+            currentMode = PageMode.New;
 
         try
         {
-            if (!isNewReport)
+            if (currentMode != PageMode.New)
             {
                 report = await ReportPageService.GetReportById(Id);
+
+                if (currentMode == PageMode.Edit)
+                {
+                    await LoadData();
+                }
             }
             else
             {
@@ -168,17 +255,20 @@
                         Id = Id,
                         GeneratedDate = DateTime.Now
                     };
+                await LoadData();
             }
-
-            // Load initial data
-            waterDataList = (await VisualisationPageService.GetAllWaterDataAsync()).ToList();
-            waterMetricsList = (await VisualisationPageService.GetAllWaterMetricsAsync()).ToList();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error initializing report: {ex.Message}");
             NavigationManager.NavigateTo("/reports");
         }
+    }
+
+    private async Task LoadData()
+    {
+        waterDataList = (await VisualisationPageService.GetAllWaterDataAsync()).ToList();
+        waterMetricsList = (await VisualisationPageService.GetAllWaterMetricsAsync()).ToList();
     }
 
     private void ApplyTimeRange()
@@ -195,7 +285,6 @@
             .OrderBy(m => m.DateGeneratedOn)
             .ToList();
 
-            // Check if any data was found
             if (!filteredWaterDataList.Any() && !filteredWaterMetricsList.Any())
             {
                 showNoDataMessage = true;
@@ -222,7 +311,7 @@
 
         try
         {
-            if (isNewReport)
+            if (currentMode == PageMode.New)
             {
                 await SaveReport();
             }
@@ -266,10 +355,9 @@
     {
         try
         {
-            if (isNewReport)
+            if (currentMode == PageMode.New)
             {
                 report = await ReportPageService.AddReport(report);
-                isNewReport = false;
             }
             else
             {
@@ -281,6 +369,11 @@
         {
             Console.WriteLine($"Error saving report: {ex.Message}");
         }
+    }
+
+    private void EditReport(int reportId)
+    {
+        NavigationManager.NavigateTo($"/report/edit/{reportId}");
     }
 
     private void BackToList()
@@ -311,5 +404,14 @@
     .actions {
         border-top: 1px solid #dee2e6;
         padding-top: 1rem;
+    }
+
+    .report-view .card {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .report-view h4 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
     }
 </style>
