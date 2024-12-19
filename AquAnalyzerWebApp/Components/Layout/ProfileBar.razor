@@ -1,0 +1,169 @@
+@inject NavigationManager NavigationManager
+@inject IAuthService AuthService
+@rendermode InteractiveServer
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using AquAnalyzerWebApp.Services
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="user-icon-dropdown">
+    <button class="user-icon" @onclick="ToggleDropdown">
+        <i class="fas fa-user-circle"></i>
+    </button>
+
+    @if (user != null && !string.IsNullOrEmpty(user.Username))
+    {
+        <span>Hello, @user.Username</span>
+    }
+    else
+    {
+        <span>Hello, User</span>
+    }
+
+    <div class="dropdown-menu @(isDropdownOpen ? "show" : "")">
+        <AuthorizeView>
+            <NotAuthorized>
+                <a class="dropdown-item" @onclick="GoToLogin">Login</a>
+                <a class="dropdown-item" @onclick="GoToRegister">Register</a>
+            </NotAuthorized>
+            <Authorized>
+                <a class="dropdown-item" @onclick="GoToDashboard">Dashboard</a>
+                @if (role == "Analyst")
+                {
+                    <a class="dropdown-item" @onclick="GoToNotifications">Notifications</a>
+                }
+                else if (role == "VisualDesigner")
+                {
+                    <a class="dropdown-item" @onclick="GoToVisualizations">Visualizations</a>
+                }
+                <a class="dropdown-item" @onclick="Logout">Log Out</a>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+</div>
+
+@code {
+    private User user;
+    private bool isDropdownOpen = false;
+    private string? role;
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthState { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        await LoadUserInfo();
+    }
+
+    private async Task LoadUserInfo()
+    {
+        var authState = await AuthState;
+        var claims = authState.User;
+
+        if (!claims.Identity.IsAuthenticated) return;
+
+        role = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+        // Add user info loading logic here
+        StateHasChanged();
+    }
+
+    private void ToggleDropdown() => isDropdownOpen = !isDropdownOpen;
+
+    private void GoToDashboard()
+    {
+        isDropdownOpen = false;
+        NavigationManager.NavigateTo("/water-dashboard");
+    }
+
+    private void GoToNotifications()
+    {
+        isDropdownOpen = false;
+        NavigationManager.NavigateTo("/notifications");
+    }
+
+    private void GoToVisualizations()
+    {
+        isDropdownOpen = false;
+        NavigationManager.NavigateTo("/visualizations");
+    }
+
+    private async Task Logout()
+    {
+        isDropdownOpen = false;
+        user = null;
+        role = null;
+        await AuthService.LogoutAsync();
+        NavigationManager.NavigateTo("/login");
+    }
+
+    private void GoToLogin()
+    {
+        isDropdownOpen = false;
+        NavigationManager.NavigateTo("/login");
+    }
+
+    private void GoToRegister()
+    {
+        isDropdownOpen = false;
+        NavigationManager.NavigateTo("/register");
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> authStateTask)
+    {
+        await LoadUserInfo();
+        StateHasChanged();
+    }
+}
+
+<style>
+    .user-icon-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .user-icon {
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        color: #3498db;
+        font-size: 1.5rem;
+    }
+
+    .user-icon:hover {
+        transform: scale(1.1);
+        color: #2980b9;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        z-index: 1000;
+        min-width: 180px;
+        margin-top: 0.5rem;
+    }
+
+    .dropdown-menu.show {
+        display: block;
+    }
+
+    .dropdown-item {
+        padding: 0.75rem 1rem;
+        text-decoration: none;
+        display: block;
+        color: #2c3e50;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #3498db;
+    }
+</style>
