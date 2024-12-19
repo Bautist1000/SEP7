@@ -30,27 +30,16 @@ namespace AquAnalyzerAPI.Services
 
         public async Task AddWaterDataAsync(WaterData data)
         {
-            // 1.Add new water data
-            await context.WaterData.AddAsync(data);
-            await context.SaveChangesAsync();
-
-            // 2. Create and calculate new metrics
-            var metrics = new WaterMetrics
+            try
             {
-                DateGeneratedOn = DateTime.UtcNow
-            };
-
-            // 3. Calculate metrics using just this single water data entry
-            metrics.CalculateMetrics(new List<WaterData> { data });
-
-            // 4. Add metrics to database
-            await context.WaterMetrics.AddAsync(metrics);
-            await context.SaveChangesAsync();
-
-            // 5. Update water data with metrics ID
-            data.WaterMetricsId = metrics.Id;
-            data.WaterMetrics = metrics;
-            await context.SaveChangesAsync();
+                await context.WaterData.AddAsync(data);
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task UpdateWaterDataAsync(WaterData data)

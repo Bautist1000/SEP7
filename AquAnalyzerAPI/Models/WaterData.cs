@@ -21,7 +21,7 @@ namespace AquAnalyzerAPI.Models
 
         public Abnormality? Abnormality { get; set; }
 
-        public List<VisualisationData> Visualisations { get; set; } = new List<VisualisationData>();
+        public List<VisualisationData>? Visualisations { get; set; } = new List<VisualisationData>();
         public WaterData() { }
         public WaterData(int Id, DateTime Timestamp)
         {

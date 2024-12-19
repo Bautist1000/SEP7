@@ -1,3 +1,4 @@
+// this is the API Program.cs
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
@@ -41,6 +42,12 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlite("Data Source=database.db"));
 
 builder.Services.AddScoped<IAuthServiceAPI, AuthServiceAPI>();
+
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+    logging.AddDebug();
+});
 
 // Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
@@ -116,11 +123,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", builder =>
         builder.WithOrigins("http://localhost:5065")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials());
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials());
 });
-
 
 var app = builder.Build();
 
@@ -136,11 +142,10 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+app.UseRouting();
 app.UseCors("AllowBlazorClient"); // Apply CORS policy
 // app.UseAuthentication(); 
 // app.UseAuthorization();  // Enable authorization middleware
-
 app.MapControllers(); // Map controller routes
 app.Run();
 
