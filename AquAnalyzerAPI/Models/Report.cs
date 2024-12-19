@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+
 namespace AquAnalyzerAPI.Models
 {
     public class Report
@@ -14,23 +15,22 @@ namespace AquAnalyzerAPI.Models
 
         public Report()
         {
-
         }
 
-        public Report(int Id, string Title, string Description)
+        public Report(int id, string title, string description)
         {
-            this.Id = Id;
-            this.Title = Title;
-            this.Description = Description;
+            Id = id;
+            Title = title;
+            Description = description;
         }
 
-        public Report(int Id, string Title, string Description, int UserId, DateTime GeneratedDate)
+        public Report(int id, string title, string description, int userId, DateTime generatedDate)
         {
-            this.Id = Id;
-            this.Title = Title;
-            this.Description = Description;
-            this.UserId = UserId;
-            this.GeneratedDate = GeneratedDate;
+            Id = id;
+            Title = title;
+            Description = description;
+            UserId = userId;
+            GeneratedDate = generatedDate;
         }
     }
 }

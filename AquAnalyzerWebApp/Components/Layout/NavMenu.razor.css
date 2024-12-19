@@ -1,5 +1,9 @@
 .navbar {
-    background-color: #f8f9fa;
+    background: rgb(63, 143, 195);
+    background: -moz-linear-gradient(90deg, rgba(63, 143, 195, 1) 0%, rgba(94, 184, 228, 1) 18%, rgba(8, 75, 119, 1) 94%);
+    background: -webkit-linear-gradient(90deg, rgba(63, 143, 195, 1) 0%, rgba(94, 184, 228, 1) 18%, rgba(8, 75, 119, 1) 94%);
+    background: linear-gradient(90deg, rgba(63, 143, 195, 1) 0%, rgba(94, 184, 228, 1) 18%, rgba(8, 75, 119, 1) 94%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#3f8fc3", endColorstr="#084b77", GradientType=1);
 }
 
 .navbar-brand {
@@ -40,6 +44,11 @@
 @media (max-width: 768px) {
     .hamburger {
         display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        position: absolute;
+        left: 70%;
+        transform: translateX(-50%);
     }
 
     .nav-links {
@@ -49,7 +58,7 @@
         background-color: #f8f9fa;
         position: absolute;
         top: calc(100% + 5px);
-        left: 50%;
+        left: 75%;
         transform: translateX(-50%);
         padding: 10px;
         border-radius: 8px;

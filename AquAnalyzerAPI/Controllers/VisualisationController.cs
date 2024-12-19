@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 namespace AquAnalyzerAPI.Controllers
 {
-
     [ApiController]
     [Route("api/[controller]")]
     public class VisualisationController(IVisualisationService _visualisationService) : ControllerBase
@@ -48,12 +47,52 @@ namespace AquAnalyzerAPI.Controllers
             return NoContent();
         }
 
-        [HttpGet("search/{searchTerm}")]
-        public async Task<ActionResult<IEnumerable<VisualisationData>>> SearchVisualisationsByType(string searchTerm)
+        [HttpGet("{id}/waterdata/{startDate}/{endDate}")]
+        public async Task<ActionResult<IEnumerable<WaterData>>> GetWaterDataForChart(int id, string startDate, string endDate)
         {
-            var visualisations = await _visualisationService.SearchVisualisationsByType(searchTerm);
-            return Ok(visualisations);
+            try
+            {
+                DateTime? start = !string.IsNullOrEmpty(startDate) ? DateTime.Parse(startDate) : null;
+                DateTime? end = !string.IsNullOrEmpty(endDate) ? DateTime.Parse(endDate) : null;
+
+                var data = await _visualisationService.GetWaterDataForChart(id, start, end);
+                return Ok(data);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error retrieving water data");
+            }
+        }
+
+        [HttpGet("{id}/metrics/{startDate}/{endDate}")]
+        public async Task<ActionResult<IEnumerable<WaterMetrics>>> GetMetricsForChart(int id, string startDate, string endDate)
+        {
+            try
+            {
+                DateTime? start = !string.IsNullOrEmpty(startDate) ? DateTime.Parse(startDate) : null;
+                DateTime? end = !string.IsNullOrEmpty(endDate) ? DateTime.Parse(endDate) : null;
+
+                var metrics = await _visualisationService.GetMetricsForChart(id, start, end);
+                return Ok(metrics);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error retrieving metrics data");
+            }
+        }
+
+        [HttpPut("{id}/charttype")]
+        public async Task<ActionResult> UpdateChartType(int id, string chartType)
+        {
+            try
+            {
+                await _visualisationService.UpdateChartType(id, chartType);
+                return NoContent();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Error updating chart type");
+            }
         }
     }
-
 }

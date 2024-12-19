@@ -12,6 +12,8 @@ namespace AquAnalyzerAPI.Interfaces
         Task<IEnumerable<VisualisationData>> GetVisualisationsByReportId(int reportId);
         Task UpdateVisualisation(VisualisationData updatedVisualisation);
         Task<bool> DeleteVisualisation(int id);
-        Task<IEnumerable<VisualisationData>> SearchVisualisationsByType(string searchTerm);
+        Task<IEnumerable<WaterData>> GetWaterDataForChart(int visualisationId, DateTime? startDate, DateTime? endDate);
+        Task<IEnumerable<WaterMetrics>> GetMetricsForChart(int visualisationId, DateTime? startDate, DateTime? endDate);
+        Task UpdateChartType(int visualisationId, string newChartType);
     }
 }

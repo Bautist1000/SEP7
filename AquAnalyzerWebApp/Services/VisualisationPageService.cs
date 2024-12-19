@@ -55,5 +55,39 @@ namespace AquAnalyzerWebApp.Services
             var response = await _httpClient.DeleteAsync($"api/visualisations/{id}");
             response.EnsureSuccessStatusCode();
         }
+
+        public async Task<IEnumerable<WaterData>> GetWaterDataForChart(int visualisationId, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            var url = $"api/visualisations/{visualisationId}/waterdata";
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                url += $"?startDate={startDate.Value:yyyy-MM-dd}&endDate={endDate.Value:yyyy-MM-dd}";
+            }
+
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<IEnumerable<WaterData>>() ?? new List<WaterData>();
+        }
+
+        public async Task<IEnumerable<WaterMetrics>> GetMetricsForChart(int visualisationId, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            var url = $"api/visualisations/{visualisationId}/metrics";
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                url += $"?startDate={startDate.Value:yyyy-MM-dd}&endDate={endDate.Value:yyyy-MM-dd}";
+            }
+
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<IEnumerable<WaterMetrics>>() ?? new List<WaterMetrics>();
+        }
+
+        public async Task UpdateChartType(int visualisationId, string chartType)
+        {
+            var content = new StringContent($"\"{chartType}\"", System.Text.Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync($"api/visualisations/{visualisationId}/charttype", content);
+            response.EnsureSuccessStatusCode();
+        }
+
     }
 }

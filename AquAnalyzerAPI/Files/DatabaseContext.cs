@@ -27,7 +27,6 @@ namespace AquAnalyzerAPI.Files
             }
         }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -113,10 +112,13 @@ namespace AquAnalyzerAPI.Files
                 entity.Property(v => v.Type).IsRequired();
 
                 entity.HasOne(v => v.Report)
-                    .WithMany()
+                    .WithMany(r => r.Visualisations)
                     .HasForeignKey(v => v.ReportId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
+
+            modelBuilder.Entity<VisualisationData>()
+                .OwnsOne(v => v.ChartConfig);
         }
     }
 }

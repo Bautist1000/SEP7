@@ -6,6 +6,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using AquAnalyzerAPI.Files;
+using Radzen;
 using AquAnalyzerWebApp.Services;
 using AquAnalyzerWebApp.Interfaces;
 using AquAnalyzerWebApp.Components;
@@ -20,6 +21,8 @@ builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri("http://localhost:5126/")
 });
+builder.Services.AddRadzenComponents();
+
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -29,7 +32,8 @@ builder.Services.AddScoped<IAuthService, JwtAuthService>();
 builder.Services.AddScoped<IReportPageService, ReportPageService>();
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
 builder.Services.AddScoped<IWaterService, WaterService>();
-
+builder.Services.AddScoped<IVisualisationPageService, VisualisationPageService>();
+builder.Services.AddHttpClient();
 
 // Register Authentication State Provider for Blazor
 // builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthProvider>();

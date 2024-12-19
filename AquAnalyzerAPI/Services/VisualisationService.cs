@@ -72,5 +72,51 @@ namespace AquAnalyzerAPI.Services
                 .Where(v => v.Type.ToLower().Contains(searchTerm.ToLower()))
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<WaterData>> GetWaterDataForChart(int visualisationId, DateTime? startDate, DateTime? endDate)
+        {
+            var query = _context.Visualisations
+                .Where(v => v.Id == visualisationId)
+                .SelectMany(v => v.RawDataUsed);
+
+            if (startDate.HasValue)
+                query = query.Where(d => d.Timestamp >= startDate.Value);
+
+            if (endDate.HasValue)
+                query = query.Where(d => d.Timestamp <= endDate.Value);
+
+            return await query
+                .OrderBy(d => d.Timestamp)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<WaterMetrics>> GetMetricsForChart(int visualisationId, DateTime? startDate, DateTime? endDate)
+        {
+            var query = _context.Visualisations
+                .Where(v => v.Id == visualisationId)
+                .SelectMany(v => v.MetricsUsed);
+
+            if (startDate.HasValue)
+                query = query.Where(m => m.DateGeneratedOn >= startDate.Value);
+
+            if (endDate.HasValue)
+                query = query.Where(m => m.DateGeneratedOn <= endDate.Value);
+
+            return await query
+                .OrderBy(m => m.DateGeneratedOn)
+                .ToListAsync();
+        }
+
+        public async Task UpdateChartType(int visualisationId, string newChartType)
+        {
+            var visualisation = await _context.Visualisations
+                .FirstOrDefaultAsync(v => v.Id == visualisationId);
+
+            if (visualisation != null)
+            {
+                visualisation.Type = newChartType;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }
