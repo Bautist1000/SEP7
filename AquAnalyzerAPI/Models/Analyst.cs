@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 namespace AquAnalyzerAPI.Models
 {
     public class Analyst : User

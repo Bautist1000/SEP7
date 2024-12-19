@@ -35,4 +35,101 @@ Content-Type: application/json
 ### Delete Notification
 DELETE {{AquAnalyzerAPI_HostAddress}}/api/notification/1
 
+### Get All Reports
+GET {{AquAnalyzerAPI_HostAddress}}/api/report
+Accept: application/json
 
+### Get Report by ID
+GET {{AquAnalyzerAPI_HostAddress}}/api/report/1
+Accept: application/json
+
+### Create Report
+POST {{AquAnalyzerAPI_HostAddress}}/api/report
+Content-Type: application/json
+
+{
+    "title": "Test Report",
+    "description": "This is a test report",
+    "userId": 1,
+    "generatedDate": "2023-10-01T00:00:00Z",
+    "visualisations": [],
+    "visualDesignerId": 1
+}
+
+
+### Update Report
+PUT {{AquAnalyzerAPI_HostAddress}}/api/report/1
+Content-Type: application/json
+
+{
+    "id": 1,
+    "title": "Updated Test Report",
+    "description": "This is an updated test report",
+    "userId": 1,
+    "generatedDate": "2023-10-01T00:00:00Z",
+    "visualisations": []
+}
+
+### Delete Report
+DELETE {{AquAnalyzerAPI_HostAddress}}/api/report/1
+
+### Search Reports by Title
+GET {{AquAnalyzerAPI_HostAddress}}/api/report/search/Test
+Accept: application/json
+
+
+### Get All Water Data
+GET {{AquAnalyzerAPI_HostAddress}}/api/waterdata
+Accept: application/json
+
+### Get Water Data by ID
+GET {{AquAnalyzerAPI_HostAddress}}/api/waterdata/1
+Accept: application/json
+
+### Create Water Data
+POST {{AquAnalyzerAPI_HostAddress}}/api/waterdata
+Content-Type: application/json
+
+{
+    "timestamp": "2024-03-19T10:00:00Z",
+    "usageVolume": 100.5,
+    "flowRate": 20.5,
+    "electricityConsumption": 50.0,
+    "productId": 123,
+    "sourceType": "freshwater",
+    "leakDetected": false,
+    "location": "Building A",
+    "hasAbnormalities": false,
+    "usesCleanEnergy": true
+}
+
+### Update Water Data
+PUT {{AquAnalyzerAPI_HostAddress}}/api/waterdata/1
+Content-Type: application/json
+
+{
+    "usageVolume": 150.5,
+    "flowRate": 25.5,
+    "electricityConsumption": 60.0,
+    "sourceType": "recycled",
+    "leakDetected": true
+}
+
+### Delete Water Data
+DELETE {{AquAnalyzerAPI_HostAddress}}/api/waterdata/1
+
+### Search Water Data by Date Range
+GET {{AquAnalyzerAPI_HostAddress}}/api/waterdata/range?start=2024-03-01T00:00:00Z&end=2024-03-19T23:59:59Z
+Accept: application/json
+
+### Get Water Data by Location
+GET {{AquAnalyzerAPI_HostAddress}}/api/waterdata/location/Building%20A
+Accept: application/json
+
+### Get Water Data with Abnormalities
+GET {{AquAnalyzerAPI_HostAddress}}/api/waterdata/abnormal
+Accept: application/json
+
+### Get Water Data with Leaks
+GET {{AquAnalyzerAPI_HostAddress}}/api/waterdata/leaks
+Accept: application/json

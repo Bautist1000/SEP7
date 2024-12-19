@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using AquAnalyzerAPI.Models;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Files;
-
 namespace AquAnalyzerAPI.Services
 {
 
@@ -27,15 +30,33 @@ namespace AquAnalyzerAPI.Services
 
         public async Task AddWaterDataAsync(WaterData data)
         {
-            await context.WaterData.AddAsync(data);
-            await context.SaveChangesAsync();
+            try
+            {
+                await context.WaterData.AddAsync(data);
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task UpdateWaterDataAsync(WaterData data)
         {
-            context.WaterData.Update(data);
+            if (data == null) throw new ArgumentNullException(nameof(data));
+
+            // Attach the main entity
+            context.Entry(data).State = EntityState.Modified;
+
+            // Only update the foreign key (no need to attach the WaterMetrics object)
+            context.Entry(data).Property(d => d.WaterMetricsId).IsModified = true;
+
+            // Save changes
             await context.SaveChangesAsync();
         }
+
+
 
         public async Task DeleteWaterDataAsync(int id)
         {

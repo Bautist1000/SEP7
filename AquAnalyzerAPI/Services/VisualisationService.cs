@@ -1,33 +1,48 @@
 using Microsoft.EntityFrameworkCore;
 using AquAnalyzerAPI.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Files;
 
 namespace AquAnalyzerAPI.Services
 {
-    public class VisualisationService(DatabaseContext context) : IVisualisationService
+    public class VisualisationService : IVisualisationService
     {
-        private readonly DatabaseContext _context = context;
+        private readonly DatabaseContext _context;
 
-        public async Task<Visualisation> AddVisualisation(Visualisation visualisation)
+        public VisualisationService(DatabaseContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<VisualisationData> AddVisualisation(VisualisationData visualisation)
         {
             await _context.Visualisations.AddAsync(visualisation);
             await _context.SaveChangesAsync();
             return visualisation;
         }
 
-        public async Task<Visualisation> GetVisualisationById(int id)
+        public async Task<VisualisationData> GetVisualisationById(int id)
         {
             return await _context.Visualisations
                 .FirstOrDefaultAsync(v => v.Id == id);
         }
 
-        public async Task<IEnumerable<Visualisation>> GetAllVisualisations()
+        public async Task<IEnumerable<VisualisationData>> GetAllVisualisations()
         {
             return await _context.Visualisations.ToListAsync();
         }
 
-        public async Task UpdateVisualisation(Visualisation updatedVisualisation)
+        public async Task<IEnumerable<VisualisationData>> GetVisualisationsByReportId(int reportId)
+        {
+            return await _context.Visualisations
+                .Where(v => v.ReportId == reportId)
+                .ToListAsync();
+        }
+
+        public async Task UpdateVisualisation(VisualisationData updatedVisualisation)
         {
             var visualisationToUpdate = await _context.Visualisations.FirstOrDefaultAsync(v => v.Id == updatedVisualisation.Id);
             if (visualisationToUpdate != null)
@@ -51,12 +66,11 @@ namespace AquAnalyzerAPI.Services
             return false;
         }
 
-        public async Task<IEnumerable<Visualisation>> SearchVisualisationsByType(string searchTerm)
+        public async Task<IEnumerable<VisualisationData>> SearchVisualisationsByType(string searchTerm)
         {
             return await _context.Visualisations
                 .Where(v => v.Type.ToLower().Contains(searchTerm.ToLower()))
                 .ToListAsync();
         }
     }
-
 }

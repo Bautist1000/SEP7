@@ -1,12 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-<ItemGroup>
-    <ProjectReference Include="..\AquAnalyzerAPI\AquAnalyzerAPI.csproj" />
-</ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+    <ItemGroup>
+    <!-- Reference to the WebAPI project -->
+    <ProjectReference Include="..\AquAnalyzerAPI\AquAnalyzerAPI.csproj" />
+
+  </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
+    </ItemGroup>
 
 </Project>

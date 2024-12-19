@@ -1,5 +1,6 @@
 using AquAnalyzerAPI.Models;
-
+using System.Collections.Generic;
+using System.Threading.Tasks;
 namespace AquAnalyzerAPI.Interfaces
 {
     public interface IWaterDataService

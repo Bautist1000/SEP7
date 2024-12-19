@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using AquAnalyzerAPI.Models;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Files;
-
 namespace AquAnalyzerAPI.Services
 {
     public class AbnormalityService : IAbnormalityService

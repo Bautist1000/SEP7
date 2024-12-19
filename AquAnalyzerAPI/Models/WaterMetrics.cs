@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace AquAnalyzerAPI.Models
 {
     public class WaterMetrics
@@ -9,9 +13,12 @@ namespace AquAnalyzerAPI.Models
         public double TotalWaterConsumption { get; set; }
         public double TotalWaterSaved { get; set; }
         public double RecycledWaterUsage { get; set; }
-        public List<Visualisation> Visualisations = [];
-        public List<WaterData> WaterData = [];
+
+        public List<WaterData>? WaterData { get; set; } = new List<WaterData>();
+
         public Abnormality? Abnormality { get; set; }
+
+        public List<VisualisationData>? Visualisations { get; set; } = new List<VisualisationData>();
 
         public WaterMetrics()
         {

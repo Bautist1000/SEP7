@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AquAnalyzerAPI", "AquAnalyzerAPI\AquAnalyzerAPI.csproj", "{3FA1B202-7C4B-4DCA-B1A7-772638490A5D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AquAnalyzerWebApp", "AquAnalyzerWebApp\AquAnalyzerWebApp.csproj", "{89E8F910-FE20-4012-A7A1-84F3B344F33C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{3FA1B202-7C4B-4DCA-B1A7-772638490A5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FA1B202-7C4B-4DCA-B1A7-772638490A5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FA1B202-7C4B-4DCA-B1A7-772638490A5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89E8F910-FE20-4012-A7A1-84F3B344F33C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89E8F910-FE20-4012-A7A1-84F3B344F33C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89E8F910-FE20-4012-A7A1-84F3B344F33C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89E8F910-FE20-4012-A7A1-84F3B344F33C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

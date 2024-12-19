@@ -1,23 +1,114 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Web
+<PageTitle>AquAnalyzer</PageTitle>
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<HeadContent>
+    <title>AquAnalyzer</title>
+</HeadContent>
+<div class="main-container">
+    <NavMenu />
+
+    <div class="main-content">
+        <div class="container-fluid p-4">
+            @Body
+        </div>
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+    <footer class="main-footer">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <p>&copy; @DateTime.Now.Year AquAnalyzer. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-right">
+                    <a href="#" class="footer-link mr-3">Privacy Policy</a>
+                    <a href="#" class="footer-link">Terms of Service</a>
+                </div>
+            </div>
         </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    </footer>
 </div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+<style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #2980b9;
+        --background-light: #e6f2ff;
+        --text-color: #2c3e50;
+        --water-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--background-light);
+        color: var(--text-color);
+        line-height: 1.6;
+    }
+
+    .main-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .main-content {
+        flex: 1;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        margin: 1rem;
+        padding: 1rem;
+    }
+
+    .main-footer {
+        background: var(--water-gradient);
+        color: white;
+        padding: 1rem 0;
+    }
+
+    .footer-link {
+        color: white;
+        text-decoration: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .footer-link:hover {
+        opacity: 0.8;
+        text-decoration: none;
+    }
+
+    /* Card Styles - Water Theme */
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    .card-header {
+        background: var(--water-gradient);
+        color: white;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+
+    /* Button Styles */
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .main-content {
+            margin: 0.5rem;
+            padding: 0.5rem;
+        }
+    }
+</style>

@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Models;
-
+using System.Threading.Tasks;
+using System.Collections.Generic;
 namespace AquAnalyzerAPI.Controllers
 {
 
@@ -12,8 +13,16 @@ namespace AquAnalyzerAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Report>>> GetAllReports()
         {
-            var reports = await _reportService.GetAllReports();
-            return Ok(reports);
+            try
+            {
+                var reports = await _reportService.GetAllReports();
+                return Ok(reports);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+
         }
 
         [HttpGet("{id}")]

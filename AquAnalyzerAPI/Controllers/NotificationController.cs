@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Models;
-
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System;
 namespace AquAnalyzerAPI.Controllers
 {
     [Route("api/[controller]")]
@@ -63,14 +65,14 @@ namespace AquAnalyzerAPI.Controllers
             return NoContent();
         }
 
-        [HttpPut("{id}/mark-as-read")]
-        public async Task<ActionResult> MarkNotificationAsRead(int id)
-        {
-            var success = await _notificationService.MarkNotificationAsRead(id, DateTime.UtcNow);
-            if (!success) return NotFound();
+        // [HttpPut("{id}/mark-as-read")]
+        // public async Task<ActionResult> MarkNotificationAsRead(int id)
+        // {
+        //     var success = await _notificationService.MarkNotificationAsRead(id, DateTime.UtcNow);
+        //     if (!success) return NotFound();
 
-            return NoContent();
-        }
+        //     return NoContent();
+        // }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNotification(int id)

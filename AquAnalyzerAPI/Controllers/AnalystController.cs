@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Models;
-
+using System.Threading.Tasks;
+using System.Collections.Generic;
 namespace AquAnalyzerAPI.Controllers
 {
     [Route("api/[controller]")]

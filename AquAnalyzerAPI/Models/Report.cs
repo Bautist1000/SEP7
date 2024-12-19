@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 namespace AquAnalyzerAPI.Models
 {
     public class Report
@@ -7,12 +9,19 @@ namespace AquAnalyzerAPI.Models
         public string Description { get; set; }
         public int UserId { get; set; }
         public DateTime GeneratedDate { get; set; }
-        public List<Visualisation> Visualisations { get; set; } = new List<Visualisation>();
-        public VisualDesigner VisualDesigner { get; set; } = null!;
+        public List<VisualisationData> Visualisations { get; set; } = new List<VisualisationData>();
+        public VisualDesigner? VisualDesigner { get; set; } = null!;
 
         public Report()
         {
 
+        }
+
+        public Report(int Id, string Title, string Description)
+        {
+            this.Id = Id;
+            this.Title = Title;
+            this.Description = Description;
         }
 
         public Report(int Id, string Title, string Description, int UserId, DateTime GeneratedDate)
