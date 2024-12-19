@@ -113,7 +113,7 @@ namespace AquAnalyzerWebApp.Services
         {
             try
             {
-                var response = await _httpClient.PutAsJsonAsync($"api/notifications/{notificationId}/read", readAt);
+                var response = await _httpClient.PutAsJsonAsync($"api/notification/{notificationId}/read", readAt);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
@@ -127,7 +127,7 @@ namespace AquAnalyzerWebApp.Services
         {
             try
             {
-                var response = await _httpClient.PutAsJsonAsync($"api/notifications/{notificationId}/status", isResolved);
+                var response = await _httpClient.PutAsJsonAsync($"api/notification/{notificationId}/status", isResolved);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)

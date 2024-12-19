@@ -45,7 +45,10 @@ namespace AquAnalyzerAPI.Services
 
         public async Task<IEnumerable<Notification>> GetAllNotifications()
         {
-            return await _context.Notifications.ToListAsync();
+            return await _context.Notifications
+                    .Include(n => n.Abnormality) // Include Abnormality
+                    .OrderByDescending(n => n.CreatedAt)
+                    .ToListAsync();
         }
 
         public async Task<Notification> GetNotificationById(int id)

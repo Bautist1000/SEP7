@@ -68,8 +68,17 @@
 
     protected override async Task OnInitializedAsync()
     {
+         Console.WriteLine("Loading notifications...");
         await LoadNotifications();
+        if (notifications != null)
+        {
+            foreach (var n in notifications)
+            {
+                Console.WriteLine($"Notification {n.Id}: HasAbnormality={n.Abnormality != null}, HasWaterDataId={n.Abnormality?.WaterDataId.HasValue}");
+            }
+        }
         SetupRefreshTimer();
+    
     }
 
     private void SetupRefreshTimer()
@@ -93,27 +102,35 @@
     private async Task MarkAsRead(Notification notification)
     {
         try
+    {
+        Console.WriteLine($"Marking notification {notification.Id} as read...");
+        var success = await NotificationsService.MarkNotificationAsRead(notification.Id, DateTime.UtcNow);
+        
+        if (success)
         {
-            await NotificationsService.MarkNotificationAsRead(notification.Id, DateTime.Now);
+            Console.WriteLine("Successfully marked as read");
             await LoadNotifications();
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Error marking notification as read: {ex.Message}");
+            Console.WriteLine("Failed to mark as read");
         }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error marking notification as read: {ex.Message}");
+    }
     }
 
     private async Task LoadNotifications()
     {
         try
         {
-            var result = await NotificationsService.GetAllNotifications();
-            notifications = result?.ToList() ?? new List<Notification>();
+            notifications = (await NotificationsService.GetAllNotifications()).ToList();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading notifications: {ex.Message}");
-            notifications = new List<Notification>();
         }
     }
 
@@ -216,6 +233,8 @@
         display: flex;
         gap: 1rem;
         margin-top: 1rem;
+        visibility: visible;
+        /* Ensure visibility */
     }
 
     .btn {
@@ -223,28 +242,35 @@
         align-items: center;
         gap: 0.5rem;
         padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
         border: none;
         cursor: pointer;
         font-weight: 500;
         transition: all 0.2s ease;
+        visibility: visible;
+        /* Ensure visibility */
+        opacity: 1;
+        /* Ensure opacity */
     }
 
     .btn-primary {
         background-color: #007bff;
-        color: white;
+        color: white !important;
+        /* Force color */
     }
 
     .btn-success {
         background-color: #28a745;
-        color: white;
+        color: white !important;
+        /* Force color */
     }
 
-    .btn:hover {
-        transform: translateY(-1px);
-        opacity: 0.9;
+    /* Debug outlines */
+    .notification-card {
+        border: 1px solid #ddd;
     }
 
-    .btn i {
-        font-size: 1rem;
+    .abnormality-details {
+        border: 1px solid #eee;
     }
 </style>
