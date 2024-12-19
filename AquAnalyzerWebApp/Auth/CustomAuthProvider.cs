@@ -1,35 +1,59 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AquAnalyzerAPI.Interfaces; 
+using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerWebApp.Services;
 
 namespace AquAnalyzerWebApp.Auth
 {
-    public class CustomAuthProvider : AuthenticationStateProvider
+    public class CustomAuthProvider : AuthenticationStateProvider, IDisposable
     {
-        private readonly IAuthService authService;
+        private readonly IAuthService _authService;
+        private bool _initialized;
+        private bool _disposed;
 
         public CustomAuthProvider(IAuthService authService)
         {
-            this.authService = authService;
-            authService.OnAuthStateChanged += AuthStateChanged; // Ensure your auth service has this event
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _authService.OnAuthStateChanged += AuthStateChanged;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            // Fetch the ClaimsPrincipal for the authenticated user
-            ClaimsPrincipal principal = await authService.GetAuthAsync();
+            if (!_initialized)
+            {
+                _initialized = true;
+                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+            }
 
-            // Return the authentication state
-            return new AuthenticationState(principal);
+            try
+            {
+                var principal = await _authService.GetAuthAsync();
+                return new AuthenticationState(principal ?? new ClaimsPrincipal(new ClaimsIdentity()));
+            }
+            catch (Exception)
+            {
+                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+            }
         }
 
         private void AuthStateChanged(ClaimsPrincipal principal)
         {
-            NotifyAuthenticationStateChanged(
-                Task.FromResult(new AuthenticationState(principal))
-            );
+            if (!_disposed)
+            {
+                NotifyAuthenticationStateChanged(
+                    Task.FromResult(new AuthenticationState(principal))
+                );
+            }
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                _authService.OnAuthStateChanged -= AuthStateChanged;
+            }
         }
     }
 }

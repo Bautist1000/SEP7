@@ -1,10 +1,11 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager NavigationManager
 
 <nav class="navbar navbar-expand-lg navbar-light bg-water-light shadow-sm">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">
-            @* <img src="/water-logo.svg" width="40" height="40" class="d-inline-block align-top" alt="AquAnalyzer Logo" /> *@
             <span class="brand-text ml-2">AquAnalyzer</span>
         </a>
         <div class="hamburger" @onclick="ToggleMenu">
@@ -13,28 +14,44 @@
             <div></div>
         </div>
         <div class="collapse navbar-collapse nav-links @(isMenuOpen ? "show" : "")" id="navbarNav">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/water-dashboard">
-                        <i class="fas fa-chart-line mr-2"></i>Dashboard
-                    </NavLink>
-                </li>
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/manage-waterdata">
-                        <i class="fas fa-water mr-2"></i>Manage Data
-                    </NavLink>
-                </li>
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/analytics">
-                        <i class="fas fa-analytics mr-2"></i>Analytics
-                    </NavLink>
-                </li>
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="/notifications">
-                        <i class="fas fa-analytics mr-2"></i>Notifications
-                    </NavLink>
-                </li>
-            </ul>
+            <AuthorizeView>
+                <Authorized>
+                    <ul class="navbar-nav mr-auto">
+                        <AuthorizeView Roles="Analyst">
+                            <Authorized Context="analystContext">
+                                <li class="nav-item">
+                                    <NavLink class="nav-link" href="/water-dashboard">
+                                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                                    </NavLink>
+                                </li>
+                                <li class="nav-item">
+                                    <NavLink class="nav-link" href="/manage-waterdata">
+                                        <i class="fas fa-water mr-2"></i>Manage Data
+                                    </NavLink>
+                                </li>
+                                <li class="nav-item">
+                                    <NavLink class="nav-link" href="/notifications">
+                                        <i class="fas fa-bell mr-2"></i>Notifications
+                                    </NavLink>
+                                </li>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView Roles="VisualDesigner">
+                            <Authorized Context="designerContext">
+                                <li class="nav-item">
+                                    <NavLink class="nav-link" href="/analytics">
+                                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                                    </NavLink>
+                                </li>
+                            </Authorized>
+                        </AuthorizeView>
+                    </ul>
+                </Authorized>
+            </AuthorizeView>
+            <div class="profile-section">
+                <AquAnalyzerWebApp.Components.Layout.ProfileBar />
+            </div>
         </div>
     </div>
 </nav>

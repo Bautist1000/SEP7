@@ -64,10 +64,30 @@
         if (!claims.Identity.IsAuthenticated) return;
 
         role = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-        // Add user info loading logic here
-        StateHasChanged();
-    }
+        var username = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+        var email = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
+        if (role == "Analyst")
+        {
+            user = new Analyst
+                {
+                    Username = username ?? string.Empty,
+                    Email = email ?? string.Empty,
+                    Role = "Analyst"
+                };
+        }
+        else if (role == "VisualDesigner")
+        {
+            user = new VisualDesigner
+                {
+                    Username = username ?? string.Empty,
+                    Email = email ?? string.Empty,
+                    Role = "VisualDesigner"
+                };
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
     private void ToggleDropdown() => isDropdownOpen = !isDropdownOpen;
 
     private void GoToDashboard()
