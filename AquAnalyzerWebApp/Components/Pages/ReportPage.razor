@@ -2,45 +2,123 @@
 @page "/report/new/{Id:int}"
 @page "/report/edit/{Id:int}"
 @using AquAnalyzerAPI.Models
+@using Radzen.Blazor
 @inject IReportPageService ReportPageService
 @inject IVisualisationPageService VisualisationPageService
 @inject NavigationManager NavigationManager
 
 <div class="container">
-    <h3>@(IsNewReport ? "Create Report" : "Edit Report")</h3>
-
-    <div class="form-group mb-3">
-        <label>Title</label>
-        <input class="form-control" @bind="report.Title" />
+    <div class="header d-flex justify-content-between align-items-center mb-4">
+        <h3>@(isNewReport ? "Create Report" : "Edit Report")</h3>
+        <button class="btn btn-outline-secondary" @onclick="BackToList">Back to Reports</button>
     </div>
 
-    <div class="form-group mb-3">
-        <label>Description</label>
-        <textarea class="form-control" @bind="report.Description"></textarea>
-    </div>
+    <div class="report-form">
+        <div class="form-group mb-3">
+            <label>Title</label>
+            <input class="form-control" @bind="report.Title" />
+        </div>
 
-    <h4>Visualizations</h4>
-    <div class="mb-3">
-        <select class="form-control" @bind="selectedVisualizationType">
-            <option value="">Select type...</option>
-            <option value="barchart">Bar Chart</option>
-            <option value="linechart">Line Chart</option>
-            <option value="metricsbar">Metrics Bar</option>
-        </select>
-        <button class="btn btn-secondary mt-2" @onclick="AddVisualization">Add Visualization</button>
-    </div>
+        <div class="form-group mb-3">
+            <label>Description</label>
+            <textarea class="form-control" rows="3" @bind="report.Description"></textarea>
+        </div>
 
-    @if (report.Visualisations?.Any() == true)
-    {
-        foreach (var vis in report.Visualisations)
+        @if (!isNewReport)
         {
-            <Visualisation VisualisationData="@vis" />
-        }
-    }
+            <div class="visualisation-section mt-4">
+                <div class="section-header d-flex justify-content-between align-items-center">
+                    <h4>Add Visualisation</h4>
+                </div>
 
-    <div class="mt-3">
-        <button class="btn btn-primary" @onclick="SaveReport">Save</button>
-        <button class="btn btn-secondary" @onclick="BackToList">Cancel</button>
+                <div class="time-range-section card p-3 mb-4">
+                    <h5>1. Select Time Range</h5>
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="flex-grow-1">
+                            <label>Start Date</label>
+                            <RadzenDatePicker @bind-Value="startDate" Class="w-100" DateFormat="d" />
+                        </div>
+                        <div class="flex-grow-1">
+                            <label>End Date</label>
+                            <RadzenDatePicker @bind-Value="endDate" Class="w-100" DateFormat="d" />
+                        </div>
+                        <div class="d-flex align-items-end">
+                            <button class="btn btn-primary" @onclick="ApplyTimeRange"
+                                disabled="@(!startDate.HasValue || !endDate.HasValue)">
+                                Apply Range
+                            </button>
+                        </div>
+                    </div>
+                    @if (showNoDataMessage)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            No data found within this range. Please select different dates.
+                        </div>
+                    }
+                </div>
+
+                @if (isTimeRangeSelected && !showNoDataMessage)
+                {
+                    <div class="data-selection card p-3 mb-4">
+                        <h5>2. Select Data and Chart Type</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label>Chart Type</label>
+                                    <RadzenDropDown @bind-Value="selectedVisualisationType" Data="@chartTypes" Class="w-100" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Water Data</label>
+                                    <RadzenListBox @bind-Value="selectedWaterData" Multiple="true" Data="@filteredWaterDataList"
+                                        TextProperty="Location" ValueProperty="Id" Change=@(args => OnDataSelectionChange())
+                                        Class="w-100" Style="height: 200px;" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Metrics</label>
+                                    <RadzenListBox @bind-Value="selectedMetrics" Multiple="true"
+                                        Data="@filteredWaterMetricsList" TextProperty="DateGeneratedOn" ValueProperty="Id"
+                                        Change=@(args => OnDataSelectionChange()) Class="w-100" Style="height: 200px;" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button class="btn btn-primary" @onclick="AddVisualisation" disabled="@(!CanAddVisualisation)">
+                                Add Visualisation
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                @if (report.Visualisations?.Any() == true)
+                {
+                    <div class="visualisations-list mt-4">
+                        <h4>Current Visualisations</h4>
+                        <div class="row">
+                            @foreach (var vis in report.Visualisations)
+                            {
+                                <div class="col-12 mb-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <Visualisation VisualisationData="@vis" />
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="actions mt-4">
+            <button class="btn btn-primary me-2" @onclick="SaveReport">Save Report</button>
+            <button class="btn btn-secondary" @onclick="BackToList">Cancel</button>
+        </div>
     </div>
 </div>
 
@@ -49,74 +127,160 @@
     public int Id { get; set; }
 
     private Report report = new();
-    private string selectedVisualizationType;
-    private bool isNewReportFlag;
+    private bool isNewReport;
+    private DateTime? startDate;
+    private DateTime? endDate;
+    private bool isTimeRangeSelected;
+    private string selectedVisualisationType;
+    private bool showNoDataMessage;
+    private List<WaterData> waterDataList = new();
+    private List<WaterMetrics> waterMetricsList = new();
+    private List<WaterData> filteredWaterDataList = new();
+    private List<WaterMetrics> filteredWaterMetricsList = new();
+    private List<WaterData> selectedWaterData = new();
+    private List<WaterMetrics> selectedMetrics = new();
+    private List<string> chartTypes = new()
+{
+"barchart",
+"linechart",
+"metricsbar"
+};
 
-    private bool IsNewReport => NavigationManager.Uri.Contains("/new/");
+    private bool CanAddVisualisation =>
+    !string.IsNullOrEmpty(selectedVisualisationType) &&
+    isTimeRangeSelected &&
+    (selectedWaterData?.Any() == true || selectedMetrics?.Any() == true);
 
     protected override async Task OnInitializedAsync()
     {
-        isNewReportFlag = IsNewReport;
+        isNewReport = NavigationManager.Uri.Contains("/new/");
 
-        if (!IsNewReport)
+        try
         {
-            try
+            if (!isNewReport)
             {
                 report = await ReportPageService.GetReportById(Id);
             }
-            catch (HttpRequestException ex)
+            else
             {
-                Console.WriteLine($"Error fetching report with ID {Id}: {ex.Message}");
-                NavigationManager.NavigateTo("/reports");
+                report = new Report
+                    {
+                        Id = Id,
+                        GeneratedDate = DateTime.Now
+                    };
+            }
+
+            // Load initial data
+            waterDataList = (await VisualisationPageService.GetAllWaterDataAsync()).ToList();
+            waterMetricsList = (await VisualisationPageService.GetAllWaterMetricsAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing report: {ex.Message}");
+            NavigationManager.NavigateTo("/reports");
+        }
+    }
+
+    private void ApplyTimeRange()
+    {
+        if (startDate.HasValue && endDate.HasValue)
+        {
+            filteredWaterDataList = waterDataList
+            .Where(w => w.Timestamp >= startDate.Value && w.Timestamp <= endDate.Value)
+            .OrderBy(w => w.Timestamp)
+            .ToList();
+
+            filteredWaterMetricsList = waterMetricsList
+            .Where(m => m.DateGeneratedOn >= startDate.Value && m.DateGeneratedOn <= endDate.Value)
+            .OrderBy(m => m.DateGeneratedOn)
+            .ToList();
+
+            // Check if any data was found
+            if (!filteredWaterDataList.Any() && !filteredWaterMetricsList.Any())
+            {
+                showNoDataMessage = true;
+                isTimeRangeSelected = false;
+            }
+            else
+            {
+                showNoDataMessage = false;
+                isTimeRangeSelected = true;
             }
         }
         else
         {
-            report.Id = Id;
-            report.GeneratedDate = DateTime.Now;
+            isTimeRangeSelected = false;
+            showNoDataMessage = false;
+            filteredWaterDataList.Clear();
+            filteredWaterMetricsList.Clear();
         }
+    }
+
+    private async Task AddVisualisation()
+    {
+        if (!CanAddVisualisation) return;
+
+        try
+        {
+            if (isNewReport)
+            {
+                await SaveReport();
+            }
+
+            var vis = new VisualisationData
+                {
+                    Type = selectedVisualisationType,
+                    ReportId = report.Id,
+                    RawDataUsed = selectedWaterData.ToList(),
+                    MetricsUsed = selectedMetrics.ToList(),
+                    ChartConfig = new ChartConfiguration
+                    {
+                        Title = $"{selectedVisualisationType} - {DateTime.Now.ToShortDateString()}",
+                        XAxisLabel = "Time",
+                        YAxisLabel = "Value",
+                        ShowLegend = true,
+                        ShowGrid = true
+                    }
+                };
+
+            await VisualisationPageService.AddVisualisation(vis);
+            report.Visualisations.Add(vis);
+
+            // Reset selections
+            selectedVisualisationType = null;
+            selectedWaterData.Clear();
+            selectedMetrics.Clear();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding visualisation: {ex.Message}");
+        }
+    }
+
+    private void OnDataSelectionChange()
+    {
+        StateHasChanged();
     }
 
     private async Task SaveReport()
     {
         try
         {
-            if (IsNewReport)
+            if (isNewReport)
             {
                 report = await ReportPageService.AddReport(report);
-                Console.WriteLine("Created new report {Id}", report.Id);
-                isNewReportFlag = false; // Update the flag to indicate the report is no longer new
+                isNewReport = false;
             }
             else
             {
                 await ReportPageService.UpdateReport(report);
-                Console.WriteLine("Updated report {Id}:", report.Id);
             }
+            NavigationManager.NavigateTo("/reports");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error saving report {Id}:", report.Id);
+            Console.WriteLine($"Error saving report: {ex.Message}");
         }
-    }
-
-    private async Task AddVisualization()
-    {
-        if (string.IsNullOrEmpty(selectedVisualizationType)) return;
-
-        if (IsNewReport)
-        {
-            // Save the report first if it is new
-            await SaveReport();
-        }
-
-        var vis = new VisualisationData
-            {
-                Type = selectedVisualizationType,
-                ReportId = report.Id
-            };
-
-        report.Visualisations.Add(vis);
-        await VisualisationPageService.AddVisualisation(vis);
     }
 
     private void BackToList()
@@ -124,3 +288,28 @@
         NavigationManager.NavigateTo("/reports");
     }
 }
+
+<style>
+    .time-range-section {
+        background-color: #f8f9fa;
+    }
+
+    .data-selection {
+        background-color: #f8f9fa;
+    }
+
+    .visualisation-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-header {
+        margin-bottom: 1rem;
+    }
+
+    .actions {
+        border-top: 1px solid #dee2e6;
+        padding-top: 1rem;
+    }
+</style>

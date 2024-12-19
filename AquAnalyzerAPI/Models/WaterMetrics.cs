@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace AquAnalyzerAPI.Models
 {
@@ -18,7 +19,8 @@ namespace AquAnalyzerAPI.Models
 
         public Abnormality? Abnormality { get; set; }
 
-        public List<VisualisationData>? Visualisations { get; set; } = new List<VisualisationData>();
+        [JsonIgnore]
+        public virtual ICollection<VisualisationData> Visualisations { get; set; } = new List<VisualisationData>();
 
         public WaterMetrics()
         {

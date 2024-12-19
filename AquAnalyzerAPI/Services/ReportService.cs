@@ -1,45 +1,78 @@
-using Microsoft.EntityFrameworkCore;
-using AquAnalyzerAPI.Models;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
-using AquAnalyzerAPI.Interfaces;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using AquAnalyzerAPI.Files;
+using AquAnalyzerAPI.Interfaces;
+using AquAnalyzerAPI.Dtos;
+using AquAnalyzerAPI.Models;
 
 namespace AquAnalyzerAPI.Services
 {
-    public class ReportService(DatabaseContext context) : IReportService
+    public class ReportService : IReportService
     {
-        private readonly DatabaseContext _context = context;
+        private readonly DatabaseContext _context;
 
-        public async Task<Report> AddReport(Report report)
+        public ReportService(DatabaseContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<ReportDto> AddReport(Report report)
         {
             await _context.Reports.AddAsync(report);
             await _context.SaveChangesAsync();
-            return report;
+            return MapToDto(report);
         }
 
-        public async Task<Report> GetReportById(int id)
+        public async Task<ReportDto> GetReportById(int id)
         {
-            return await _context.Reports.FirstOrDefaultAsync(r => r.Id == id);
+            var report = await _context.Reports
+                .Include(r => r.Visualisations)
+                    .ThenInclude(v => v.MetricsUsed)
+                .Include(r => r.Visualisations)
+                    .ThenInclude(v => v.RawDataUsed)
+                .Include(r => r.Visualisations)
+                    .ThenInclude(v => v.ChartConfig)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            return MapToDto(report);
         }
 
-        public async Task<IEnumerable<Report>> GetAllReports()
+        public async Task<IEnumerable<ReportDto>> GetAllReports()
         {
-            return await _context.Reports.ToListAsync();
+            var reports = await _context.Reports
+                .Include(r => r.Visualisations)
+                .ToListAsync();
+
+            return reports.Select(MapToDto);
         }
 
-        public async Task UpdateReport(Report updatedReport)
+        public async Task<ReportDto> UpdateReport(Report updatedReport)
         {
-            var reportToUpdate = await _context.Reports.FirstOrDefaultAsync(r => r.Id == updatedReport.Id);
+            var reportToUpdate = await _context.Reports
+                .Include(r => r.Visualisations)
+                .FirstOrDefaultAsync(r => r.Id == updatedReport.Id);
+
             if (reportToUpdate != null)
             {
                 reportToUpdate.Title = updatedReport.Title;
                 reportToUpdate.Description = updatedReport.Description;
-                reportToUpdate.UserId = updatedReport.UserId;
-                reportToUpdate.Visualisations = updatedReport.Visualisations;
+
+                foreach (var vis in updatedReport.Visualisations)
+                {
+                    var existingVis = reportToUpdate.Visualisations
+                        .FirstOrDefault(v => v.Id == vis.Id);
+
+                    if (existingVis == null)
+                        reportToUpdate.Visualisations.Add(vis);
+                }
+
                 await _context.SaveChangesAsync();
+                return MapToDto(reportToUpdate);
             }
+
+            return null;
         }
 
         public async Task<bool> DeleteReport(int id)
@@ -54,12 +87,55 @@ namespace AquAnalyzerAPI.Services
             return false;
         }
 
-        public async Task<IEnumerable<Report>> SearchReportsByTitle(string searchTerm)
+        public async Task<IEnumerable<ReportDto>> SearchReportsByTitle(string searchTerm)
         {
-            return await _context.Reports
+            var reports = await _context.Reports
                 .Where(r => r.Title.ToLower().Contains(searchTerm.ToLower()))
                 .ToListAsync();
+
+            return reports.Select(MapToDto);
+        }
+
+        private static ReportDto MapToDto(Report report)
+        {
+            if (report == null) return null;
+
+            return new ReportDto
+            {
+                Id = report.Id,
+                Title = report.Title,
+                Description = report.Description,
+                GeneratedDate = report.GeneratedDate,
+                Visualisations = report.Visualisations?.Select(v => new VisualisationDataDto
+                {
+                    Id = v.Id,
+                    Type = v.Type,
+                    ChartConfig = v.ChartConfig != null ? new ChartConfiguration
+                    {
+                        Title = v.ChartConfig.Title,
+                        XAxisLabel = v.ChartConfig.XAxisLabel,
+                        YAxisLabel = v.ChartConfig.YAxisLabel,
+                        ColorScheme = v.ChartConfig.ColorScheme,
+                        ShowLegend = v.ChartConfig.ShowLegend,
+                        ShowGrid = v.ChartConfig.ShowGrid
+                    } : null,
+                    RawDataUsed = v.RawDataUsed?.Select(w => new WaterDataDto
+                    {
+                        Id = w.Id,
+                        Timestamp = w.Timestamp,
+                        UsageVolume = w.UsageVolume,
+                        Location = w.Location,
+                        SourceType = w.SourceType
+                    }).ToList(),
+                    MetricsUsed = v.MetricsUsed?.Select(m => new WaterMetricsDto
+                    {
+                        Id = m.Id,
+                        DateGeneratedOn = m.DateGeneratedOn,
+                        WaterEfficiencyRatio = m.WaterEfficiencyRatio,
+                        TotalWaterConsumption = m.TotalWaterConsumption
+                    }).ToList()
+                }).ToList()
+            };
         }
     }
-
 }

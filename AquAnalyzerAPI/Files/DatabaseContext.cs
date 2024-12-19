@@ -41,24 +41,64 @@ namespace AquAnalyzerAPI.Files
                 .Property(s => s.Id)
                 .ValueGeneratedOnAdd();
 
-            modelBuilder.Entity<WaterMetrics>()
-                .HasMany(w => w.Visualisations)
-                .WithMany(v => v.MetricsUsed)
-                .UsingEntity(
-                    "WaterMetricsVisualisation",
-                    l => l.HasOne(typeof(VisualisationData)).WithMany().HasForeignKey("VisualisationId"),
-                    r => r.HasOne(typeof(WaterMetrics)).WithMany().HasForeignKey("WaterMetricsId"));
+            modelBuilder.Entity<Report>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired();
+                entity.Property(e => e.Description).IsRequired();
+                entity.Property(e => e.GeneratedDate).IsRequired();
 
-            modelBuilder.Entity<WaterData>()
-                .HasMany(w => w.Visualisations)
-                .WithMany(v => v.RawDataUsed)
-                .UsingEntity(
-                    "WaterDataVisualisation",
-                    l => l.HasOne(typeof(VisualisationData)).WithMany().HasForeignKey("VisualisationId"),
-                    r => r.HasOne(typeof(WaterData)).WithMany().HasForeignKey("WaterDataId"));
+                entity.HasOne(r => r.VisualDesigner)
+                    .WithMany(v => v.GeneratedReports)
+                    .HasForeignKey(r => r.UserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasMany(r => r.Visualisations)
+                    .WithOne(v => v.Report)
+                    .HasForeignKey(v => v.ReportId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<VisualisationData>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Type).IsRequired();
+                entity.Property(e => e.ReportId).IsRequired();
+
+                // Configure ChartConfiguration as owned entity
+                entity.OwnsOne(v => v.ChartConfig, config =>
+                {
+                    config.Property(c => c.Title).IsRequired();
+                    config.Property(c => c.XAxisLabel).IsRequired();
+                    config.Property(c => c.YAxisLabel).IsRequired();
+                    config.Property(c => c.ColorScheme).IsRequired();
+                });
+
+                // Many-to-Many relationships
+                entity.HasMany(v => v.MetricsUsed)
+                    .WithMany(m => m.Visualisations)
+                    .UsingEntity(
+                        "VisualisationWaterMetrics",
+                        l => l.HasOne(typeof(WaterMetrics)).WithMany().HasForeignKey("WaterMetricsId"),
+                        r => r.HasOne(typeof(VisualisationData)).WithMany().HasForeignKey("VisualisationId"));
+
+                entity.HasMany(v => v.RawDataUsed)
+                    .WithMany(w => w.Visualisations)
+                    .UsingEntity(
+                        "VisualisationWaterData",
+                        l => l.HasOne(typeof(WaterData)).WithMany().HasForeignKey("WaterDataId"),
+                        r => r.HasOne(typeof(VisualisationData)).WithMany().HasForeignKey("VisualisationId"));
+            });
 
             modelBuilder.Entity<WaterData>(entity =>
             {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Timestamp).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.SourceType).IsRequired();
+                entity.Property(e => e.UsageVolume).IsRequired();
+                entity.Property(e => e.FlowRate).IsRequired();
+
                 entity.HasOne(w => w.WaterMetrics)
                     .WithMany(m => m.WaterData)
                     .HasForeignKey(w => w.WaterMetricsId)
@@ -70,15 +110,14 @@ namespace AquAnalyzerAPI.Files
                     .HasForeignKey<Abnormality>(a => a.WaterDataId)
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.SetNull);
-
-                entity.Property(w => w.Location).IsRequired();
-                entity.Property(w => w.SourceType).IsRequired();
-                entity.Property(w => w.Timestamp).IsRequired();
             });
 
             modelBuilder.Entity<WaterMetrics>(entity =>
             {
-                entity.Property(w => w.DateGeneratedOn).IsRequired();
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.DateGeneratedOn).IsRequired();
+                entity.Property(e => e.TotalWaterConsumption).IsRequired();
+                entity.Property(e => e.WaterEfficiencyRatio).IsRequired();
 
                 entity.HasOne(w => w.Abnormality)
                     .WithOne(a => a.WaterMetrics)
@@ -89,16 +128,18 @@ namespace AquAnalyzerAPI.Files
 
             modelBuilder.Entity<Abnormality>(entity =>
             {
-                entity.Property(a => a.Timestamp).IsRequired();
-                entity.Property(a => a.Description).IsRequired();
-                entity.Property(a => a.Type).IsRequired();
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Timestamp).IsRequired();
+                entity.Property(e => e.Description).IsRequired();
+                entity.Property(e => e.Type).IsRequired();
             });
 
             modelBuilder.Entity<Notification>(entity =>
             {
-                entity.Property(n => n.Message).IsRequired();
-                entity.Property(n => n.Type).IsRequired();
-                entity.Property(n => n.CreatedAt).IsRequired();
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Message).IsRequired();
+                entity.Property(e => e.Type).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
 
                 entity.HasOne(n => n.Abnormality)
                     .WithMany()
@@ -106,19 +147,6 @@ namespace AquAnalyzerAPI.Files
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.SetNull);
             });
-
-            modelBuilder.Entity<VisualisationData>(entity =>
-            {
-                entity.Property(v => v.Type).IsRequired();
-
-                entity.HasOne(v => v.Report)
-                    .WithMany(r => r.Visualisations)
-                    .HasForeignKey(v => v.ReportId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            modelBuilder.Entity<VisualisationData>()
-                .OwnsOne(v => v.ChartConfig);
         }
     }
 }

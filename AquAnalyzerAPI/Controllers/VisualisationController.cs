@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Models;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 namespace AquAnalyzerAPI.Controllers
 {
     [ApiController]
@@ -86,8 +84,11 @@ namespace AquAnalyzerAPI.Controllers
         {
             try
             {
-                await _visualisationService.UpdateChartType(id, chartType);
-                return NoContent();
+                var updatedVis = await _visualisationService.UpdateChartType(id, chartType);
+                if (updatedVis == null)
+                    return NotFound();
+
+                return Ok(updatedVis);
             }
             catch (Exception)
             {

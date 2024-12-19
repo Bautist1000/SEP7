@@ -1,16 +1,9 @@
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using AquAnalyzerAPI.Files;
 using Radzen;
 using AquAnalyzerWebApp.Services;
 using AquAnalyzerWebApp.Interfaces;
 using AquAnalyzerWebApp.Components;
-using AquAnalyzerWebApp.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace AquAnalyzerAPI.Models
 {
@@ -10,8 +11,9 @@ namespace AquAnalyzerAPI.Models
         public string Description { get; set; }
         public int UserId { get; set; }
         public DateTime GeneratedDate { get; set; }
-        public List<VisualisationData> Visualisations { get; set; } = new List<VisualisationData>();
-        public VisualDesigner? VisualDesigner { get; set; } = null!;
+        public virtual ICollection<VisualisationData> Visualisations { get; set; } = new List<VisualisationData>();
+        [JsonIgnore]
+        public virtual VisualDesigner VisualDesigner { get; set; }
 
         public Report()
         {

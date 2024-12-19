@@ -18,47 +18,47 @@ namespace AquAnalyzerWebApp.Services
 
         public async Task<VisualisationData> GetVisualisationById(int id)
         {
-            var response = await _httpClient.GetAsync($"api/visualisations/{id}");
+            var response = await _httpClient.GetAsync($"api/visualisation/{id}");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<VisualisationData>() ?? new VisualisationData(id, string.Empty, 0);
         }
 
         public async Task<IEnumerable<VisualisationData>> GetAllVisualisations()
         {
-            var response = await _httpClient.GetAsync("api/visualisations");
+            var response = await _httpClient.GetAsync("api/visualisation");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<IEnumerable<VisualisationData>>() ?? new List<VisualisationData>();
         }
 
         public async Task<IEnumerable<VisualisationData>> GetVisualisationsByReportId(int reportId)
         {
-            var response = await _httpClient.GetAsync($"api/visualisations/report/{reportId}");
+            var response = await _httpClient.GetAsync($"api/visualisation/report/{reportId}");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<IEnumerable<VisualisationData>>() ?? new List<VisualisationData>();
         }
 
-        public async Task<VisualisationData> AddVisualisation(VisualisationData visualisation)
+        public async Task AddVisualisation(VisualisationData visualisation)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/visualisations", visualisation);
+            var response = await _httpClient.PostAsJsonAsync("api/visualisation", visualisation);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<VisualisationData>() ?? new VisualisationData(0, string.Empty, 0);
+            // return await response.Content.ReadFromJsonAsync<VisualisationData>() ?? new VisualisationData(0, string.Empty, 0);
         }
 
         public async Task UpdateVisualisation(VisualisationData visualisation)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/visualisations/{visualisation.Id}", visualisation);
+            var response = await _httpClient.PutAsJsonAsync($"api/visualisation/{visualisation.Id}", visualisation);
             response.EnsureSuccessStatusCode();
         }
 
         public async Task DeleteVisualisation(int id)
         {
-            var response = await _httpClient.DeleteAsync($"api/visualisations/{id}");
+            var response = await _httpClient.DeleteAsync($"api/visualisation/{id}");
             response.EnsureSuccessStatusCode();
         }
 
         public async Task<IEnumerable<WaterData>> GetWaterDataForChart(int visualisationId, DateTime? startDate = null, DateTime? endDate = null)
         {
-            var url = $"api/visualisations/{visualisationId}/waterdata";
+            var url = $"api/visualisation/{visualisationId}/waterdata";
             if (startDate.HasValue && endDate.HasValue)
             {
                 url += $"?startDate={startDate.Value:yyyy-MM-dd}&endDate={endDate.Value:yyyy-MM-dd}";
@@ -71,7 +71,7 @@ namespace AquAnalyzerWebApp.Services
 
         public async Task<IEnumerable<WaterMetrics>> GetMetricsForChart(int visualisationId, DateTime? startDate = null, DateTime? endDate = null)
         {
-            var url = $"api/visualisations/{visualisationId}/metrics";
+            var url = $"api/visualisation/{visualisationId}/metrics";
             if (startDate.HasValue && endDate.HasValue)
             {
                 url += $"?startDate={startDate.Value:yyyy-MM-dd}&endDate={endDate.Value:yyyy-MM-dd}";
@@ -85,8 +85,22 @@ namespace AquAnalyzerWebApp.Services
         public async Task UpdateChartType(int visualisationId, string chartType)
         {
             var content = new StringContent($"\"{chartType}\"", System.Text.Encoding.UTF8, "application/json");
-            var response = await _httpClient.PutAsync($"api/visualisations/{visualisationId}/charttype", content);
+            var response = await _httpClient.PutAsync($"api/visualisation/{visualisationId}/charttype", content);
             response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<IEnumerable<WaterData>> GetAllWaterDataAsync()
+        {
+            var response = await _httpClient.GetAsync("api/waterdata");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<IEnumerable<WaterData>>() ?? new List<WaterData>();
+        }
+
+        public async Task<IEnumerable<WaterMetrics>> GetAllWaterMetricsAsync()
+        {
+            var response = await _httpClient.GetAsync("api/watermetrics");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<IEnumerable<WaterMetrics>>() ?? new List<WaterMetrics>();
         }
 
     }

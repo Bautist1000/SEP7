@@ -3,6 +3,8 @@ namespace AquAnalyzerAPI.Models
 {
     public class ChartConfiguration
     {
+        public int Id { get; set; }
+        public int VisualisationDataId { get; set; }
         public string Title { get; set; }
         public string XAxisLabel { get; set; }
         public string YAxisLabel { get; set; }
@@ -12,7 +14,6 @@ namespace AquAnalyzerAPI.Models
 
         public ChartConfiguration()
         {
-            // Default values
             ColorScheme = "default";
             Title = "Water Usage Chart";
             XAxisLabel = "Time";
