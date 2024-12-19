@@ -32,14 +32,11 @@ namespace AquAnalyzerAPI.Services
         {
             try
             {
-                Console.WriteLine($"Service attempting to add water data: {System.Text.Json.JsonSerializer.Serialize(data)}");
                 await context.WaterData.AddAsync(data);
                 await context.SaveChangesAsync();
-                Console.WriteLine($"Data successfully saved with ID: {data.Id}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in service adding water data: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 throw;
             }

@@ -27,11 +27,11 @@ namespace AquAnalyzerAPI.Files
             }
         }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // User inheritance configuration
             modelBuilder.Entity<User>().UseTpcMappingStrategy();
             modelBuilder.Entity<Analyst>()
                 .ToTable("Analyst")
@@ -42,7 +42,6 @@ namespace AquAnalyzerAPI.Files
                 .Property(s => s.Id)
                 .ValueGeneratedOnAdd();
 
-            // WaterMetrics to Visualisation many-to-many relationship
             modelBuilder.Entity<WaterMetrics>()
                 .HasMany(w => w.Visualisations)
                 .WithMany(v => v.MetricsUsed)
@@ -51,7 +50,6 @@ namespace AquAnalyzerAPI.Files
                     l => l.HasOne(typeof(VisualisationData)).WithMany().HasForeignKey("VisualisationId"),
                     r => r.HasOne(typeof(WaterMetrics)).WithMany().HasForeignKey("WaterMetricsId"));
 
-            // WaterData to Visualisation many-to-many relationship
             modelBuilder.Entity<WaterData>()
                 .HasMany(w => w.Visualisations)
                 .WithMany(v => v.RawDataUsed)
@@ -60,7 +58,6 @@ namespace AquAnalyzerAPI.Files
                     l => l.HasOne(typeof(VisualisationData)).WithMany().HasForeignKey("VisualisationId"),
                     r => r.HasOne(typeof(WaterData)).WithMany().HasForeignKey("WaterDataId"));
 
-            // WaterData relationships
             modelBuilder.Entity<WaterData>(entity =>
             {
                 entity.HasOne(w => w.WaterMetrics)
@@ -80,7 +77,6 @@ namespace AquAnalyzerAPI.Files
                 entity.Property(w => w.Timestamp).IsRequired();
             });
 
-            // WaterMetrics configuration
             modelBuilder.Entity<WaterMetrics>(entity =>
             {
                 entity.Property(w => w.DateGeneratedOn).IsRequired();
@@ -92,7 +88,6 @@ namespace AquAnalyzerAPI.Files
                     .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // Abnormality configuration
             modelBuilder.Entity<Abnormality>(entity =>
             {
                 entity.Property(a => a.Timestamp).IsRequired();
@@ -100,7 +95,6 @@ namespace AquAnalyzerAPI.Files
                 entity.Property(a => a.Type).IsRequired();
             });
 
-            // Notification configuration
             modelBuilder.Entity<Notification>(entity =>
             {
                 entity.Property(n => n.Message).IsRequired();
@@ -114,7 +108,6 @@ namespace AquAnalyzerAPI.Files
                     .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // VisualisationData configuration
             modelBuilder.Entity<VisualisationData>(entity =>
             {
                 entity.Property(v => v.Type).IsRequired();
