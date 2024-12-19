@@ -61,21 +61,12 @@ public class WaterService : IWaterService
     {
         try
         {
-            Console.WriteLine($"Sending POST request to: {_httpClient.BaseAddress}api/waterdata");
-            Console.WriteLine($"Request content: {System.Text.Json.JsonSerializer.Serialize(data)}");
-
             var response = await _httpClient.PostAsJsonAsync("api/waterdata", data);
-            Console.WriteLine($"Response status code: {response.StatusCode}");
-
             var responseContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Response content: {responseContent}");
-
-            response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<WaterDataDto>();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to add water data: {ex.Message}");
             Console.WriteLine($"Stack trace: {ex.StackTrace}");
             throw;
         }
@@ -84,24 +75,32 @@ public class WaterService : IWaterService
 
     public async Task<WaterDataDto> UpdateWaterDataAsync(int id, WaterDataDto data)
     {
-        var response = await _httpClient.PutAsJsonAsync($"api/waterdata/{id}", data);
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<WaterDataDto>();
-        if (result == null)
+        try
         {
-            throw new NullReferenceException("Failed to update water data. No data with that id exists.");
+            Console.WriteLine($"Sending PUT request for id: {id}");
+            Console.WriteLine($"Request data: {System.Text.Json.JsonSerializer.Serialize(data)}");
+
+            var response = await _httpClient.PutAsJsonAsync($"api/waterdata/{id}", data);
+            var content = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Update response: {response.StatusCode}, Content: {content}");
+
+            response.EnsureSuccessStatusCode();
+            return data; // Return the updated data since the API returns NoContent
         }
-        return result;
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Update exception: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            throw;
+        }
     }
 
     public async Task<bool> DeleteWaterDataAsync(int id)
     {
         try
         {
-            Console.WriteLine($"Sending DELETE request for id: {id}");
             var response = await _httpClient.DeleteAsync($"api/waterdata/{id}");
             var content = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Delete response: {response.StatusCode}, Content: {content}");
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)

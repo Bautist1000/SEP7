@@ -44,16 +44,40 @@ namespace AquAnalyzerAPI.Services
 
         public async Task UpdateWaterDataAsync(WaterData data)
         {
-            if (data == null) throw new ArgumentNullException(nameof(data));
+            try
+            {
+                Console.WriteLine($"Attempting to update water data with ID: {data.Id}");
 
-            // Attach the main entity
-            context.Entry(data).State = EntityState.Modified;
+                // Get existing entity
+                var existingData = await context.WaterData.FindAsync(data.Id);
+                if (existingData == null)
+                {
+                    throw new KeyNotFoundException($"No water data found with ID {data.Id}");
+                }
 
-            // Only update the foreign key (no need to attach the WaterMetrics object)
-            context.Entry(data).Property(d => d.WaterMetricsId).IsModified = true;
+                // Update properties
+                existingData.Location = data.Location;
+                existingData.UsageVolume = data.UsageVolume;
+                existingData.FlowRate = data.FlowRate;
+                existingData.ElectricityConsumption = data.ElectricityConsumption;
+                existingData.ProductId = data.ProductId;
+                existingData.SourceType = data.SourceType;
+                existingData.LeakDetected = data.LeakDetected;
+                existingData.HasAbnormalities = data.HasAbnormalities;
+                existingData.UsesCleanEnergy = data.UsesCleanEnergy;
+                existingData.WaterMetricsId = data.WaterMetricsId;
 
-            // Save changes
-            await context.SaveChangesAsync();
+                context.WaterData.Update(existingData);
+                await context.SaveChangesAsync();
+
+                Console.WriteLine($"Successfully updated water data with ID: {data.Id}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating water data: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
 
