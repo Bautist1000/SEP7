@@ -16,12 +16,12 @@ namespace AquAnalyzerAPI.Models
         public bool HasAbnormalities { get; set; } = false;
         public bool UsesCleanEnergy { get; set; } = false;
 
-        public int WaterMetricsId { get; set; }
-        public WaterMetrics WaterMetrics { get; set; }
+        public int? WaterMetricsId { get; set; }
+        public WaterMetrics? WaterMetrics { get; set; }
 
         public Abnormality? Abnormality { get; set; }
 
-        public List<VisualisationData> Visualisations { get; set; } = new List<VisualisationData>();
+        public List<VisualisationData>? Visualisations { get; set; } = new List<VisualisationData>();
         public WaterData() { }
         public WaterData(int Id, DateTime Timestamp)
         {

@@ -1,13 +1,15 @@
-using AquAnalyzerAPI.Interfaces;
-using AquAnalyzerAPI.Services;
-using AquAnalyzerWebApp.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using AquAnalyzerAPI.Files;
 using AquAnalyzerWebApp.Services;
 using AquAnalyzerWebApp.Interfaces;
-using AquAnalyzerAPI.Files;
-using AquAnalyzerAPI.Auth;
-using AquAnalyzerWebApp.Auth;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Components.Authorization;
+using AquAnalyzerWebApp.Components;
+using AquAnalyzerWebApp.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,26 +20,23 @@ builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri("http://localhost:5126/")
 });
-builder.Services.AddScoped<INotificationsService, NotificationsService>();
-builder.Services.AddScoped<IWaterService, WaterService>();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register application services
-builder.Services.AddScoped<IAnalystService, AnalystService>();
-builder.Services.AddScoped<IVisualDesignerService, VisualDesignerService>();
-builder.Services.AddScoped<IAuthServiceAPI, AuthServiceAPI>();
 builder.Services.AddScoped<IAuthService, JwtAuthService>();
-builder.Services.AddScoped<INotificationsService, NotificationsService>();
 builder.Services.AddScoped<IReportPageService, ReportPageService>();
+builder.Services.AddScoped<INotificationsService, NotificationsService>();
+builder.Services.AddScoped<IWaterService, WaterService>();
+
 
 // Register Authentication State Provider for Blazor
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthProvider>();
+// builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthProvider>();
 
-// Add AuthorizationCore and policies
-builder.Services.AddAuthorizationCore();
-AuthorizationPolicies.AddPolicies(builder.Services);
+// // Add AuthorizationCore and policies
+// builder.Services.AddAuthorizationCore();
+// AuthorizationPolicies.AddPolicies(builder.Services);
 
 // Configure Authentication (Single Registration)
 builder.Services.AddAuthentication(options =>
@@ -58,7 +57,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthentication();

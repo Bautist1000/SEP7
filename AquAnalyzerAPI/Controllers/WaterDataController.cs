@@ -39,8 +39,24 @@ namespace AquAnalyzerAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> AddWaterData(WaterData waterData)
         {
-            await _waterDataService.AddWaterDataAsync(waterData);
-            return CreatedAtAction(nameof(GetWaterDataById), new { id = waterData.Id }, waterData);
+            try
+            {
+                // Create default metrics if none provided
+                if (waterData.WaterMetrics == null)
+                {
+                    waterData.WaterMetrics = new WaterMetrics
+                    {
+                        DateGeneratedOn = DateTime.UtcNow
+                    };
+                }
+
+                await _waterDataService.AddWaterDataAsync(waterData);
+                return CreatedAtAction(nameof(GetWaterDataById), new { id = waterData.Id }, waterData);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
@@ -63,8 +79,18 @@ namespace AquAnalyzerAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWaterData(int id)
         {
-            await _waterDataService.DeleteWaterDataAsync(id);
-            return NoContent();
+            try
+            {
+                Console.WriteLine($"API: Delete request received for id: {id}");
+                await _waterDataService.DeleteWaterDataAsync(id);
+                Console.WriteLine($"API: Successfully deleted id: {id}");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"API: Error deleting id {id}: {ex.Message}");
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpGet("location/{location}")]

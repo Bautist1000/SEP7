@@ -14,11 +14,11 @@ namespace AquAnalyzerAPI.Models
         public double TotalWaterSaved { get; set; }
         public double RecycledWaterUsage { get; set; }
 
-        public List<WaterData> WaterData { get; set; } = new List<WaterData>();
+        public List<WaterData>? WaterData { get; set; } = new List<WaterData>();
 
         public Abnormality? Abnormality { get; set; }
 
-        public List<VisualisationData> Visualisations { get; set; } = new List<VisualisationData>();
+        public List<VisualisationData>? Visualisations { get; set; } = new List<VisualisationData>();
 
         public WaterMetrics()
         {
