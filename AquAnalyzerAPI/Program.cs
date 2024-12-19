@@ -36,6 +36,7 @@ builder.Services.AddScoped<IWaterDataService, WaterDataService>();
 builder.Services.AddScoped<IWaterMetricsService, WaterMetricsService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IVisualisationService, VisualisationService>();
 builder.Services.AddHttpClient();
 
 // Add database context

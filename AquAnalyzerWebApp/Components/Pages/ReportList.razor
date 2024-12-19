@@ -4,10 +4,8 @@
 @inject NavigationManager NavigationManager
 
 <div class="container">
-    <div class="header">
-        <h2>Reports</h2>
-        <button class="btn btn-primary" @onclick="CreateNewReport">Create New Report</button>
-    </div>
+    <h3>Reports</h3>
+    <button class="btn btn-primary mb-3" @onclick="CreateNewReport">Create New Report</button>
 
     @if (reports == null)
     {
@@ -15,59 +13,45 @@
     }
     else if (!reports.Any())
     {
-        <div class="empty-state">
-            <p>No reports to show</p>
-        </div>
+        <p>No reports available.</p>
     }
     else
     {
-        <div class="reports-grid">
-            @foreach (var report in reports)
-            {
-                <div class="report-card">
-                    <div class="report-header">
-                        <h4>@report.Title</h4>
-                        <span class="date">@report.GeneratedDate.ToShortDateString()</span>
-                    </div>
-                    <p class="description">@report.Description</p>
-                    <div class="stats">
-                        <span>@report.Visualisations?.Count Visualisations</span>
-                    </div>
-                    <div class="actions">
-                        <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewReport(report.Id)">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => EditReport(report.Id)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteReportPrompt(report.Id)">
-                            <i class="fas fa-trash"></i>
-                        </button>
+        @foreach (var report in reports)
+        {
+            <div class="report-container">
+                <div class="report-header">
+                    <div class="report-title">@report.Title</div>
+                    <div class="report-actions">
+                        <button class="btn btn-sm btn-primary" @onclick="() => ViewReport(report.Id)">View</button>
+                        <button class="btn btn-sm btn-secondary" @onclick="() => EditReport(report.Id)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteReportPrompt(report.Id)">Delete</button>
                     </div>
                 </div>
-            }
-        </div>
+                <div class="report-description">@report.Description</div>
+            </div>
+        }
     }
 
     @if (showDeleteDialog)
     {
         <RadzenDialog>
-            <RadzenDialogTitle>Delete Report</RadzenDialogTitle>
-            <RadzenDialogContent>
+            <div class="p-4">
+                <h5>Confirm Delete</h5>
                 <p>Are you sure you want to delete this report?</p>
-            </RadzenDialogContent>
-            <RadzenDialogActions>
-                <button class="btn btn-danger" @onclick="DeleteReport">Delete</button>
-                <button class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
-            </RadzenDialogActions>
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-danger me-2" @onclick="DeleteReport">Delete</button>
+                    <button class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
+                </div>
+            </div>
         </RadzenDialog>
     }
 </div>
 
 @code {
-    private List<Report> reports = new();
-    private bool showDeleteDialog = false;
+    private List<Report> reports;
     private int reportIdToDelete;
+    private bool showDeleteDialog;
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,3 +97,36 @@
         showDeleteDialog = false;
     }
 }
+
+<style>
+    .report-container {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        background-color: #f9f9f9;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .report-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .report-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .report-description {
+        font-size: 1rem;
+        color: #555;
+    }
+</style>

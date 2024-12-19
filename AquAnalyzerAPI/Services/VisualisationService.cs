@@ -25,6 +25,7 @@ namespace AquAnalyzerAPI.Services
         public async Task<VisualisationDataDto> GetVisualisationById(int id)
         {
             var visualisation = await _context.Visualisations
+                .AsSplitQuery()
                 .Include(v => v.MetricsUsed)
                 .Include(v => v.RawDataUsed)
                 .Include(v => v.ChartConfig)
@@ -36,6 +37,7 @@ namespace AquAnalyzerAPI.Services
         public async Task<IEnumerable<VisualisationDataDto>> GetAllVisualisations()
         {
             var visualisations = await _context.Visualisations
+                .AsSplitQuery()
                 .Include(v => v.MetricsUsed)
                 .Include(v => v.RawDataUsed)
                 .Include(v => v.ChartConfig)
@@ -47,6 +49,7 @@ namespace AquAnalyzerAPI.Services
         public async Task<IEnumerable<VisualisationDataDto>> GetVisualisationsByReportId(int reportId)
         {
             var visualisations = await _context.Visualisations
+                .AsSplitQuery()
                 .Include(v => v.MetricsUsed)
                 .Include(v => v.RawDataUsed)
                 .Include(v => v.ChartConfig)

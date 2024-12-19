@@ -23,7 +23,7 @@ namespace AquAnalyzerAPI.Files
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("Data Source=AquAnalyzerAPI.database.db");
+                optionsBuilder.UseSqlite("Data Source=database.db");
             }
         }
 
