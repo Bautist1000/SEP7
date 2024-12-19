@@ -12,10 +12,14 @@ namespace AquAnalyzerAPI.Services
     public class WaterDataService : IWaterDataService
     {
         private readonly DatabaseContext context;
+        private readonly IAbnormalityService _abnormalityService;
 
-        public WaterDataService(DatabaseContext context)
+
+        public WaterDataService(DatabaseContext context, IAbnormalityService abnormalityService)
         {
             this.context = context;
+            _abnormalityService = abnormalityService;
+
         }
 
         public async Task<WaterData> GetWaterDataByIdAsync(int id)
@@ -32,8 +36,25 @@ namespace AquAnalyzerAPI.Services
         {
             try
             {
+                // Add water data
                 await context.WaterData.AddAsync(data);
                 await context.SaveChangesAsync();
+
+                // Check for abnormalities
+                var abnormalities = await _abnormalityService.CheckWaterDataAbnormalities(data.Id);
+
+                if (abnormalities.Any())
+                {
+                    // Update water data to reflect abnormalities
+                    data.HasAbnormalities = true;
+                    await UpdateWaterDataAsync(data);
+
+                    // Add abnormalities (this will create notifications internally)
+                    foreach (var abnormality in abnormalities)
+                    {
+                        await _abnormalityService.AddAbnormality(abnormality);
+                    }
+                }
             }
             catch (Exception ex)
             {

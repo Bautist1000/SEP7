@@ -50,7 +50,26 @@ namespace AquAnalyzerAPI.Controllers
                     };
                 }
 
+                // Add water data
                 await _waterDataService.AddWaterDataAsync(waterData);
+
+                // Check for abnormalities
+                var abnormalityService = HttpContext.RequestServices.GetRequiredService<IAbnormalityService>();
+                var abnormalities = await abnormalityService.CheckWaterDataAbnormalities(waterData.Id);
+
+                if (abnormalities.Any())
+                {
+                    // Update water data to reflect abnormalities
+                    waterData.HasAbnormalities = true;
+                    await _waterDataService.UpdateWaterDataAsync(waterData);
+
+                    // Add abnormalities (this will trigger notifications internally)
+                    foreach (var abnormality in abnormalities)
+                    {
+                        await abnormalityService.AddAbnormality(abnormality);
+                    }
+                }
+
                 return CreatedAtAction(nameof(GetWaterDataById), new { id = waterData.Id }, waterData);
             }
             catch (Exception ex)
@@ -58,6 +77,7 @@ namespace AquAnalyzerAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateWaterData(int id, WaterData waterData)

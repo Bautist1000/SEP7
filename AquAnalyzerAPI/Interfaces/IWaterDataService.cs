@@ -20,5 +20,6 @@ namespace AquAnalyzerAPI.Interfaces
         Task<IEnumerable<WaterData>> GetByProductIdAsync(double productId);
         Task<IEnumerable<WaterData>> GetByLeakDetectedAsync(bool leakDetected);
         Task<IEnumerable<WaterData>> GetByCleanEnergyUsageAsync(bool usesCleanEnergy);
+
     }
 }

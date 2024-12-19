@@ -53,24 +53,30 @@ namespace AquAnalyzerAPI.Services
                 .ToListAsync();
         }
 
-        public async Task<bool> MarkAsDealtWith(int id)
+        public async Task<bool> MarkAbnormalityAsDealtWith(int abnormalityId)
         {
-            try
-            {
-                var abnormality = await _context.Abnormalities.FindAsync(id);
-                if (abnormality == null)
-                {
-                    return false;
-                }
 
-                abnormality.IsDealtWith = true;
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception)
+            var abnormality = await _context.Abnormalities.FindAsync(abnormalityId);
+            if (abnormality != null)
             {
-                return false;
+                abnormality.IsDealtWith = true;
+
+                // Update related water data if no other active abnormalities exist
+                var waterData = await _context.WaterData
+                    .Include(w => w.Abnormality)
+                    .FirstOrDefaultAsync(w => w.Id == abnormality.WaterDataId);
+
+                if (waterData != null)
+                {
+                    var hasActiveAbnormalities = await _context.Abnormalities
+                        .AnyAsync(a => a.WaterDataId == waterData.Id && !a.IsDealtWith);
+
+                    waterData.HasAbnormalities = hasActiveAbnormalities;
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
             }
+            return false;
         }
 
         public async Task<bool> UpdateAbnormality(int id, string description, string type)
