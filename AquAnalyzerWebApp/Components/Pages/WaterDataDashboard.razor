@@ -24,6 +24,9 @@
             </a>
         </div>
     </div>
+    <div class="abnormality-section">
+        <AbnormalityDisplay />
+    </div>
 
     <WaterMetricsSummary />
 
@@ -129,12 +132,11 @@
             waterData = (await WaterService.GetAllWaterDataAsync()).ToList();
             ApplyFilter();
             Console.WriteLine("Data loaded successfully.");
-            Console.WriteLine($"Loaded data: {System.Text.Json.JsonSerializer.Serialize(waterData)}");
         }
         catch (Exception ex)
         {
             errorMessage = $"Error loading data: {ex.Message}";
-            Console.WriteLine($"Load error: {ex}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
         finally
         {
