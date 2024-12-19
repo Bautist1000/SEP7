@@ -28,9 +28,28 @@ namespace AquAnalyzerAPI.Services
 
         public async Task<Abnormality> AddAbnormality(Abnormality abnormality)
         {
+            // First get potential matches by WaterDataId and Type(database side)
+            var potentialMatches = await _context.Abnormalities
+                .Where(a => a.WaterDataId == abnormality.WaterDataId &&
+                            a.Type == abnormality.Type)
+                .ToListAsync();
+
+            // Then check timestamp and description in memory
+            var existingAbnormality = potentialMatches
+                .FirstOrDefault(a =>
+                    a.Description == abnormality.Description &&
+                    Math.Abs((a.Timestamp - abnormality.Timestamp).TotalSeconds) < 1);
+
+            if (existingAbnormality != null)
+            {
+                await _notificationService.CreateNotificationFromAbnormality(existingAbnormality);
+                return existingAbnormality;
+            }
+
             await _context.Abnormalities.AddAsync(abnormality);
             await _context.SaveChangesAsync();
 
+            // Create notification after saving abnormality
             await _notificationService.CreateNotificationFromAbnormality(abnormality);
 
             return abnormality;
@@ -53,24 +72,30 @@ namespace AquAnalyzerAPI.Services
                 .ToListAsync();
         }
 
-        public async Task<bool> MarkAsDealtWith(int id)
+        public async Task<bool> MarkAbnormalityAsDealtWith(int abnormalityId)
         {
-            try
-            {
-                var abnormality = await _context.Abnormalities.FindAsync(id);
-                if (abnormality == null)
-                {
-                    return false;
-                }
 
-                abnormality.IsDealtWith = true;
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception)
+            var abnormality = await _context.Abnormalities.FindAsync(abnormalityId);
+            if (abnormality != null)
             {
-                return false;
+                abnormality.IsDealtWith = true;
+
+                // Update related water data if no other active abnormalities exist
+                var waterData = await _context.WaterData
+                    .Include(w => w.Abnormalities)
+                    .FirstOrDefaultAsync(w => w.Id == abnormality.WaterDataId);
+
+                if (waterData != null)
+                {
+                    var hasActiveAbnormalities = await _context.Abnormalities
+                        .AnyAsync(a => a.WaterDataId == waterData.Id && !a.IsDealtWith);
+
+                    waterData.HasAbnormalities = hasActiveAbnormalities;
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
             }
+            return false;
         }
 
         public async Task<bool> UpdateAbnormality(int id, string description, string type)
@@ -100,14 +125,97 @@ namespace AquAnalyzerAPI.Services
             return true;
         }
 
+        public async Task RemoveDuplicateAbnormalities(int waterDataId)
+        {
+            var existingAbnormalities = await _context.Abnormalities
+         .Where(a => a.WaterDataId == waterDataId)
+         .ToListAsync();
+
+            var groupedAbnormalities = existingAbnormalities
+                .GroupBy(a => new
+                {
+                    // Round to nearest second by flooring ticks
+                    Timestamp = DateTime.SpecifyKind(
+                        new DateTime(a.Timestamp.Ticks - (a.Timestamp.Ticks % TimeSpan.TicksPerSecond),
+                        DateTimeKind.Utc),
+                        DateTimeKind.Utc),
+                    a.WaterDataId,
+                    a.Type
+                })
+                .Where(g => g.Count() > 1)
+                .ToList(); // Materialize the query
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                foreach (var group in groupedAbnormalities)
+                {
+                    var duplicates = group.OrderBy(a => a.Id).Skip(1).ToList(); // Keep oldest, remove others
+                    foreach (var duplicate in duplicates)
+                    {
+                        var notifications = await _context.Notifications
+                            .Where(n => n.AbnormalityId == duplicate.Id)
+                            .ToListAsync();
+
+                        _context.Notifications.RemoveRange(notifications);
+                        _context.Abnormalities.Remove(duplicate);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<Abnormality>> CheckWaterDataAbnormalities(int dataId)
         {
             var abnormalities = new List<Abnormality>();
             var waterData = await _context.WaterData
                 .FirstOrDefaultAsync(w => w.Id == dataId);
 
-            if (waterData == null)
-                return abnormalities;
+            if (waterData == null) return abnormalities;
+
+            var existingAbnormalities = await _context.Abnormalities
+      .Where(a => a.WaterDataId == dataId)
+      .ToListAsync();
+
+            var groupedAbnormalities = existingAbnormalities
+                .GroupBy(a => new
+                {
+                    Timestamp = DateTime.SpecifyKind(
+                        new DateTime(a.Timestamp.Ticks - (a.Timestamp.Ticks % TimeSpan.TicksPerSecond),
+                        DateTimeKind.Utc),
+                        DateTimeKind.Utc),
+                    a.WaterDataId,
+                    a.Type
+                })
+                .Where(g => g.Count() > 1);
+
+            foreach (var group in groupedAbnormalities)
+            {
+                var duplicates = group.OrderBy(a => a.Id).Skip(1).ToList();
+                foreach (var duplicate in duplicates)
+                {
+                    var notifications = await _context.Notifications
+                        .Where(n => n.AbnormalityId == duplicate.Id)
+                        .ToListAsync();
+
+                    _context.Notifications.RemoveRange(notifications);
+                    _context.Abnormalities.Remove(duplicate);
+                }
+            }
+
+            var existingTypes = await _context.Abnormalities
+                .Where(a => a.WaterDataId == dataId)
+                .Select(a => new { a.Type, a.Description })
+                .ToListAsync();
+
+            var processedTypes = new HashSet<(string type, string desc)>();
 
             // Check Timestamp
             if (waterData.Timestamp == default(DateTime))
@@ -389,8 +497,8 @@ namespace AquAnalyzerAPI.Services
                     WaterData = waterData
                 });
             }
-
             return abnormalities;
+
         }
 
 
@@ -497,7 +605,7 @@ namespace AquAnalyzerAPI.Services
         }
 
     }
-
-
-
 }
+
+
+

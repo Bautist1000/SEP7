@@ -56,9 +56,9 @@ namespace AquAnalyzerAPI.Controllers
 
 
         [HttpPut("{id}/dealt-with")]
-        public async Task<ActionResult> MarkAsDealtWith(int id)
+        public async Task<ActionResult> MarkAbnormalityAsDealtWith(int id)
         {
-            var success = await _abnormalityService.MarkAsDealtWith(id);
+            var success = await _abnormalityService.MarkAbnormalityAsDealtWith(id);
             if (!success) return NotFound();
             return NoContent();
         }

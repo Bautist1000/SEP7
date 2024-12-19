@@ -27,23 +27,29 @@ namespace AquAnalyzerAPI.Services
             return await context.WaterMetrics.FindAsync(id);
         }
         // generate metrics for each location from raw data
-        public async Task GenerateMetricsAsync(IEnumerable<WaterData> data)
+        public async Task<WaterMetrics> GenerateMetricsAsync(IEnumerable<WaterData> data)
         {
             var groupedData = data.GroupBy(d => d.Location);
+            WaterMetrics lastGeneratedMetrics = null;
+
             foreach (var group in groupedData)
             {
                 var metrics = new WaterMetrics
                 {
                     DateGeneratedOn = DateTime.Now,
-                    LeakageRate = group.Average(d => d.LeakDetected == true ? 1 : 0),
+                    LeakageRate = group.Average(d => d.LeakDetected ? 1 : 0),
                     WaterEfficiencyRatio = group.Average(d => d.UsageVolume / d.ElectricityConsumption),
                     TotalWaterConsumption = group.Sum(d => d.UsageVolume),
                     TotalWaterSaved = group.Where(d => d.SourceType == "recycled").Sum(d => d.UsageVolume),
-                    RecycledWaterUsage = group.Where(d => d.SourceType == "recycled").Sum(d => d.UsageVolume),
+                    RecycledWaterUsage = group.Where(d => d.SourceType == "recycled").Sum(d => d.UsageVolume)
                 };
+
                 await context.WaterMetrics.AddAsync(metrics);
+                lastGeneratedMetrics = metrics;
             }
             await context.SaveChangesAsync();
+            return lastGeneratedMetrics;
+
         }
 
         public async Task<double> CalculateAverageFlowRateAsync(IEnumerable<WaterData> waterData)

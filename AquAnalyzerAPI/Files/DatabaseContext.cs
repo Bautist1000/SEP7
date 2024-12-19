@@ -105,11 +105,11 @@ namespace AquAnalyzerAPI.Files
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.SetNull);
 
-                entity.HasOne(w => w.Abnormality)
-                    .WithOne(a => a.WaterData)
-                    .HasForeignKey<Abnormality>(a => a.WaterDataId)
-                    .IsRequired(false)
-                    .OnDelete(DeleteBehavior.SetNull);
+
+
+                entity.Property(w => w.Location).IsRequired();
+                entity.Property(w => w.SourceType).IsRequired();
+                entity.Property(w => w.Timestamp).IsRequired();
             });
 
             modelBuilder.Entity<WaterMetrics>(entity =>
@@ -127,12 +127,24 @@ namespace AquAnalyzerAPI.Files
             });
 
             modelBuilder.Entity<Abnormality>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Timestamp).IsRequired();
-                entity.Property(e => e.Description).IsRequired();
-                entity.Property(e => e.Type).IsRequired();
-            });
+        {
+            entity.Property(a => a.Timestamp).IsRequired();
+            entity.Property(a => a.Description).IsRequired();
+            entity.Property(a => a.Type).IsRequired();
+            
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd();
+
+
+            // Remove one-to-one relationship, make it one-to-many
+            entity.HasOne(a => a.WaterData)
+                .WithMany(w => w.Abnormalities) // Update WaterData model to have collection
+                .HasForeignKey(a => a.WaterDataId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+        });
 
             modelBuilder.Entity<Notification>(entity =>
             {

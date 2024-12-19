@@ -39,8 +39,19 @@ namespace AquAnalyzerAPI.Controllers
             if (waterData == null || !waterData.Any())
                 return BadRequest("Water data cannot be null or empty");
 
-            await _waterMetricsService.GenerateMetricsAsync(waterData);
-            return Ok("Metrics generated successfully.");
+            var metrics = await _waterMetricsService.GenerateMetricsAsync(waterData);
+            var abnormalityService = HttpContext.RequestServices.GetRequiredService<IAbnormalityService>();
+            var abnormalities = await abnormalityService.CheckWaterMetricsAbnormalities(metrics.Id);
+
+            if (abnormalities.Any())
+            {
+                foreach (var abnormality in abnormalities)
+                {
+                    await abnormalityService.AddAbnormality(abnormality);
+                }
+            }
+
+            return Ok(metrics);
         }
 
         [HttpPost("average-flowrate")]

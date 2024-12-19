@@ -3,45 +3,61 @@
 @using AquAnalyzerAPI.Models
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject INotificationsService NotificationsService
+@inject NavigationManager NavigationManager
 @implements IDisposable
 
 <h3>
     Notifications
     @if (notifications?.Any(n => !n.ReadAt.HasValue) == true)
     {
-                            <span class="unread-badge">@(notifications.Count(n => !n.ReadAt.HasValue))</span>
+        <span class="unread-badge">@(notifications.Count(n => !n.ReadAt.HasValue))</span>
     }
 </h3>
 
 <div class="notifications-container">
     @if (notifications == null)
     {
-                            <p>Loading...</p>
+        <p>Loading...</p>
     }
     else if (!notifications.Any())
     {
-                            <p>No notifications found. Count: @(notifications?.Count() ?? 0)</p>
+        <p>No notifications found. Count: @(notifications?.Count() ?? 0)</p>
     }
     else
     {
         @foreach (var notification in notifications.OrderByDescending(n => n.CreatedAt))
         {
-                                                    <div class="notification-card @(notification.ReadAt.HasValue ? "read" : "unread")">
-                                                        <div class="notification-header">
-                                                            <span class="notification-type">@notification.Type</span>
-                                                            <small class="notification-date">@notification.CreatedAt.ToString("g")</small>
-                                                        </div>
-                                                        <div class="notification-body">
-                                                            <p>@notification.Message</p>
+            <div class="notification-card @(notification.ReadAt.HasValue ? "read" : "unread")">
+                <div class="notification-header">
+                    <span class="notification-type">@notification.Type</span>
+                    <small class="notification-date">@notification.CreatedAt.ToString("g")</small>
+                </div>
+                <div class="notification-body">
+                    <p>@notification.Message</p>
                     @if (notification.Abnormality != null)
                     {
-                                                                                    <div class="abnormality-details">
-                                                                                        <p><strong>Type:</strong> @notification.Abnormality.Type</p>
-                                                                                        <p>@notification.Abnormality.Description</p>
-                                                                                    </div>
+                        <div class="abnormality-details">
+                            <p><strong>Type:</strong> @notification.Abnormality.Type</p>
+                            <p><strong>Description:</strong> @notification.Abnormality.Description</p>
+                            @if (notification.Abnormality.WaterDataId.HasValue)
+                            {
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary"
+                                        @onclick="() => NavigateToWaterData(notification.Abnormality.WaterDataId.Value, notification)">
+                                        <i class="fas fa-wrench"></i> Fix Issue
+                                    </button>
+                                    @if (!notification.ReadAt.HasValue)
+                                    {
+                                        <button class="btn btn-success" @onclick="() => MarkAsRead(notification)">
+                                            <i class="fas fa-check"></i> Mark as Read
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
                     }
-                                                        </div>
-                                                    </div>
+                </div>
+            </div>
         }
     }
 </div>
@@ -52,7 +68,21 @@
 
     protected override async Task OnInitializedAsync()
     {
+         Console.WriteLine("Loading notifications...");
         await LoadNotifications();
+        if (notifications != null)
+        {
+            foreach (var n in notifications)
+            {
+                Console.WriteLine($"Notification {n.Id}: HasAbnormality={n.Abnormality != null}, HasWaterDataId={n.Abnormality?.WaterDataId.HasValue}");
+            }
+        }
+        SetupRefreshTimer();
+    
+    }
+
+    private void SetupRefreshTimer()
+    {
         timer = new System.Threading.Timer(async _ =>
         {
             await LoadNotifications();
@@ -60,18 +90,47 @@
         }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
     }
 
+    private async Task NavigateToWaterData(int waterDataId, Notification notification)
+    {
+        if (!notification.ReadAt.HasValue)
+        {
+            await MarkAsRead(notification);
+        }
+        NavigationManager.NavigateTo($"/manage-waterdata/{waterDataId}");
+    }
+
+    private async Task MarkAsRead(Notification notification)
+    {
+        try
+    {
+        Console.WriteLine($"Marking notification {notification.Id} as read...");
+        var success = await NotificationsService.MarkNotificationAsRead(notification.Id, DateTime.UtcNow);
+        
+        if (success)
+        {
+            Console.WriteLine("Successfully marked as read");
+            await LoadNotifications();
+        }
+        else
+        {
+            Console.WriteLine("Failed to mark as read");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error marking notification as read: {ex.Message}");
+    }
+    }
+
     private async Task LoadNotifications()
     {
         try
         {
-            var result = await NotificationsService.GetAllNotifications();
-            notifications = result?.ToList() ?? new List<Notification>();
-            Console.WriteLine($"Loaded {notifications.Count} notifications");
+            notifications = (await NotificationsService.GetAllNotifications()).ToList();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading notifications: {ex.Message}");
-            notifications = new List<Notification>();
         }
     }
 
@@ -168,5 +227,50 @@
         font-weight: 600;
         font-size: 1.75rem;
         margin-bottom: 2rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        visibility: visible;
+        /* Ensure visibility */
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        visibility: visible;
+        /* Ensure visibility */
+        opacity: 1;
+        /* Ensure opacity */
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white !important;
+        /* Force color */
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: white !important;
+        /* Force color */
+    }
+
+    /* Debug outlines */
+    .notification-card {
+        border: 1px solid #ddd;
+    }
+
+    .abnormality-details {
+        border: 1px solid #eee;
     }
 </style>
