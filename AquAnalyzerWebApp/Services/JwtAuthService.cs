@@ -14,24 +14,55 @@ namespace AquAnalyzerWebApp.Services
         public string Jwt { get; private set; } = "";
         public Action<ClaimsPrincipal> OnAuthStateChanged { get; set; } = null!;
 
-        public async Task LoginAsync(string username, string password)
+        public async Task<bool> LoginAsync(string username, string password)
         {
-            string userAsJson = JsonSerializer.Serialize(new { username, password });
-            StringContent content = new(userAsJson, Encoding.UTF8, "application/json");
-
-            HttpResponseMessage response = await client.PostAsync("/auth/login", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                throw new Exception(responseContent);
+                Console.WriteLine($"Attempting login for user: {username}");
+
+                var loginRequest = new
+                {
+                    Username = username,
+                    Password = password
+                };
+
+                // Try analyst login
+                var content = new StringContent(
+                    JsonSerializer.Serialize(loginRequest),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                HttpResponseMessage response = await client.PostAsync("auth/login-analyst", content);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Analyst login response: {response.StatusCode}, Content: {responseContent}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Try visual designer login
+                    response = await client.PostAsync("auth/login-visualdesigner", content);
+                    responseContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Designer login response: {response.StatusCode}, Content: {responseContent}");
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return false;
+                }
+
+                Jwt = responseContent;
+                await CacheTokenAsync();
+
+                ClaimsPrincipal principal = await CreateClaimsPrincipal();
+                OnAuthStateChanged?.Invoke(principal);
+
+                return true;
             }
-
-            Jwt = responseContent;
-            await CacheTokenAsync();
-
-            ClaimsPrincipal principal = await CreateClaimsPrincipal();
-            OnAuthStateChanged.Invoke(principal);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Login error: {ex.Message}");
+                return false;
+            }
         }
         public async Task LogoutAsync()
         {
