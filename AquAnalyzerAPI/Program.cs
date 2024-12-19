@@ -21,6 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
@@ -35,11 +36,13 @@ builder.Services.AddScoped<IWaterDataService, WaterDataService>();
 builder.Services.AddScoped<IWaterMetricsService, WaterMetricsService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IVisualisationService, VisualisationService>();
+builder.Services.AddHttpClient();
 
 // Add database context
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlite("Data Source=database.db"));
+    options.UseSqlite("Data Source=database.db"), ServiceLifetime.Scoped);
 
 builder.Services.AddScoped<IAuthServiceAPI, AuthServiceAPI>();
 
@@ -53,23 +56,6 @@ builder.Services.AddLogging(logging =>
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
-
-// Add JWT Authentication
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
 
 // builder.Services.AddSwaggerGen(options =>
 // {
@@ -125,15 +111,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // // Add authorization policies
 // AuthorizationPolicies.AddPolicies(builder.Services);
-
-// // Add CORS
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowBlazorClient", policy =>
-//         policy.WithOrigins(builder.Configuration["AllowedOrigins"]?.Split(';') ?? Array.Empty<string>())
-//                .AllowAnyMethod()
-//                .AllowAnyHeader());
-// });
 
 
 builder.Services.AddCors(options =>

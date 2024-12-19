@@ -3,15 +3,23 @@ using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using AquAnalyzerAPI.Dtos;
 namespace AquAnalyzerAPI.Controllers
 {
 
     [ApiController]
     [Route("api/[controller]")]
-    public class ReportController(IReportService _reportService) : ControllerBase
+    public class ReportController : ControllerBase
     {
+
+        private readonly IReportService _reportService;
+
+        public ReportController(IReportService reportService)
+        {
+            _reportService = reportService;
+        }
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Report>>> GetAllReports()
+        public async Task<ActionResult<IEnumerable<ReportDto>>> GetAllReports()
         {
             try
             {
@@ -26,20 +34,38 @@ namespace AquAnalyzerAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Report>> GetReportById(int id)
+        public async Task<ActionResult<ReportDto>> GetReportById(int id)
         {
-            var report = await _reportService.GetReportById(id);
-            if (report == null) return NotFound();
-            return Ok(report);
+            try
+            {
+                var report = await _reportService.GetReportById(id);
+                if (report == null) return NotFound();
+                return Ok(report);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpPost]
-        public async Task<ActionResult<Report>> AddReport(Report report)
+        public async Task<ActionResult<ReportDto>> AddReport(Report report)
         {
-            await _reportService.AddReport(report);
-            return CreatedAtAction(nameof(GetReportById), new { id = report.Id }, report);
-        }
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
+                var createdReport = await _reportService.AddReport(report);
+                return CreatedAtAction(nameof(GetReportById),
+                    new { id = createdReport.Id }, createdReport);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error creating report", ex);
+                return StatusCode(500, "Internal server error while creating report");
+            }
+        }
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateReport(int id, Report report)
         {
@@ -57,7 +83,7 @@ namespace AquAnalyzerAPI.Controllers
         }
 
         [HttpGet("search/{searchTerm}")]
-        public async Task<ActionResult<IEnumerable<Report>>> SearchReportsByTitle(string searchTerm)
+        public async Task<ActionResult<IEnumerable<ReportDto>>> SearchReportsByTitle(string searchTerm)
         {
             var reports = await _reportService.SearchReportsByTitle(searchTerm);
             return Ok(reports);

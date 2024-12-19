@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using AquAnalyzerAPI.Models;
@@ -16,55 +15,59 @@ public class AuthController(IConfiguration config, IAuthServiceAPI authService) 
     private readonly IAuthServiceAPI _authService = authService;
 
     [HttpPost("register")]
-    public async Task<ActionResult> Register([FromBody] User user)
+public async Task<ActionResult> Register([FromBody] User user)
+{
+    try
     {
-        try
+        if (user.Role == "Analyst")
         {
-            if (user.Role == "Analyst")
+            var analyst = new Analyst
             {
-                var analyst = new Analyst
-                {
-                    Username = user.Username,
-                    Password = user.Password,
-                    Email = user.Email,
-                    Role = "Analyst"
-                };
-                await _authService.RegisterAnalystAsync(analyst);
-            }
-            else if (user.Role == "VisualDesigner")
+                Username = user.Username,
+                Password = user.Password,
+                Email = user.Email,
+                Role = "Analyst"
+            };
+            await _authService.RegisterAnalystAsync(analyst);
+        }
+        else if (user.Role == "VisualDesigner")
+        {
+            var visualDesigner = new VisualDesigner
             {
-                var visualDesigner = new VisualDesigner
-                {
-                    Username = user.Username,
-                    Password = user.Password,
-                    Email = user.Email,
-                    Role = "VisualDesigner"
-                };
-                await _authService.RegisterVisualDesignerAsync(visualDesigner);
-            }
-            else
-            {
-                return BadRequest("Invalid role.");
-            }
+                Username = user.Username,
+                Password = user.Password,
+                Email = user.Email,
+                Role = "VisualDesigner"
+            };
+            await _authService.RegisterVisualDesignerAsync(visualDesigner);
+        }
+        else
+        {
+            return BadRequest("Invalid role.");
+        }
 
-            return Ok("Registration successful.");
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok("Registration successful.");
     }
+    catch (Exception ex)
+    {
+        return BadRequest(ex.Message);
+    }
+}
 
 
 
 
     [HttpPost("login-analyst")]
-    public async Task<ActionResult> LoginAnalyst([FromBody] LoginRequest request)
+    public async Task<ActionResult> LoginAnalyst([FromBody] Analyst analyst)
     {
         try
         {
-            var analyst = await _authService.ValidateAnalyst(request.Username, request.Password);
-            string token = await _authService.GenerateTokenAsync(analyst);
+            // Validate Analyst credentials
+            Analyst validatedAnalyst = await _authService.ValidateAnalyst(analyst.Username, analyst.Password);
+
+            // Generate JWT
+            string token = GenerateJwt(validatedAnalyst);
+
             return Ok(token);
         }
         catch (Exception ex)
@@ -74,12 +77,16 @@ public class AuthController(IConfiguration config, IAuthServiceAPI authService) 
     }
 
     [HttpPost("login-visualdesigner")]
-    public async Task<ActionResult> LoginVisualDesigner([FromBody] LoginRequest request)
+    public async Task<ActionResult> LoginVisualDesigner([FromBody] VisualDesigner visualDesigner)
     {
         try
         {
-            var designer = await _authService.ValidateVisualDesigner(request.Username, request.Password);
-            string token = await _authService.GenerateTokenAsync(designer);
+            // Validate Visual Designer credentials
+            VisualDesigner validatedDesigner = await _authService.ValidateVisualDesigner(visualDesigner.Username, visualDesigner.Password);
+
+            // Generate JWT
+            string token = GenerateJwt(validatedDesigner);
+
             return Ok(token);
         }
         catch (Exception ex)
@@ -88,19 +95,10 @@ public class AuthController(IConfiguration config, IAuthServiceAPI authService) 
         }
     }
 
-    public class LoginRequest
-    {
-        [Required]
-        public string Username { get; set; }
-        [Required]
-        public string Password { get; set; }
-    }
-
     private string GenerateJwt(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        // Use a key that is at least 32 bytes (256 bits) long
-        var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "MypussytasteslikePepsicolaMyeyesarewidelikecherrypiesIgotsweettasteformenwhoareolderIt'salwaysbeenso,it'snosurprise");
+        var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "");
 
         List<Claim> claims = GenerateClaims(user);
 
@@ -108,9 +106,9 @@ public class AuthController(IConfiguration config, IAuthServiceAPI authService) 
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256),
-            Issuer = _config["Jwt:Issuer"] ?? "YourIssuer",
-            Audience = _config["Jwt:Audience"] ?? "YourAudience"
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _config["Jwt:Issuer"],
+            Audience = _config["Jwt:Audience"]
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);

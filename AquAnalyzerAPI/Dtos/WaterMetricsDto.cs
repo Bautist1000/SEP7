@@ -1,4 +1,4 @@
-namespace AquAnalyzerWebApp.Models
+namespace AquAnalyzerAPI.Dtos
 {
     public class WaterMetricsDto
     {
