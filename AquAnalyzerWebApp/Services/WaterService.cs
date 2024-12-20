@@ -36,7 +36,7 @@ public class WaterService : IWaterService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching water data by ID: {id}");
+            _logger.LogError(ex, "Error fetching water data by ID: {Id}", id);
             throw;
         }
     }
