@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using AquAnalyzerAPI.Files;
 using AquAnalyzerWebApp.Services;
+using Radzen;
 using AquAnalyzerWebApp.Interfaces;
 using AquAnalyzerWebApp.Components;
 using AquAnalyzerWebApp.Auth;
@@ -15,7 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5126/") });
+builder.Services.AddScoped<DialogService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<TooltipService>();
+builder.Services.AddScoped<ContextMenuService>();
 builder.Services.AddRadzenComponents();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
@@ -32,6 +36,11 @@ builder.Services.AddHttpClient<INotificationsService, NotificationsService>(clie
     client.BaseAddress = new Uri("http://localhost:5126/");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
+
+// Add authentication services
+builder.Services.AddAuthenticationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthProvider>();
+builder.Services.AddAuthorizationCore();
 
 // Configure Authentication
 builder.Services.AddAuthentication(options =>

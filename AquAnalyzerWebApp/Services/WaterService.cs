@@ -6,7 +6,6 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using AquAnalyzerAPI.Dtos;
 using AquAnalyzerAPI.Models;
-using AquAnalyzerWebApp.Models;
 using Microsoft.Extensions.Logging;
 
 public class WaterService : IWaterService

@@ -12,6 +12,24 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/default.css">
     <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+
+    <CascadingAuthenticationState>
+        <Router AppAssembly="@typeof(App).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+                    <NotAuthorized>
+                        <RedirectToLogin />
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+            </Found>
+            <NotFound>
+                <PageTitle>Not found</PageTitle>
+                <LayoutView Layout="@typeof(Layout.MainLayout)">
+                    <p role="alert">Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </CascadingAuthenticationState>
 </head>
 
 <body>
