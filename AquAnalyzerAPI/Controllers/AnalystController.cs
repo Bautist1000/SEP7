@@ -9,24 +9,24 @@ namespace AquAnalyzerAPI.Controllers
     [ApiController]
     public class AnalystController : ControllerBase
     {
-        private readonly IAnalystService _service;
+        private readonly IAnalystService _analystService;
 
         public AnalystController(IAnalystService service)
         {
-            _service = service;
+            _analystService = service;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Analyst>>> GetAllAnalysts()
         {
-            var analysts = await _service.GetAllAnalysts();
+            var analysts = await _analystService.GetAllAnalysts();
             return Ok(analysts);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Analyst>> GetAnalystById(int id)
         {
-            var analyst = await _service.GetAnalystById(id);
+            var analyst = await _analystService.GetAnalystById(id);
             if (analyst == null)
             {
                 return NotFound();
@@ -37,7 +37,7 @@ namespace AquAnalyzerAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Analyst>> AddAnalyst(Analyst analyst)
         {
-            var createdAnalyst = await _service.AddAnalyst(analyst);
+            var createdAnalyst = await _analystService.AddAnalyst(analyst);
             return CreatedAtAction(nameof(GetAnalystById), new { id = createdAnalyst.Id }, createdAnalyst);
         }
 
@@ -49,14 +49,14 @@ namespace AquAnalyzerAPI.Controllers
                 return BadRequest();
             }
 
-            await _service.UpdateAnalyst(analyst);
+            await _analystService.UpdateAnalyst(analyst);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAnalyst(int id)
         {
-            await _service.DeleteAnalyst(id);
+            await _analystService.DeleteAnalyst(id);
             return NoContent();
         }
     }
