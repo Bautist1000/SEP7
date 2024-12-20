@@ -12,10 +12,12 @@ namespace AquAnalyzerAPI.Services
     public class WaterDataService : IWaterDataService
     {
         private readonly DatabaseContext context;
+        private readonly IAbnormalityService _abnormalityService;
 
-        public WaterDataService(DatabaseContext context)
+        public WaterDataService(DatabaseContext context, IAbnormalityService abnormalityService)
         {
             this.context = context;
+            _abnormalityService = abnormalityService;
         }
 
         public async Task<WaterData> GetWaterDataByIdAsync(int id)
@@ -30,54 +32,52 @@ namespace AquAnalyzerAPI.Services
 
         public async Task AddWaterDataAsync(WaterData data)
         {
+            using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
+                data.Id = 0;
+
+                // Add water data
                 await context.WaterData.AddAsync(data);
                 await context.SaveChangesAsync();
+
+                // Check for abnormalities
+                var abnormalities = await _abnormalityService.CheckWaterDataAbnormalities(data.Id);
+
+                if (abnormalities.Any())
+                {
+                    data.HasAbnormalities = true;
+                    context.Entry(data).State = EntityState.Modified;
+
+                    foreach (var abnormality in abnormalities)
+                    {
+                        await context.Abnormalities.AddAsync(abnormality);
+                    }
+                    await context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                await transaction.RollbackAsync();
                 throw;
             }
         }
 
+
         public async Task UpdateWaterDataAsync(WaterData data)
         {
-            try
-            {
-                Console.WriteLine($"Attempting to update water data with ID: {data.Id}");
+            if (data == null) throw new ArgumentNullException(nameof(data));
 
-                // Get existing entity
-                var existingData = await context.WaterData.FindAsync(data.Id);
-                if (existingData == null)
-                {
-                    throw new KeyNotFoundException($"No water data found with ID {data.Id}");
-                }
+            // Attach the main entity
+            context.Entry(data).State = EntityState.Modified;
 
-                // Update properties
-                existingData.Location = data.Location;
-                existingData.UsageVolume = data.UsageVolume;
-                existingData.FlowRate = data.FlowRate;
-                existingData.ElectricityConsumption = data.ElectricityConsumption;
-                existingData.ProductId = data.ProductId;
-                existingData.SourceType = data.SourceType;
-                existingData.LeakDetected = data.LeakDetected;
-                existingData.HasAbnormalities = data.HasAbnormalities;
-                existingData.UsesCleanEnergy = data.UsesCleanEnergy;
-                existingData.WaterMetricsId = data.WaterMetricsId;
+            // Only update the foreign key (no need to attach the WaterMetrics object)
+            context.Entry(data).Property(d => d.WaterMetricsId).IsModified = true;
 
-                context.WaterData.Update(existingData);
-                await context.SaveChangesAsync();
-
-                Console.WriteLine($"Successfully updated water data with ID: {data.Id}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error updating water data: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                throw;
-            }
+            // Save changes
+            await context.SaveChangesAsync();
         }
 
 

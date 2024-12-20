@@ -10,7 +10,7 @@
 
 <div class="container-fluid">
     <h1 class="mb-4">@(IsEditMode ? "Edit" : "Add") Water Data</h1>
-    @* 
+
     @if (!string.IsNullOrEmpty(statusMessage))
     {
         <div class="alert @(isSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
@@ -19,7 +19,7 @@
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-    } *@
+    }
 
     <div class="row">
         <div class="col-md-6">
@@ -30,45 +30,37 @@
                 <EditForm Model="@waterData" OnValidSubmit="HandleSubmit" FormName="waterDataForm">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
-
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="location">Location</label>
-                            <InputText id="location" class="form-control" @bind-Value="waterData.Location" />
-                            <ValidationMessage For="@(() => waterData.Location)" />
+                            <label>Location</label>
+                            <InputText class="form-control" @bind-Value="waterData.Location" />
+                        </div>
+                        <div class="form-group">
+                            <label>Usage Volume</label>
+                            <InputNumber class="form-control" @bind-Value="waterData.UsageVolume" />
+                        </div>
+                        <div class="form-group">
+                            <label>Flow Rate</label>
+                            <InputNumber class="form-control" @bind-Value="waterData.FlowRate" />
+                        </div>
+                        <div class="form-group">
+                            <label>Electricity Consumption</label>
+                            <InputNumber class="form-control" @bind-Value="waterData.ElectricityConsumption" />
+                        </div>
+                        <div class="form-group">
+                            <label>Product ID</label>
+                            <InputNumber class="form-control" @bind-Value="waterData.ProductId" />
                         </div>
 
                         <div class="form-group">
-                            <label for="usageVolume">Usage Volume</label>
-                            <InputNumber id="usageVolume" class="form-control" @bind-Value="waterData.UsageVolume" />
-                        </div>
-
-                        <div class="form-group">
-                            <label for="flowRate">Flow Rate</label>
-                            <InputNumber id="flowRate" class="form-control" @bind-Value="waterData.FlowRate" />
-                        </div>
-
-                        <div class="form-group">
-                            <label for="electricityConsumption">Electricity Consumption</label>
-                            <InputNumber id="electricityConsumption" class="form-control"
-                                @bind-Value="waterData.ElectricityConsumption" />
-                        </div>
-
-                        <div class="form-group">
-                            <label for="productId">Product ID</label>
-                            <InputNumber id="productId" class="form-control" @bind-Value="waterData.ProductId" />
-                        </div>
-
-                        <div class="form-group">
-                            <label for="sourceType">Source Type</label>
-                            <InputSelect id="sourceType" class="form-control" @bind-Value="waterData.SourceType">
+                            <label>Source Type</label>
+                            <InputSelect class="form-control" @bind-Value="waterData.SourceType">
                                 <option value="">Select Source Type</option>
                                 <option value="freshwater">Freshwater</option>
                                 <option value="recycled">Recycled</option>
                                 <option value="groundwater">Groundwater</option>
                                 <option value="seawater">Seawater</option>
                             </InputSelect>
-                            <ValidationMessage For="@(() => waterData.SourceType)" />
                         </div>
                         <div class="form-check mb-2">
                             <InputCheckbox class="form-check-input" @bind-Value="waterData.LeakDetected" />
@@ -82,7 +74,6 @@
                             <InputCheckbox class="form-check-input" @bind-Value="waterData.UsesCleanEnergy" />
                             <label class="form-check-label">Uses Clean Energy</label>
                         </div>
-
                     </div>
                     <div class="card-footer">
                         <button type="submit" class="btn btn-primary">
@@ -94,7 +85,7 @@
                                 Delete Entry
                             </button>
                         }
-                        <button type="button" class="btn btn-secondary" @onclick="@(() => NavigateBack())">
+                        <button type="button" class="btn btn-secondary ml-2" @onclick="NavigateBack">
                             Back
                         </button>
                     </div>
@@ -149,29 +140,12 @@
     {
         try
         {
-            // Validate required fields before sending
-            if (string.IsNullOrEmpty(waterData.Location))
-            {
-                SetStatusMessage("Location is required", false);
-                return;
-            }
-            if (string.IsNullOrEmpty(waterData.SourceType))
-            {
-                SetStatusMessage("Source Type is required", false);
-                return;
-            }
-
             if (!IsEditMode)
             {
                 // Set new ID as max + 1
                 waterData.Id = existingWaterData.Any() ? existingWaterData.Max(w => w.Id) + 1 : 1;
                 waterData.Timestamp = DateTime.UtcNow;
-
-                // Set default values for required fields if they're null
-                waterData.Location = waterData.Location ?? "Default Location";
-                waterData.SourceType = waterData.SourceType ?? "freshwater";
-
-                Console.WriteLine($"Submitting water data: {System.Text.Json.JsonSerializer.Serialize(waterData)}");
+                Console.WriteLine($"Updating water data: {System.Text.Json.JsonSerializer.Serialize(waterData)}");
                 await WaterService.AddWaterDataAsync(waterData);
                 SetStatusMessage("Water data added successfully!", true);
             }
@@ -181,6 +155,7 @@
                 SetStatusMessage("Water data updated successfully!", true);
             }
 
+            // Wait briefly to show the success message
             await Task.Delay(2000);
             NavigateBack();
         }
@@ -215,7 +190,6 @@
     private void NavigateBack()
     {
         // If ReturnUrl is provided, use it; otherwise default to dashboard
-        Console.WriteLine("NavigateBack called"); // Add this debug line
         var destination = string.IsNullOrEmpty(ReturnUrl) ? "/water-dashboard" : ReturnUrl;
         NavigationManager.NavigateTo(destination);
     }

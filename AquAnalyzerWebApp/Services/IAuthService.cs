@@ -3,27 +3,22 @@ using System.Threading.Tasks;
 using AquAnalyzerAPI.Models;
 using AquAnalyzerAPI.Controllers;
 
-namespace AquAnalyzerWebApp.Services{
-
-
-public interface IAuthService
+namespace AquAnalyzerWebApp.Services
 {
-    // Login a user (Analyst or Visual Designer)
-    Task LoginAsync(string username, string password);
 
-    // Logout the current user
-    Task LogoutAsync();
 
-    // Event to notify about authentication state changes
-    Action<ClaimsPrincipal> OnAuthStateChanged { get; set; }
+    public interface IAuthService
+    {
+        Task<bool> LoginAsync(string username, string password);
 
-    // Retrieve the authenticated user's ClaimsPrincipal
-    Task<ClaimsPrincipal> GetAuthAsync();
+        Task LogoutAsync();
 
-    // Register a new Analyst
-    Task RegisterAnalystAsync(Analyst analyst);
+        Action<ClaimsPrincipal> OnAuthStateChanged { get; set; }
 
-    // Register a new Visual Designer
-    Task RegisterVisualDesignerAsync(VisualDesigner visualDesigner);
-}
+        Task<ClaimsPrincipal> GetAuthAsync();
+
+        Task RegisterAnalystAsync(Analyst analyst);
+
+        Task RegisterVisualDesignerAsync(VisualDesigner visualDesigner);
+    }
 }

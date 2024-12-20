@@ -36,7 +36,6 @@ namespace AquAnalyzerAPI.Controllers
             return Ok(waterData);
         }
 
-        [HttpPost]
         public async Task<ActionResult> AddWaterData(WaterData waterData)
         {
             try
@@ -50,7 +49,26 @@ namespace AquAnalyzerAPI.Controllers
                     };
                 }
 
+                // Add water data
                 await _waterDataService.AddWaterDataAsync(waterData);
+
+                // Check for abnormalities
+                var abnormalityService = HttpContext.RequestServices.GetRequiredService<IAbnormalityService>();
+                var abnormalities = await abnormalityService.CheckWaterDataAbnormalities(waterData.Id);
+
+                if (abnormalities.Any())
+                {
+                    // Update water data to reflect abnormalities
+                    waterData.HasAbnormalities = true;
+                    await _waterDataService.UpdateWaterDataAsync(waterData);
+
+                    // Add abnormalities (this will trigger notifications internally)
+                    foreach (var abnormality in abnormalities)
+                    {
+                        await abnormalityService.AddAbnormality(abnormality);
+                    }
+                }
+
                 return CreatedAtAction(nameof(GetWaterDataById), new { id = waterData.Id }, waterData);
             }
             catch (Exception ex)
@@ -62,35 +80,18 @@ namespace AquAnalyzerAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateWaterData(int id, WaterData waterData)
         {
-            try
+            if (id != waterData.Id)
             {
-                Console.WriteLine($"Received update request for water data ID: {id}");
-                Console.WriteLine($"Update data: {System.Text.Json.JsonSerializer.Serialize(waterData)}");
-
-                if (id != waterData.Id)
-                {
-                    return BadRequest("ID mismatch");
-                }
-
-                if (waterData == null)
-                {
-                    return BadRequest("Water data cannot be null");
-                }
-
-                await _waterDataService.UpdateWaterDataAsync(waterData);
-                Console.WriteLine($"Successfully updated water data ID: {id}");
-                return NoContent();
+                return BadRequest("ID mismatch");
             }
-            catch (KeyNotFoundException ex)
+
+            if (waterData == null)
             {
-                Console.WriteLine($"Not found error: {ex.Message}");
-                return NotFound(ex.Message);
+                return BadRequest("Water data cannot be null");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error updating water data: {ex.Message}");
-                return StatusCode(500, ex.Message);
-            }
+
+            await _waterDataService.UpdateWaterDataAsync(waterData);
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
@@ -109,6 +110,7 @@ namespace AquAnalyzerAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
 
         [HttpGet("location/{location}")]
         public async Task<ActionResult<IEnumerable<WaterData>>> GetByLocation(string location)

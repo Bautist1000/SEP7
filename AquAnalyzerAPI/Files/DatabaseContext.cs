@@ -93,32 +93,20 @@ namespace AquAnalyzerAPI.Files
 
             modelBuilder.Entity<WaterData>(entity =>
             {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Timestamp).IsRequired();
-                entity.Property(e => e.Location).IsRequired();
-                entity.Property(e => e.SourceType).IsRequired();
-                entity.Property(e => e.UsageVolume).IsRequired();
-                entity.Property(e => e.FlowRate).IsRequired();
-
                 entity.HasOne(w => w.WaterMetrics)
                     .WithMany(m => m.WaterData)
                     .HasForeignKey(w => w.WaterMetricsId)
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.SetNull);
 
-                entity.HasMany(w => w.Abnormalities)
-                    .WithOne(a => a.WaterData)
-                    .HasForeignKey(a => a.WaterDataId)
-                    .IsRequired(false)
-                    .OnDelete(DeleteBehavior.SetNull);
+                entity.Property(w => w.Location).IsRequired();
+                entity.Property(w => w.SourceType).IsRequired();
+                entity.Property(w => w.Timestamp).IsRequired();
             });
 
             modelBuilder.Entity<WaterMetrics>(entity =>
             {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.DateGeneratedOn).IsRequired();
-                entity.Property(e => e.TotalWaterConsumption).IsRequired();
-                entity.Property(e => e.WaterEfficiencyRatio).IsRequired();
+                entity.Property(w => w.DateGeneratedOn).IsRequired();
 
                 entity.HasOne(w => w.Abnormality)
                     .WithOne(a => a.WaterMetrics)
@@ -128,18 +116,23 @@ namespace AquAnalyzerAPI.Files
             });
 
             modelBuilder.Entity<Abnormality>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Timestamp).IsRequired();
-                entity.Property(e => e.Description).IsRequired();
-                entity.Property(e => e.Type).IsRequired();
+         {
+             entity.Property(a => a.Timestamp).IsRequired();
+             entity.Property(a => a.Description).IsRequired();
+             entity.Property(a => a.Type).IsRequired();
 
-                entity.HasOne(a => a.WaterData)
-                    .WithMany(w => w.Abnormalities)
-                    .HasForeignKey(a => a.WaterDataId)
-                    .IsRequired(false)
-                    .OnDelete(DeleteBehavior.SetNull);
-            });
+             entity.HasKey(e => e.Id);
+             entity.Property(e => e.Id)
+                 .ValueGeneratedOnAdd();
+
+
+             entity.HasOne(a => a.WaterData)
+                 .WithMany(w => w.Abnormalities)
+                 .HasForeignKey(a => a.WaterDataId)
+                 .IsRequired(false)
+                 .OnDelete(DeleteBehavior.SetNull);
+
+         });
 
             modelBuilder.Entity<Notification>(entity =>
             {
