@@ -5,11 +5,12 @@
 <HeadContent>
     <title>AquAnalyzer</title>
 </HeadContent>
+
 <div class="main-container">
     <NavMenu />
-    <div class="content">
+    <main class="content">
         @Body
-    </div>
+    </main>
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-links">
@@ -29,36 +30,33 @@
         --secondary-color: #2980b9;
         --background-light: #e6f2ff;
         --text-color: #2c3e50;
-        --water-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    }
-
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: var(-s-text-color);
-        line-height: 1.6;
     }
 
     .main-container {
         display: flex;
         flex-direction: column;
         min-height: 100vh;
+        background-color: var(--background-light);
     }
 
     .content {
         flex: 1;
+        padding: 20px;
+        background-color: white;
     }
 
     .footer {
         background-color: var(--secondary-color);
-        color: #2980b9;
+        color: white;
         padding: 16px;
-        text-align: center;
     }
 
     .footer-content {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
     .footer-links a {
@@ -69,38 +67,5 @@
 
     .footer-rights p {
         margin: 0;
-        color: white;
-    }
-
-    .card {
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1rem;
-    }
-
-    .card-header {
-        background: var(--water-gradient);
-        color: white;
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
-    }
-
-    .btn-primary {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-        transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover {
-        background-color: var(--secondary-color);
-        transform: translateY(-2px);
-    }
-
-    @@media (max-width: 768px) {
-        .main-content {
-            margin: 0.5rem;
-            padding: 0.5rem;
-        }
     }
 </style>

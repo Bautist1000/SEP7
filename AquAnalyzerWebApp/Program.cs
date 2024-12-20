@@ -103,11 +103,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseRouting();
 app.UseCors("AllowApiServer");
-app.UseStaticFiles();
-app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
+app.UseAntiforgery();
 
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
