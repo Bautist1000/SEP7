@@ -37,7 +37,7 @@
     private string? role;
 
     [CascadingParameter]
-    public Task<AuthenticationState>? AuthState { get; set; }
+    public Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -52,9 +52,9 @@
     {
         try
         {
-            if (AuthState == null) return;
+            if (AuthenticationStateTask == null) return;
 
-            var authState = await AuthState;
+            var authState = await AuthenticationStateTask;
             var claims = authState.User;
 
             if (!claims.Identity?.IsAuthenticated ?? true)
