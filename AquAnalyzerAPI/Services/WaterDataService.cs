@@ -2,20 +2,25 @@ using Microsoft.EntityFrameworkCore;
 using AquAnalyzerAPI.Models;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using AquAnalyzerAPI.Interfaces;
 using AquAnalyzerAPI.Files;
+using Microsoft.Extensions.Logging;
+
 namespace AquAnalyzerAPI.Services
 {
-
     public class WaterDataService : IWaterDataService
     {
         private readonly DatabaseContext context;
+        private readonly IAbnormalityService _abnormalityService;
+        private readonly ILogger<WaterDataService> _logger;
 
-        public WaterDataService(DatabaseContext context)
+        public WaterDataService(DatabaseContext context, IAbnormalityService abnormalityService, ILogger<WaterDataService> logger)
         {
             this.context = context;
+            _abnormalityService = abnormalityService;
+            _logger = logger;
         }
 
         public async Task<WaterData> GetWaterDataByIdAsync(int id)
@@ -30,14 +35,38 @@ namespace AquAnalyzerAPI.Services
 
         public async Task AddWaterDataAsync(WaterData data)
         {
+            using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
+                _logger.LogInformation("Adding water data.");
+
+                // Remove Id assignment - let database generate it
+                data.Id = 0;
+
                 await context.WaterData.AddAsync(data);
                 await context.SaveChangesAsync();
+
+                var abnormalities = await _abnormalityService?.CheckWaterDataAbnormalities(data.Id);
+
+                if (abnormalities != null && abnormalities.Any())
+                {
+                    data.HasAbnormalities = true;
+                    context.Entry(data).State = EntityState.Modified;
+
+                    foreach (var abnormality in abnormalities)
+                    {
+                        await context.Abnormalities.AddAsync(abnormality);
+                    }
+
+                    await context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                _logger.LogError(ex, "Failed to add water data.");
+                await transaction.RollbackAsync();
                 throw;
             }
         }
@@ -46,49 +75,40 @@ namespace AquAnalyzerAPI.Services
         {
             try
             {
-                Console.WriteLine($"Attempting to update water data with ID: {data.Id}");
+                _logger.LogInformation($"Updating water data with ID: {data.Id}");
 
-                // Get existing entity
-                var existingData = await context.WaterData.FindAsync(data.Id);
-                if (existingData == null)
-                {
-                    throw new KeyNotFoundException($"No water data found with ID {data.Id}");
-                }
+                // Attach the main entity
+                context.Entry(data).State = EntityState.Modified;
 
-                // Update properties
-                existingData.Location = data.Location;
-                existingData.UsageVolume = data.UsageVolume;
-                existingData.FlowRate = data.FlowRate;
-                existingData.ElectricityConsumption = data.ElectricityConsumption;
-                existingData.ProductId = data.ProductId;
-                existingData.SourceType = data.SourceType;
-                existingData.LeakDetected = data.LeakDetected;
-                existingData.HasAbnormalities = data.HasAbnormalities;
-                existingData.UsesCleanEnergy = data.UsesCleanEnergy;
-                existingData.WaterMetricsId = data.WaterMetricsId;
+                // Only update the foreign key
+                context.Entry(data).Property(d => d.WaterMetricsId).IsModified = true;
 
-                context.WaterData.Update(existingData);
                 await context.SaveChangesAsync();
-
-                Console.WriteLine($"Successfully updated water data with ID: {data.Id}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating water data: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                _logger.LogError(ex, "Failed to update water data.");
                 throw;
             }
         }
 
-
-
         public async Task DeleteWaterDataAsync(int id)
         {
-            var data = await GetWaterDataByIdAsync(id);
-            if (data != null)
+            try
             {
-                context.WaterData.Remove(data);
-                await context.SaveChangesAsync();
+                _logger.LogInformation($"Deleting water data with ID: {id}");
+                var data = await GetWaterDataByIdAsync(id);
+
+                if (data != null)
+                {
+                    context.WaterData.Remove(data);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete water data.");
+                throw;
             }
         }
 
@@ -108,18 +128,29 @@ namespace AquAnalyzerAPI.Services
 
         public async Task GenerateMetricsAsync(IEnumerable<WaterData> waterData)
         {
-            var groupedData = waterData.GroupBy(wd => wd.Location);
-            foreach (var group in groupedData)
+            try
             {
-                var metrics = new WaterMetrics
-                {
-                    DateGeneratedOn = DateTime.Now
-                };
-                metrics.CalculateMetrics(group);
+                _logger.LogInformation("Generating water metrics.");
+                var groupedData = waterData.GroupBy(wd => wd.Location);
 
-                await context.WaterMetrics.AddAsync(metrics);
+                foreach (var group in groupedData)
+                {
+                    var metrics = new WaterMetrics
+                    {
+                        DateGeneratedOn = DateTime.Now
+                    };
+                    metrics.CalculateMetrics(group);
+
+                    await context.WaterMetrics.AddAsync(metrics);
+                }
+
+                await context.SaveChangesAsync();
             }
-            await context.SaveChangesAsync();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate metrics.");
+                throw;
+            }
         }
 
         public async Task<IEnumerable<WaterData>> GetBySourceTypeAsync(string sourceType)
