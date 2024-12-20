@@ -4,6 +4,8 @@ using AquAnalyzerAPI.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AquAnalyzerAPI.Interfaces;
+using System;
+using System.Linq;
 
 namespace AquAnalyzerAPI.Controllers
 {
@@ -41,7 +43,6 @@ namespace AquAnalyzerAPI.Controllers
         {
             try
             {
-                // Create default metrics if none provided
                 if (waterData.WaterMetrics == null)
                 {
                     waterData.WaterMetrics = new WaterMetrics
@@ -51,6 +52,21 @@ namespace AquAnalyzerAPI.Controllers
                 }
 
                 await _waterDataService.AddWaterDataAsync(waterData);
+
+                var abnormalityService = HttpContext.RequestServices.GetRequiredService<IAbnormalityService>();
+                var abnormalities = await abnormalityService.CheckWaterDataAbnormalities(waterData.Id);
+
+                if (abnormalities.Any())
+                {
+                    waterData.HasAbnormalities = true;
+                    await _waterDataService.UpdateWaterDataAsync(waterData);
+
+                    foreach (var abnormality in abnormalities)
+                    {
+                        await abnormalityService.AddAbnormality(abnormality);
+                    }
+                }
+
                 return CreatedAtAction(nameof(GetWaterDataById), new { id = waterData.Id }, waterData);
             }
             catch (Exception ex)
@@ -64,9 +80,6 @@ namespace AquAnalyzerAPI.Controllers
         {
             try
             {
-                Console.WriteLine($"Received update request for water data ID: {id}");
-                Console.WriteLine($"Update data: {System.Text.Json.JsonSerializer.Serialize(waterData)}");
-
                 if (id != waterData.Id)
                 {
                     return BadRequest("ID mismatch");
@@ -78,17 +91,14 @@ namespace AquAnalyzerAPI.Controllers
                 }
 
                 await _waterDataService.UpdateWaterDataAsync(waterData);
-                Console.WriteLine($"Successfully updated water data ID: {id}");
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
             {
-                Console.WriteLine($"Not found error: {ex.Message}");
                 return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating water data: {ex.Message}");
                 return StatusCode(500, ex.Message);
             }
         }
@@ -98,14 +108,11 @@ namespace AquAnalyzerAPI.Controllers
         {
             try
             {
-                Console.WriteLine($"API: Delete request received for id: {id}");
                 await _waterDataService.DeleteWaterDataAsync(id);
-                Console.WriteLine($"API: Successfully deleted id: {id}");
                 return NoContent();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"API: Error deleting id {id}: {ex.Message}");
                 return StatusCode(500, ex.Message);
             }
         }
