@@ -75,6 +75,7 @@ namespace AquAnalyzerAPI.Files
                     config.Property(c => c.ColorScheme).IsRequired();
                 });
 
+                // Many-to-Many relationships
                 entity.HasMany(v => v.MetricsUsed)
                     .WithMany(m => m.Visualisations)
                     .UsingEntity(
@@ -105,7 +106,7 @@ namespace AquAnalyzerAPI.Files
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.SetNull);
 
-                entity.HasMany<Abnormality>(w => w.Abnormalities)
+                entity.HasMany(w => w.Abnormalities)
                     .WithOne(a => a.WaterData)
                     .HasForeignKey(a => a.WaterDataId)
                     .IsRequired(false)
