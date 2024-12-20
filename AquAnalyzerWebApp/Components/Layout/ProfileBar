@@ -1,196 +1,139 @@
 @inject NavigationManager NavigationManager
 @inject IAuthService AuthService
-@rendermode InteractiveServer
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
-@using AquAnalyzerWebApp.Services
 @inject AuthenticationStateProvider AuthStateProvider
 
-<div class="user-icon-dropdown">
-    <button class="user-icon" @onclick="ToggleDropdown">
-        <i class="fas fa-user-circle"></i>
-    </button>
+<div class= "user-icon-dropdown" >
+    < button class= "user-icon" @onclick = "ToggleDropdown" >
+        < i class= "fas fa-user-circle" ></ i >
+    </ button >
 
-    <span>Hello, @(user?.Username ?? "Guest")</span>
+    < span > Hello, @(user?.Username ?? "Guest") </ span >
 
-    <div class="dropdown-menu @(isDropdownOpen ? "show" : "")">
+    < div class= "dropdown-menu @(isDropdownOpen ? "show" : "")">
         <AuthorizeView>
             <NotAuthorized>
-                <a class="dropdown-item" @onclick="GoToLogin">Login</a>
-                <a class="dropdown-item" @onclick="GoToRegister">Register</a>
-            </NotAuthorized>
-            <Authorized>
-                <a class="dropdown-item" @onclick="Logout">Log Out</a>
-            </Authorized>
-        </AuthorizeView>
-    </div>
-</div>
+                <a class= "dropdown-item" @onclick = "GoToLogin" > Login </ a >
+                < a class= "dropdown-item" @onclick = "GoToRegister" > Register </ a >
+            </ NotAuthorized >
+            < Authorized >
+                < a class= "dropdown-item" @onclick = "Logout" > Log Out </ a >
+            </ Authorized >
+        </ AuthorizeView >
+    </ div >
+</ div >
 
 @code {
-
     private User? user;
-    private bool isDropdownOpen;
-    private bool isDisposed;
-    private string? role;
+private bool isDropdownOpen;
+private bool isDisposed;
+private string? role;
 
-    [CascadingParameter]
-    public Task<AuthenticationState>? AuthState { get; set; }
+[CascadingParameter]
+public Task<AuthenticationState>? AuthState { get; set; }
 
-    protected override async Task OnInitializedAsync()
+protected override async Task OnInitializedAsync()
+{
+    if (!isDisposed)
     {
-        if (!isDisposed)
-        {
-            AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
-            await LoadUserInfo();
-        }
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        await LoadUserInfo();
     }
-
-    private async Task LoadUserInfo()
-    {
-        try
-        {
-            if (AuthState == null) return;
-
-            var authState = await AuthState;
-            var claims = authState.User;
-
-            if (!claims.Identity?.IsAuthenticated ?? true)
-            {
-                user = null;
-                role = null;
-                return;
-            }
-
-            role = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-            var username = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-            var email = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-
-            user = role switch
-            {
-                "Analyst" => new Analyst
-                    {
-                        Username = username ?? string.Empty,
-                        Email = email ?? string.Empty,
-                        Role = "Analyst"
-                    },
-                "VisualDesigner" => new VisualDesigner
-                    {
-                        Username = username ?? string.Empty,
-                        Email = email ?? string.Empty,
-                        Role = "VisualDesigner"
-                    },
-                _ => null
-            };
-
-            await InvokeAsync(StateHasChanged);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error in LoadUserInfo: {ex.Message}");
-            user = null;
-            role = null;
-        }
-    }
-
-    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
-    {
-        if (!isDisposed)
-        {
-            await LoadUserInfo();
-            StateHasChanged();
-        }
-    }
-
-    private async Task Logout()
-    {
-        try
-        {
-            isDropdownOpen = false;
-            user = null;
-            role = null;
-            await AuthService.LogoutAsync();
-            NavigationManager.NavigateTo("/login", true);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error in Logout: {ex.Message}");
-        }
-    }
-
-    public void Dispose()
-    {
-        if (!isDisposed)
-        {
-            isDisposed = true;
-            AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
-        }
-    }
-
-
-    private void ToggleDropdown() => isDropdownOpen = !isDropdownOpen;
-
-    private void GoToLogin()
-    {
-        isDropdownOpen = false;
-        NavigationManager.NavigateTo("/login");
-    }
-
-    private void GoToRegister()
-    {
-        isDropdownOpen = false;
-        NavigationManager.NavigateTo("/register");
-    }
-
 }
 
-<style>
-    .user-icon-dropdown {
-        position: relative;
-        display: inline-block;
-    }
+private async Task LoadUserInfo()
+{
+    try
+    {
+        if (AuthState == null) return;
 
-    .user-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.3s ease;
-        color: #3498db;
-        font-size: 1.5rem;
-    }
+        var authState = await AuthState;
+        var claims = authState.User;
 
-    .user-icon:hover {
-        transform: scale(1.1);
-        color: #2980b9;
-    }
+        if (!claims.Identity?.IsAuthenticated ?? true)
+        {
+            user = null;
+            role = null;
+            return;
+        }
 
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background-color: white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        z-index: 1000;
-        min-width: 180px;
-        margin-top: 0.5rem;
-    }
+        role = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+        var username = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+        var email = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-    .dropdown-menu.show {
-        display: block;
-    }
+        user = role switch
+        {
+            "Analyst" => new Analyst
+            {
+                Username = username ?? string.Empty,
+                Email = email ?? string.Empty,
+                Role = "Analyst"
+            },
+            "VisualDesigner" => new VisualDesigner
+            {
+                Username = username ?? string.Empty,
+                Email = email ?? string.Empty,
+                Role = "VisualDesigner"
+            },
+            _ => null
+        };
 
-    .dropdown-item {
-        padding: 0.75rem 1rem;
-        text-decoration: none;
-        display: block;
-        color: #2c3e50;
-        transition: all 0.2s ease;
-        cursor: pointer;
+        await InvokeAsync(StateHasChanged);
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error in LoadUserInfo: {ex.Message}");
+        user = null;
+        role = null;
+    }
+}
 
-    .dropdown-item:hover {
-        background-color: #f8f9fa;
-        color: #3498db;
+private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+{
+    if (!isDisposed)
+    {
+        await LoadUserInfo();
+        StateHasChanged();
     }
-</style>
+}
+
+private async Task Logout()
+{
+    try
+    {
+        isDropdownOpen = false;
+        user = null;
+        role = null;
+        await AuthService.LogoutAsync();
+        NavigationManager.NavigateTo("/login", true);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error in Logout: {ex.Message}");
+    }
+}
+
+public void Dispose()
+{
+    if (!isDisposed)
+    {
+        isDisposed = true;
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+}
+
+private void ToggleDropdown() => isDropdownOpen = !isDropdownOpen;
+
+private void GoToLogin()
+{
+    isDropdownOpen = false;
+    NavigationManager.NavigateTo("/login");
+}
+
+private void GoToRegister()
+{
+    isDropdownOpen = false;
+    NavigationManager.NavigateTo("/register");
+}
+}
