@@ -20,7 +20,7 @@ namespace AquAnalyzerAPI.Models
         public int? WaterMetricsId { get; set; }
         public WaterMetrics? WaterMetrics { get; set; }
 
-        public List<Abnormality> Abnormalities { get; set; }
+        public List<Abnormality>? Abnormalities { get; set; }
 
         [JsonIgnore]
         public virtual ICollection<VisualisationData> Visualisations { get; set; } = new List<VisualisationData>();

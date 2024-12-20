@@ -83,14 +83,23 @@ public class WaterService : IWaterService
 
     public async Task<WaterDataDto> UpdateWaterDataAsync(int id, WaterDataDto data)
     {
-        var response = await _httpClient.PutAsJsonAsync($"api/waterdata/{id}", data);
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<WaterDataDto>();
-        if (result == null)
+        try
         {
-            throw new NullReferenceException("Failed to update water data. No data with that id exists.");
+            var response = await _httpClient.PutAsJsonAsync($"api/waterdata/{id}", data);
+            response.EnsureSuccessStatusCode();
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                return data;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<WaterDataDto>();
+            return result ?? data;
         }
-        return result;
+        catch (Exception ex)
+        {
+            throw new HttpRequestException($"Failed to update water data. {ex.Message}");
+        }
     }
 
     public async Task<bool> DeleteWaterDataAsync(int id)
