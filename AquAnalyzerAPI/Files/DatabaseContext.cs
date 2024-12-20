@@ -23,7 +23,7 @@ namespace AquAnalyzerAPI.Files
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("Data Source=database.db");
+                optionsBuilder.UseSqlite("Data Source=AquAnalyzerAPI.database.db");
             }
         }
 
@@ -32,10 +32,12 @@ namespace AquAnalyzerAPI.Files
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>().UseTpcMappingStrategy();
+
             modelBuilder.Entity<Analyst>()
                 .ToTable("Analyst")
                 .Property(s => s.Id)
                 .ValueGeneratedOnAdd();
+
             modelBuilder.Entity<VisualDesigner>()
                 .ToTable("VisualDesigner")
                 .Property(s => s.Id)
@@ -65,7 +67,6 @@ namespace AquAnalyzerAPI.Files
                 entity.Property(e => e.Type).IsRequired();
                 entity.Property(e => e.ReportId).IsRequired();
 
-                // Configure ChartConfiguration as owned entity
                 entity.OwnsOne(v => v.ChartConfig, config =>
                 {
                     config.Property(c => c.Title).IsRequired();
@@ -74,7 +75,6 @@ namespace AquAnalyzerAPI.Files
                     config.Property(c => c.ColorScheme).IsRequired();
                 });
 
-                // Many-to-Many relationships
                 entity.HasMany(v => v.MetricsUsed)
                     .WithMany(m => m.Visualisations)
                     .UsingEntity(
@@ -105,9 +105,9 @@ namespace AquAnalyzerAPI.Files
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.SetNull);
 
-                entity.HasOne(w => w.Abnormality)
+                entity.HasMany(w => w.Abnormalities)
                     .WithOne(a => a.WaterData)
-                    .HasForeignKey<Abnormality>(a => a.WaterDataId)
+                    .HasForeignKey(a => a.WaterDataId)
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.SetNull);
             });
@@ -132,6 +132,12 @@ namespace AquAnalyzerAPI.Files
                 entity.Property(e => e.Timestamp).IsRequired();
                 entity.Property(e => e.Description).IsRequired();
                 entity.Property(e => e.Type).IsRequired();
+
+                entity.HasOne(a => a.WaterData)
+                    .WithMany(w => w.Abnormalities)
+                    .HasForeignKey(a => a.WaterDataId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<Notification>(entity =>
