@@ -9,24 +9,24 @@ namespace AquAnalyzerAPI.Controllers
     [ApiController]
     public class VisualDesignerController : ControllerBase
     {
-        private readonly IVisualDesignerService _visualDesignerService;
+        private readonly IVisualDesignerService _service;
 
         public VisualDesignerController(IVisualDesignerService service)
         {
-            _visualDesignerService = service;
+            _service = service;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<VisualDesigner>>> GetAllVisDesig()
         {
-            var visualDesigners = await _visualDesignerService.GetAllVisDesig();
+            var visualDesigners = await _service.GetAllVisDesig();
             return Ok(visualDesigners);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<VisualDesigner>> GetByIdOfVisDesig(int id)
         {
-            var visualDesigner = await _visualDesignerService.GetByIdOfVisDesig(id);
+            var visualDesigner = await _service.GetByIdOfVisDesig(id);
             if (visualDesigner == null)
             {
                 return NotFound();
@@ -37,7 +37,7 @@ namespace AquAnalyzerAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<VisualDesigner>> AddVisDesig(VisualDesigner visualDesigner)
         {
-            var createdVisualDesigner = await _visualDesignerService.AddVisDesig(visualDesigner);
+            var createdVisualDesigner = await _service.AddVisDesig(visualDesigner);
             return CreatedAtAction(nameof(GetByIdOfVisDesig), new { id = createdVisualDesigner.Id }, createdVisualDesigner);
         }
 
@@ -49,14 +49,14 @@ namespace AquAnalyzerAPI.Controllers
                 return BadRequest();
             }
 
-            await _visualDesignerService.UpdateVisDesig(visualDesigner);
+            await _service.UpdateVisDesig(visualDesigner);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVisDesig(int id)
         {
-            await _visualDesignerService.DeleteVisDesig(id);
+            await _service.DeleteVisDesig(id);
             return NoContent();
         }
     }

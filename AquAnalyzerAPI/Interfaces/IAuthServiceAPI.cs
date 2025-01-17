@@ -33,3 +33,4 @@ namespace AquAnalyzerAPI.Interfaces
         Action<ClaimsPrincipal>? OnAuthStateChanged { get; set; }
     }
 }
+
